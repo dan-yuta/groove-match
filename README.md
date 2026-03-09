@@ -17,7 +17,7 @@
 | スタイリング | Tailwind CSS v4 |
 | アニメーション | Framer Motion |
 | データ管理 | localStorage（モック） |
-| 決済 | Stripe（モックUI） |
+| 決済 | Stripe / App Store / Google Play（モックUI） |
 | モバイル | Capacitor (iOS / Android) |
 
 ## セットアップ

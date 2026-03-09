@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BandMatch - ドキュメントポータル</title>
+<style>
+  :root {
+    --bg: #0a0a1a;
+    --surface: #1a1a2e;
+    --surface-light: #25253d;
+    --primary: #7c3aed;
+    --primary-light: #8b5cf6;
+    --secondary: #06b6d4;
+    --accent: #f97066;
+    --green: #22c55e;
+    --yellow: #eab308;
+    --orange: #f59e0b;
+    --pink: #ec4899;
+    --blue: #3b82f6;
+    --indigo: #6366f1;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #0a0a1a 50%, #1a1a2e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 60px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle at 30% 50%, rgba(124,58,237,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 70% 50%, rgba(6,182,212,0.06) 0%, transparent 50%);
+  }
+  .hero h1 {
+    font-size: 2.6rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary-light), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+    margin-bottom: 10px;
+  }
+  .hero p { font-size: 1.05rem; color: var(--text-dim); position: relative; }
+  .hero .badges { margin-top: 16px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; position: relative; }
+  .hero .badge {
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 40px; }
+
+  .section { padding: 50px 0; }
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.8rem;
+  }
+
+  .doc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+
+  .doc-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s;
+    display: block;
+    position: relative;
+    overflow: hidden;
+  }
+  .doc-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  }
+  .doc-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .doc-card .card-num {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .doc-card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .doc-card p {
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+  .doc-card .card-type {
+    margin-top: 12px;
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 0.68rem;
+    font-weight: 600;
+  }
+  .type-html { background: rgba(124,58,237,0.12); color: var(--primary-light); }
+  .type-md { background: rgba(59,130,246,0.12); color: var(--blue); }
+
+  /* color themes */
+  .card-intro::before { background: var(--green); }
+  .card-intro .card-num { color: var(--green); }
+  .card-spec::before { background: var(--blue); }
+  .card-spec .card-num { color: var(--blue); }
+  .card-arch::before { background: var(--indigo); }
+  .card-arch .card-num { color: var(--indigo); }
+  .card-algo::before { background: var(--pink); }
+  .card-algo .card-num { color: var(--pink); }
+  .card-visual::before { background: var(--primary); }
+  .card-visual .card-num { color: var(--primary); }
+  .card-aws::before { background: var(--orange); }
+  .card-aws .card-num { color: var(--orange); }
+  .card-cost::before { background: var(--green); }
+  .card-cost .card-num { color: var(--green); }
+  .card-infra::before { background: var(--secondary); }
+  .card-infra .card-num { color: var(--secondary); }
+  .card-setup::before { background: var(--yellow); }
+  .card-setup .card-num { color: var(--yellow); }
+  .card-onboard::before { background: var(--accent); }
+  .card-onboard .card-num { color: var(--accent); }
+  .card-compete::before { background: var(--pink); }
+  .card-compete .card-num { color: var(--pink); }
+
+  .reading-order {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-top: 30px;
+  }
+  .reading-order h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .order-group { margin-bottom: 16px; }
+  .order-group:last-child { margin-bottom: 0; }
+  .order-group h4 {
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text-muted);
+  }
+  .order-steps {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .order-step {
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    background: var(--surface-light);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+  .order-arrow { color: var(--text-muted); font-size: 0.9rem; }
+
+  .app-link {
+    background: linear-gradient(135deg, rgba(124,58,237,0.1), rgba(6,182,212,0.1));
+    border: 1px solid rgba(124,58,237,0.3);
+    border-radius: 14px;
+    padding: 24px;
+    margin-top: 30px;
+    text-align: center;
+  }
+  .app-link h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+  .app-link p { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 14px; }
+  .app-link a {
+    display: inline-block;
+    padding: 10px 28px;
+    background: var(--primary);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+  }
+  .app-link a:hover { background: var(--primary-light); transform: translateY(-2px); }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 40px;
+    text-align: center;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+
+  @media (max-width: 768px) {
+    .hero { padding: 40px 20px; }
+    .hero h1 { font-size: 1.8rem; }
+    .container { padding: 0 20px; }
+    .doc-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>BandMatch Docs</h1>
+  <p>初心者バンドマン向けコミュニティアプリ &#8212; プロジェクトドキュメント</p>
+  <div class="badges">
+    <span class="badge" style="background:rgba(124,58,237,0.12); border-color:rgba(124,58,237,0.3); color:var(--primary-light);">Next.js 16</span>
+    <span class="badge" style="background:rgba(6,182,212,0.12); border-color:rgba(6,182,212,0.3); color:var(--secondary);">TypeScript</span>
+    <span class="badge" style="background:rgba(255,153,0,0.12); border-color:rgba(255,153,0,0.3); color:var(--orange);">AWS</span>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- 初めての方 -->
+  <div class="section">
+    <div class="section-title">&#128640; 初めての方はこちらから</div>
+    <div class="doc-grid">
+
+      <a href="08-03_起動・導入ガイド図解.html" class="doc-card card-onboard">
+        <div class="card-num">08-03</div>
+        <h3>起動・導入ガイド図解</h3>
+        <p>起動手順、画面マップ、技術スタック、オンボーディングをビジュアルで解説。初めての方はまずこれ。</p>
+        <span class="card-type type-html">&#9658; HTML図解（ブラウザで閲覧）</span>
+      </a>
+
+      <a href="https://github.com/dan-yuta/band-match/blob/main/docs/08-02_プロジェクト導入ガイド.md" class="doc-card card-setup">
+        <div class="card-num">08-02</div>
+        <h3>プロジェクト導入ガイド</h3>
+        <p>プロジェクトの背景、現在の開発状況、技術スタック、開発ルール、4日間オンボーディング計画。</p>
+        <span class="card-type type-md">&#128196; Markdown（GitHubで閲覧）</span>
+      </a>
+
+      <a href="https://github.com/dan-yuta/band-match/blob/main/docs/08-01_起動手順書.md" class="doc-card card-setup">
+        <div class="card-num">08-01</div>
+        <h3>起動手順書</h3>
+        <p>Node.jsインストールからアプリ起動、テストアカウントでのログインまでの全手順。トラブルシューティング付き。</p>
+        <span class="card-type type-md">&#128196; Markdown（GitHubで閲覧）</span>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- アプリ仕様 -->
+  <div class="section">
+    <div class="section-title">&#127928; アプリ仕様・設計</div>
+    <div class="doc-grid">
+
+      <a href="https://github.com/dan-yuta/band-match/blob/main/docs/01-01_プロジェクト仕様書.md" class="doc-card card-spec">
+        <div class="card-num">01-01</div>
+        <h3>プロジェクト仕様書</h3>
+        <p>アプリの全体仕様。機能一覧、データモデル、セキュリティ対策、モックデータ仕様。</p>
+        <span class="card-type type-md">&#128196; Markdown（GitHubで閲覧）</span>
+      </a>
+
+      <a href="04-01_ビジュアル仕様図解.html" class="doc-card card-visual">
+        <div class="card-num">04-01</div>
+        <h3>ビジュアル仕様図解</h3>
+        <p>カラーパレット、ユーザーフロー、ページマップ、ワイヤーフレーム、データモデルをビジュアルで確認。</p>
+        <span class="card-type type-html">&#9658; HTML図解（ブラウザで閲覧）</span>
+      </a>
+
+      <a href="https://github.com/dan-yuta/band-match/blob/main/docs/02-01_アーキテクチャガイド.md" class="doc-card card-arch">
+        <div class="card-num">02-01</div>
+        <h3>アーキテクチャガイド</h3>
+        <p>技術構成図、ルーティング構造、コンポーネント依存関係、データフロー。</p>
+        <span class="card-type type-md">&#128196; Markdown（GitHubで閲覧）</span>
+      </a>
+
+      <a href="https://github.com/dan-yuta/band-match/blob/main/docs/03-01_マッチングアルゴリズム詳細.md" class="doc-card card-algo">
+        <div class="card-num">03-01</div>
+        <h3>マッチングアルゴリズム詳細</h3>
+        <p>5要素スコアリング（地域・楽器・ジャンル・スキル・スケジュール）の算出ロジック。</p>
+        <span class="card-type type-md">&#128196; Markdown（GitHubで閲覧）</span>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- AWS・インフラ -->
+  <div class="section">
+    <div class="section-title">&#9729; AWS・インフラ設計</div>
+    <div class="doc-grid">
+
+      <a href="07-01_AWSインフラ図解.html" class="doc-card card-infra">
+        <div class="card-num">07-01</div>
+        <h3>AWSインフラ図解</h3>
+        <p>全体構成図、VPCネットワーク、サービス詳細、セキュリティ多層防御、CI/CD、コストをビジュアル図解。</p>
+        <span class="card-type type-html">&#9658; HTML図解（ブラウザで閲覧）</span>
+      </a>
+
+      <a href="https://github.com/dan-yuta/band-match/blob/main/docs/05-01_AWS要件定義書.md" class="doc-card card-aws">
+        <div class="card-num">05-01</div>
+        <h3>AWS要件定義書</h3>
+        <p>機能/非機能要件、AWSサービス一覧、ネットワーク構成、CI/CD、DB設計、監視、開発スケジュール。</p>
+        <span class="card-type type-md">&#128196; Markdown（GitHubで閲覧）</span>
+      </a>
+
+      <a href="https://github.com/dan-yuta/band-match/blob/main/docs/06-01_AWSコスト概算書.md" class="doc-card card-cost">
+        <div class="card-num">06-01</div>
+        <h3>AWSコスト概算書</h3>
+        <p>3フェーズ別のAWSコスト詳細、サービス選定比較、損益分岐点、コスト最適化戦略。</p>
+        <span class="card-type type-md">&#128196; Markdown（GitHubで閲覧）</span>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- ビジネス・戦略 -->
+  <div class="section">
+    <div class="section-title">&#128200; ビジネス・戦略</div>
+    <div class="doc-grid">
+
+      <a href="https://github.com/dan-yuta/band-match/blob/main/docs/09-01_競合分析・差別化戦略.md" class="doc-card card-compete">
+        <div class="card-num">09-01</div>
+        <h3>競合分析・差別化戦略</h3>
+        <p>OURSOUNDS、ROCKJOINT との比較分析。ポジショニングマップ、差別化の3つの柱、キャッチコピー案。</p>
+        <span class="card-type type-md">&#128196; Markdown（GitHubで閲覧）</span>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- 読み順ガイド -->
+  <div class="reading-order">
+    <h3>&#128218; おすすめの読み順</h3>
+    <div class="order-group">
+      <h4>初めての方</h4>
+      <div class="order-steps">
+        <span class="order-step" style="border-color: rgba(249,112,102,0.3);">08-03 起動・導入ガイド図解</span>
+        <span class="order-arrow">&#8594;</span>
+        <span class="order-step" style="border-color: rgba(234,179,8,0.3);">08-01 起動手順書</span>
+        <span class="order-arrow">&#8594;</span>
+        <span class="order-step" style="border-color: rgba(59,130,246,0.3);">01-01 プロジェクト仕様書</span>
+      </div>
+    </div>
+    <div class="order-group">
+      <h4>アプリの詳細</h4>
+      <div class="order-steps">
+        <span class="order-step" style="border-color: rgba(124,58,237,0.3);">04-01 ビジュアル仕様図解</span>
+        <span class="order-arrow">&#8594;</span>
+        <span class="order-step" style="border-color: rgba(99,102,241,0.3);">02-01 アーキテクチャ</span>
+        <span class="order-arrow">&#8594;</span>
+        <span class="order-step" style="border-color: rgba(236,72,153,0.3);">03-01 マッチングアルゴリズム</span>
+      </div>
+    </div>
+    <div class="order-group">
+      <h4>インフラ・ビジネス</h4>
+      <div class="order-steps">
+        <span class="order-step" style="border-color: rgba(6,182,212,0.3);">07-01 AWSインフラ図解</span>
+        <span class="order-arrow">&#8594;</span>
+        <span class="order-step" style="border-color: rgba(245,158,11,0.3);">05-01 AWS要件定義書</span>
+        <span class="order-arrow">&#8594;</span>
+        <span class="order-step" style="border-color: rgba(34,197,94,0.3);">06-01 コスト概算</span>
+        <span class="order-arrow">&#8594;</span>
+        <span class="order-step" style="border-color: rgba(236,72,153,0.3);">09-01 競合分析</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- アプリリンク -->
+  <div class="app-link">
+    <h3>&#127928; アプリを見る</h3>
+    <p>BandMatch のデモアプリにアクセスできます</p>
+    <a href="https://band-match.netlify.app" target="_blank">アプリを開く &#8594;</a>
+  </div>
+
+</main>
+
+<footer>
+  <p>&#169; 2026 BandMatch. All documents are project-internal.</p>
+  <p style="margin-top: 4px;">GitHub: <a href="https://github.com/dan-yuta/band-match" style="color: var(--secondary); text-decoration: none;">dan-yuta/band-match</a></p>
+</footer>
+
+</body>
+</html>

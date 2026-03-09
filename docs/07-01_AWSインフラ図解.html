@@ -1,0 +1,1966 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BandMatch - AWS インフラ構成図解</title>
+<style>
+  :root {
+    --bg: #0a0a1a;
+    --surface: #1a1a2e;
+    --surface-light: #25253d;
+    --surface-hover: #2f2f4a;
+    --primary: #7c3aed;
+    --primary-light: #8b5cf6;
+    --secondary: #06b6d4;
+    --accent: #f97066;
+    --green: #22c55e;
+    --yellow: #eab308;
+    --orange: #f59e0b;
+    --pink: #ec4899;
+    --blue: #3b82f6;
+    --indigo: #6366f1;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --aws-orange: #ff9900;
+    --aws-dark: #232f3e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #0a0a1a 50%, #1a1a2e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 60px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 50%, rgba(124,58,237,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 70% 50%, rgba(6,182,212,0.06) 0%, transparent 50%);
+    animation: heroFloat 20s ease-in-out infinite;
+  }
+  @keyframes heroFloat {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(-2%, 2%); }
+  }
+  .hero h1 {
+    font-size: 2.8rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary-light), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .hero .subtitle {
+    font-size: 1.15rem;
+    color: var(--text-dim);
+    position: relative;
+  }
+  .hero .badge-row {
+    margin-top: 20px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  .hero .badge {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid;
+  }
+  .badge-aws { background: rgba(255,153,0,0.12); border-color: rgba(255,153,0,0.3) !important; color: var(--aws-orange); }
+  .badge-region { background: rgba(59,130,246,0.12); border-color: rgba(59,130,246,0.3) !important; color: var(--blue); }
+  .badge-ha { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.3) !important; color: var(--green); }
+
+  /* ===== NAV ===== */
+  .nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav a {
+    color: var(--text-dim);
+    text-decoration: none;
+    padding: 14px 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .nav a:hover {
+    color: var(--text);
+    background: var(--surface-light);
+    border-bottom-color: var(--primary);
+  }
+
+  /* ===== SECTIONS ===== */
+  .container { max-width: 1400px; margin: 0 auto; padding: 0 40px; }
+
+  section {
+    padding: 60px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  section:last-child { border-bottom: none; }
+
+  .section-header {
+    margin-bottom: 40px;
+  }
+  .section-header h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-header h2 .icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .section-header p {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    margin-left: 52px;
+  }
+
+  /* ===== ARCHITECTURE DIAGRAM ===== */
+  .arch-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .arch-diagram::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+  }
+
+  /* Layers */
+  .arch-layer {
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .arch-layer:last-child { margin-bottom: 0; }
+
+  .layer-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    padding-left: 4px;
+  }
+
+  .layer-content {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  /* Service Box */
+  .svc-box {
+    background: var(--surface-light);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    min-width: 160px;
+    max-width: 240px;
+    flex: 1;
+    text-align: center;
+    transition: all 0.3s;
+    position: relative;
+  }
+  .svc-box:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary);
+    box-shadow: 0 8px 30px rgba(124,58,237,0.15);
+  }
+  .svc-box .svc-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    margin: 0 auto 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+  .svc-box .svc-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+  .svc-box .svc-detail {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    line-height: 1.4;
+  }
+  .svc-box .svc-tag {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 600;
+  }
+
+  /* Color themes for service boxes */
+  .svc-dns .svc-icon { background: rgba(99,102,241,0.15); color: var(--indigo); }
+  .svc-cdn .svc-icon { background: rgba(59,130,246,0.15); color: var(--blue); }
+  .svc-waf .svc-icon { background: rgba(249,112,102,0.15); color: var(--accent); }
+  .svc-s3 .svc-icon { background: rgba(34,197,94,0.15); color: var(--green); }
+  .svc-alb .svc-icon { background: rgba(6,182,212,0.15); color: var(--secondary); }
+  .svc-ecs .svc-icon { background: rgba(255,153,0,0.15); color: var(--aws-orange); }
+  .svc-db .svc-icon { background: rgba(124,58,237,0.15); color: var(--primary-light); }
+  .svc-cache .svc-icon { background: rgba(236,72,153,0.15); color: var(--pink); }
+  .svc-auth .svc-icon { background: rgba(234,179,8,0.15); color: var(--yellow); }
+  .svc-mail .svc-icon { background: rgba(6,182,212,0.15); color: var(--secondary); }
+  .svc-secret .svc-icon { background: rgba(249,112,102,0.15); color: var(--accent); }
+  .svc-monitor .svc-icon { background: rgba(59,130,246,0.15); color: var(--blue); }
+  .svc-cicd .svc-icon { background: rgba(34,197,94,0.15); color: var(--green); }
+  .svc-iac .svc-icon { background: rgba(255,153,0,0.15); color: var(--aws-orange); }
+
+  /* Arrows between layers */
+  .arch-arrow {
+    display: flex;
+    justify-content: center;
+    padding: 8px 0;
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    position: relative;
+  }
+  .arch-arrow .arrow-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    position: absolute;
+    right: calc(50% - 140px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--surface);
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+  .arch-arrow-multi {
+    display: flex;
+    justify-content: center;
+    gap: 120px;
+    padding: 8px 0;
+    color: var(--text-muted);
+    font-size: 1.2rem;
+  }
+
+  /* ===== VPC DIAGRAM ===== */
+  .vpc-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-top: 30px;
+  }
+  .vpc-outer {
+    border: 2px dashed rgba(124,58,237,0.4);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+  }
+  .vpc-label {
+    position: absolute;
+    top: -12px;
+    left: 24px;
+    background: var(--surface);
+    padding: 2px 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--primary-light);
+    border-radius: 6px;
+    border: 1px solid rgba(124,58,237,0.4);
+  }
+
+  .az-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 16px;
+  }
+  .az-box {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    position: relative;
+    background: rgba(255,255,255,0.02);
+  }
+  .az-label {
+    position: absolute;
+    top: -10px;
+    left: 16px;
+    background: var(--surface);
+    padding: 2px 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--secondary);
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
+  .subnet {
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    font-size: 0.75rem;
+  }
+  .subnet:last-child { margin-bottom: 0; }
+  .subnet-public {
+    background: rgba(34,197,94,0.08);
+    border: 1px solid rgba(34,197,94,0.2);
+  }
+  .subnet-private {
+    background: rgba(59,130,246,0.08);
+    border: 1px solid rgba(59,130,246,0.2);
+  }
+  .subnet-db {
+    background: rgba(124,58,237,0.08);
+    border: 1px solid rgba(124,58,237,0.2);
+  }
+  .subnet-label {
+    font-weight: 700;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .subnet-public .subnet-label { color: var(--green); }
+  .subnet-private .subnet-label { color: var(--blue); }
+  .subnet-db .subnet-label { color: var(--primary-light); }
+  .subnet-cidr {
+    color: var(--text-muted);
+    font-family: 'Courier New', monospace;
+    font-size: 0.7rem;
+  }
+  .subnet-items {
+    margin-top: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .subnet-item {
+    background: rgba(255,255,255,0.06);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* ===== DATA FLOW ===== */
+  .flow-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    align-items: center;
+  }
+  .flow-step {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 800px;
+  }
+  .flow-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+  .flow-card {
+    flex: 1;
+    background: var(--surface-light);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    transition: all 0.3s;
+  }
+  .flow-card:hover {
+    border-color: var(--primary);
+    transform: translateX(4px);
+  }
+  .flow-card h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .flow-card p {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+  }
+  .flow-connector {
+    width: 2px;
+    height: 20px;
+    background: var(--border);
+    margin-left: 19px;
+  }
+
+  /* ===== SERVICE CARDS GRID ===== */
+  .service-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+  .service-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .service-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  }
+  .service-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .service-card.cat-compute::before { background: var(--aws-orange); }
+  .service-card.cat-database::before { background: var(--primary-light); }
+  .service-card.cat-network::before { background: var(--blue); }
+  .service-card.cat-storage::before { background: var(--green); }
+  .service-card.cat-security::before { background: var(--accent); }
+  .service-card.cat-devops::before { background: var(--secondary); }
+  .service-card.cat-monitoring::before { background: var(--yellow); }
+
+  .service-card .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .service-card .card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .service-card .card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+  .service-card .card-subtitle {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+  .service-card .card-body {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+  .service-card .card-specs {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .spec-tag {
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--text-dim);
+  }
+  .spec-tag.highlight {
+    background: rgba(124,58,237,0.12);
+    border-color: rgba(124,58,237,0.25);
+    color: var(--primary-light);
+  }
+
+  .card-reason {
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: rgba(34,197,94,0.06);
+    border: 1px solid rgba(34,197,94,0.15);
+    border-radius: 8px;
+    font-size: 0.75rem;
+    color: var(--green);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .card-reason .reason-icon { flex-shrink: 0; font-size: 0.9rem; }
+
+  /* ===== CI/CD PIPELINE ===== */
+  .pipeline {
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+    overflow-x: auto;
+    padding: 20px 0;
+  }
+  .pipeline-step {
+    flex: 1;
+    min-width: 160px;
+    position: relative;
+  }
+  .pipeline-step-inner {
+    background: var(--surface-light);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 16px;
+    text-align: center;
+    height: 100%;
+    transition: all 0.3s;
+  }
+  .pipeline-step-inner:hover {
+    border-color: var(--secondary);
+    transform: translateY(-3px);
+  }
+  .pipeline-step .step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--secondary);
+    color: #000;
+    font-weight: 800;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+  }
+  .pipeline-step .step-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .pipeline-step .step-desc {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+  .pipeline-step .step-tool {
+    margin-top: 10px;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+  .pipeline-arrow {
+    display: flex;
+    align-items: center;
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+
+  /* ===== COST TABLE ===== */
+  .cost-table-wrapper {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+  .cost-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+  .cost-table thead th {
+    background: var(--surface-light);
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 700;
+    color: var(--text);
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+  }
+  .cost-table tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: var(--text-dim);
+  }
+  .cost-table tbody tr:hover td {
+    background: rgba(255,255,255,0.02);
+  }
+  .cost-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+  .cost-table .cost-total td {
+    background: rgba(124,58,237,0.08) !important;
+    font-weight: 700;
+    color: var(--text);
+    border-top: 2px solid var(--primary);
+  }
+  .cost-value { font-family: 'Courier New', monospace; font-weight: 600; }
+  .cost-free { color: var(--green) !important; }
+
+  /* ===== COST CHART ===== */
+  .cost-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 40px;
+    justify-content: center;
+    padding: 40px 20px 20px;
+    min-height: 300px;
+  }
+  .chart-bar-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .chart-bar {
+    width: 80px;
+    border-radius: 8px 8px 0 0;
+    position: relative;
+    transition: all 0.5s;
+    cursor: pointer;
+    min-height: 20px;
+  }
+  .chart-bar:hover {
+    filter: brightness(1.2);
+    transform: scaleX(1.05);
+  }
+  .chart-bar .bar-value {
+    position: absolute;
+    top: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.82rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .chart-bar-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-dim);
+  }
+  .chart-bar-sub {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+  }
+
+  /* ===== SECURITY LAYERS ===== */
+  .security-layers {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    align-items: center;
+  }
+  .security-layer {
+    width: 100%;
+    max-width: 700px;
+    position: relative;
+  }
+  .security-ring {
+    border: 2px solid;
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s;
+  }
+  .security-ring:hover {
+    transform: scale(1.02);
+  }
+  .ring-1 { border-color: rgba(249,112,102,0.4); background: rgba(249,112,102,0.04); }
+  .ring-2 { border-color: rgba(255,153,0,0.4); background: rgba(255,153,0,0.04); margin: -1px 20px 0; }
+  .ring-3 { border-color: rgba(124,58,237,0.4); background: rgba(124,58,237,0.04); margin: -1px 40px 0; }
+  .ring-4 { border-color: rgba(6,182,212,0.4); background: rgba(6,182,212,0.04); margin: -1px 60px 0; }
+  .ring-5 { border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.04); margin: -1px 80px 0; }
+
+  .security-ring h4 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .ring-1 h4 { color: var(--accent); }
+  .ring-2 h4 { color: var(--aws-orange); }
+  .ring-3 h4 { color: var(--primary-light); }
+  .ring-4 h4 { color: var(--secondary); }
+  .ring-5 h4 { color: var(--green); }
+  .security-ring p {
+    font-size: 0.73rem;
+    color: var(--text-dim);
+  }
+
+  /* ===== PHASE TIMELINE ===== */
+  .timeline {
+    position: relative;
+    padding-left: 40px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, var(--primary), var(--secondary), var(--green));
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 30px;
+    padding-left: 20px;
+  }
+  .timeline-item:last-child { margin-bottom: 0; }
+  .timeline-dot {
+    position: absolute;
+    left: -29px;
+    top: 4px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid;
+  }
+  .timeline-item:nth-child(1) .timeline-dot { border-color: var(--primary); background: rgba(124,58,237,0.3); }
+  .timeline-item:nth-child(2) .timeline-dot { border-color: var(--secondary); background: rgba(6,182,212,0.3); }
+  .timeline-item:nth-child(3) .timeline-dot { border-color: var(--green); background: rgba(34,197,94,0.3); }
+  .timeline-item h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .timeline-item .timeline-meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .timeline-item .timeline-body {
+    background: var(--surface-light);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .timeline-item .timeline-body p {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  .timeline-item .timeline-body p:last-child { margin-bottom: 0; }
+  .timeline-cost {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.8rem;
+  }
+
+  /* ===== MONITORING DASHBOARD ===== */
+  .monitor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .monitor-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s;
+  }
+  .monitor-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+  }
+  .monitor-value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .monitor-label {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  .monitor-bar {
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.08);
+    overflow: hidden;
+  }
+  .monitor-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+
+  /* ===== LEGEND / HELPERS ===== */
+  .legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    color: var(--text-dim);
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+  }
+
+  .info-box {
+    background: rgba(59,130,246,0.08);
+    border: 1px solid rgba(59,130,246,0.2);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 20px;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .info-box .info-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+    color: var(--blue);
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 30px 0;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    .hero { padding: 40px 20px; }
+    .hero h1 { font-size: 1.8rem; }
+    .container { padding: 0 20px; }
+    section { padding: 40px 0; }
+    .az-container { grid-template-columns: 1fr; }
+    .pipeline { flex-direction: column; align-items: stretch; }
+    .pipeline-arrow { justify-content: center; transform: rotate(90deg); padding: 4px 0; }
+    .service-grid { grid-template-columns: 1fr; }
+    .cost-chart { flex-direction: column; align-items: center; }
+    .chart-bar { width: 100%; max-width: 200px; }
+    .arch-arrow-multi { gap: 40px; }
+    .ring-2 { margin: -1px 10px 0; }
+    .ring-3 { margin: -1px 20px 0; }
+    .ring-4 { margin: -1px 30px 0; }
+    .ring-5 { margin: -1px 40px 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HERO ===== -->
+<header class="hero">
+  <h1>BandMatch AWS Infrastructure</h1>
+  <p class="subtitle">初心者バンドマン向けコミュニティアプリのクラウドインフラ構成図解</p>
+  <div class="badge-row">
+    <span class="badge badge-aws">AWS Cloud</span>
+    <span class="badge badge-region">ap-northeast-1 (Tokyo)</span>
+    <span class="badge badge-ha">Multi-AZ / 99.9% SLA</span>
+  </div>
+</header>
+
+<!-- ===== NAV ===== -->
+<nav class="nav">
+  <a href="#overview">全体構成</a>
+  <a href="#network">ネットワーク</a>
+  <a href="#services">サービス詳細</a>
+  <a href="#dataflow">データフロー</a>
+  <a href="#security">セキュリティ</a>
+  <a href="#cicd">CI/CD</a>
+  <a href="#monitoring">監視</a>
+  <a href="#cost">コスト</a>
+  <a href="#phases">フェーズ計画</a>
+</nav>
+
+<!-- ===== 1. OVERVIEW ===== -->
+<section id="overview">
+<div class="container">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(124,58,237,0.15); color:var(--primary-light);">&#9729;</span> 全体構成図</h2>
+    <p>ユーザーのリクエストがどのようにAWSサービスを通過してレスポンスを返すかの全体像</p>
+  </div>
+
+  <div class="arch-diagram">
+
+    <!-- User Layer -->
+    <div class="arch-layer">
+      <div class="layer-label">&#127760; ユーザー</div>
+      <div class="layer-content">
+        <div class="svc-box svc-dns">
+          <div class="svc-icon">&#128241;</div>
+          <div class="svc-name">ユーザー</div>
+          <div class="svc-detail">ブラウザ / モバイル<br>bandmatch.jp にアクセス</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-arrow">&#8595;</div>
+
+    <!-- Edge Layer -->
+    <div class="arch-layer">
+      <div class="layer-label">&#127759; エッジレイヤー（グローバル）</div>
+      <div class="layer-content">
+        <div class="svc-box svc-dns">
+          <div class="svc-icon">R53</div>
+          <div class="svc-name">Route 53</div>
+          <div class="svc-detail">DNS解決<br>bandmatch.jp</div>
+          <span class="svc-tag" style="background:rgba(99,102,241,0.12); color:var(--indigo);">DNS</span>
+        </div>
+        <div class="svc-box svc-waf">
+          <div class="svc-icon">WAF</div>
+          <div class="svc-name">AWS WAF</div>
+          <div class="svc-detail">ボット対策<br>レートリミット<br>SQLi/XSS防御</div>
+          <span class="svc-tag" style="background:rgba(249,112,102,0.12); color:var(--accent);">Security</span>
+        </div>
+        <div class="svc-box svc-cdn">
+          <div class="svc-icon">CF</div>
+          <div class="svc-name">CloudFront</div>
+          <div class="svc-detail">CDN + SSL終端<br>静的アセット高速配信<br>ACM証明書</div>
+          <span class="svc-tag" style="background:rgba(59,130,246,0.12); color:var(--blue);">CDN</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-arrow">
+      &#8595;
+      <span class="arrow-label">HTTPS (TLS 1.2+)</span>
+    </div>
+
+    <!-- Origin Layer -->
+    <div class="arch-layer">
+      <div class="layer-label">&#128187; オリジンレイヤー（東京リージョン）</div>
+      <div class="layer-content" style="gap: 30px;">
+        <div class="svc-box svc-s3">
+          <div class="svc-icon">S3</div>
+          <div class="svc-name">S3</div>
+          <div class="svc-detail">静的アセット<br>画像アップロード</div>
+          <span class="svc-tag" style="background:rgba(34,197,94,0.12); color:var(--green);">Storage</span>
+        </div>
+        <div class="svc-box svc-alb" style="min-width: 200px;">
+          <div class="svc-icon">ALB</div>
+          <div class="svc-name">Application Load Balancer</div>
+          <div class="svc-detail">リクエスト振り分け<br>ヘルスチェック<br>パブリックサブネット配置</div>
+          <span class="svc-tag" style="background:rgba(6,182,212,0.12); color:var(--secondary);">Network</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-arrow-multi">
+      <span style="color:var(--green);">&#8593; 静的</span>
+      <span>&#8595; 動的</span>
+    </div>
+
+    <!-- Compute Layer -->
+    <div class="arch-layer">
+      <div class="layer-label">&#9881; コンピュートレイヤー</div>
+      <div class="layer-content">
+        <div class="svc-box svc-ecs" style="min-width: 200px;">
+          <div class="svc-icon">ECS</div>
+          <div class="svc-name">ECS Fargate</div>
+          <div class="svc-detail">Next.js SSR<br>0.5 vCPU / 1GB × 2〜6タスク<br>オートスケーリング対応</div>
+          <span class="svc-tag" style="background:rgba(255,153,0,0.12); color:var(--aws-orange);">Serverless Container</span>
+        </div>
+        <div class="svc-box svc-ecs">
+          <div class="svc-icon">ECR</div>
+          <div class="svc-name">ECR</div>
+          <div class="svc-detail">Dockerイメージ<br>ライフサイクル管理</div>
+          <span class="svc-tag" style="background:rgba(255,153,0,0.12); color:var(--aws-orange);">Registry</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-arrow">&#8595;</div>
+
+    <!-- Data Layer -->
+    <div class="arch-layer">
+      <div class="layer-label">&#128451; データレイヤー</div>
+      <div class="layer-content">
+        <div class="svc-box svc-db" style="min-width: 220px;">
+          <div class="svc-icon">&#9741;</div>
+          <div class="svc-name">Aurora Serverless v2</div>
+          <div class="svc-detail">PostgreSQL 15<br>0.5〜32 ACU 自動スケーリング<br>Multi-AZ / 自動バックアップ</div>
+          <span class="svc-tag" style="background:rgba(124,58,237,0.12); color:var(--primary-light);">Serverless DB</span>
+        </div>
+        <div class="svc-box svc-db">
+          <div class="svc-icon">RP</div>
+          <div class="svc-name">RDS Proxy</div>
+          <div class="svc-detail">コネクション<br>プーリング</div>
+          <span class="svc-tag" style="background:rgba(124,58,237,0.12); color:var(--primary-light);">Proxy</span>
+        </div>
+        <div class="svc-box svc-cache">
+          <div class="svc-icon">&#9889;</div>
+          <div class="svc-name">ElastiCache Serverless</div>
+          <div class="svc-detail">Redis<br>セッション管理<br>マッチングキャッシュ</div>
+          <span class="svc-tag" style="background:rgba(236,72,153,0.12); color:var(--pink);">Cache</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider" style="margin: 24px 0 16px;"></div>
+
+    <!-- Supporting Services -->
+    <div class="arch-layer">
+      <div class="layer-label">&#128295; サポートサービス</div>
+      <div class="layer-content">
+        <div class="svc-box svc-auth">
+          <div class="svc-icon">&#128274;</div>
+          <div class="svc-name">Cognito</div>
+          <div class="svc-detail">ユーザー認証<br>Google/Apple連携</div>
+        </div>
+        <div class="svc-box svc-mail">
+          <div class="svc-icon">&#9993;</div>
+          <div class="svc-name">SES</div>
+          <div class="svc-detail">メール送信<br>パスワードリセット</div>
+        </div>
+        <div class="svc-box svc-secret">
+          <div class="svc-icon">&#128273;</div>
+          <div class="svc-name">Secrets Manager</div>
+          <div class="svc-detail">APIキー<br>DB接続情報</div>
+        </div>
+        <div class="svc-box svc-monitor">
+          <div class="svc-icon">&#128202;</div>
+          <div class="svc-name">CloudWatch</div>
+          <div class="svc-detail">ログ・メトリクス<br>アラーム通知</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--indigo);"></div>DNS</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue);"></div>ネットワーク</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--aws-orange);"></div>コンピュート</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--primary-light);"></div>データベース</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--pink);"></div>キャッシュ</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green);"></div>ストレージ</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent);"></div>セキュリティ</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--yellow);"></div>認証</div>
+  </div>
+</div>
+</section>
+
+<!-- ===== 2. NETWORK ===== -->
+<section id="network">
+<div class="container">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(59,130,246,0.15); color:var(--blue);">&#128423;</span> ネットワーク構成（VPC）</h2>
+    <p>Multi-AZ構成でパブリック/プライベートサブネットを分離し、セキュリティを確保</p>
+  </div>
+
+  <div class="vpc-diagram">
+    <div class="vpc-outer">
+      <div class="vpc-label">VPC: 10.0.0.0/16</div>
+
+      <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom: 16px; margin-top: 8px;">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green);"></div>パブリックサブネット（インターネットアクセス可）</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blue);"></div>プライベートサブネット（NAT経由のみ）</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--primary-light);"></div>DBサブネット（完全隔離）</div>
+      </div>
+
+      <div class="az-container">
+        <!-- AZ-a -->
+        <div class="az-box">
+          <div class="az-label">AZ: ap-northeast-1a</div>
+
+          <div class="subnet subnet-public">
+            <div class="subnet-label">&#127795; Public Subnet</div>
+            <div class="subnet-cidr">10.0.1.0/24</div>
+            <div class="subnet-items">
+              <span class="subnet-item">ALB</span>
+              <span class="subnet-item">NAT Gateway</span>
+            </div>
+          </div>
+
+          <div class="subnet subnet-private">
+            <div class="subnet-label">&#128274; Private Subnet</div>
+            <div class="subnet-cidr">10.0.10.0/24</div>
+            <div class="subnet-items">
+              <span class="subnet-item">ECS Fargate</span>
+              <span class="subnet-item">ElastiCache</span>
+            </div>
+          </div>
+
+          <div class="subnet subnet-db">
+            <div class="subnet-label">&#9741; DB Subnet</div>
+            <div class="subnet-cidr">10.0.30.0/24</div>
+            <div class="subnet-items">
+              <span class="subnet-item">Aurora Writer</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- AZ-c -->
+        <div class="az-box">
+          <div class="az-label">AZ: ap-northeast-1c</div>
+
+          <div class="subnet subnet-public">
+            <div class="subnet-label">&#127795; Public Subnet</div>
+            <div class="subnet-cidr">10.0.2.0/24</div>
+            <div class="subnet-items">
+              <span class="subnet-item">ALB</span>
+            </div>
+          </div>
+
+          <div class="subnet subnet-private">
+            <div class="subnet-label">&#128274; Private Subnet</div>
+            <div class="subnet-cidr">10.0.20.0/24</div>
+            <div class="subnet-items">
+              <span class="subnet-item">ECS Fargate</span>
+            </div>
+          </div>
+
+          <div class="subnet subnet-db">
+            <div class="subnet-label">&#9741; DB Subnet</div>
+            <div class="subnet-cidr">10.0.40.0/24</div>
+            <div class="subnet-items">
+              <span class="subnet-item">Aurora Reader</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box" style="margin-top:20px;">
+        <span class="info-icon">&#9432;</span>
+        <div>
+          <strong>セキュリティグループ構成:</strong>
+          ALB → ECS（ポート3000のみ）、ECS → RDS Proxy（ポート5432のみ）、ECS → Redis（ポート6379のみ）。
+          各層は必要最小限の通信のみ許可。DBサブネットはインターネットアクセス不可。
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ===== 3. SERVICES DETAIL ===== -->
+<section id="services">
+<div class="container">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(255,153,0,0.15); color:var(--aws-orange);">&#9881;</span> サービス詳細</h2>
+    <p>各AWSサービスの構成・選定理由・スペック</p>
+  </div>
+
+  <div class="service-grid">
+
+    <!-- ECS Fargate -->
+    <div class="service-card cat-compute">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(255,153,0,0.15); color:var(--aws-orange);">ECS</div>
+        <div>
+          <div class="card-title">ECS Fargate</div>
+          <div class="card-subtitle">サーバーレスコンテナ</div>
+        </div>
+      </div>
+      <div class="card-body">
+        Next.js (SSR) アプリケーションを Docker コンテナで実行。サーバーの管理・パッチ適用が一切不要。
+      </div>
+      <div class="card-specs">
+        <span class="spec-tag highlight">サーバー管理不要</span>
+        <span class="spec-tag">0.5 vCPU / 1GB</span>
+        <span class="spec-tag">最小2タスク</span>
+        <span class="spec-tag">オートスケーリング</span>
+        <span class="spec-tag">ローリングデプロイ</span>
+      </div>
+      <div class="card-reason">
+        <span class="reason-icon">&#10003;</span>
+        <span>EC2のOS管理が不要。Dockerfileだけで環境統一。CPUベースのオートスケーリングで負荷に自動対応。</span>
+      </div>
+    </div>
+
+    <!-- Aurora Serverless v2 -->
+    <div class="service-card cat-database">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(124,58,237,0.15); color:var(--primary-light);">&#9741;</div>
+        <div>
+          <div class="card-title">Aurora Serverless v2</div>
+          <div class="card-subtitle">PostgreSQL 15</div>
+        </div>
+      </div>
+      <div class="card-body">
+        トラフィックに応じて 0.5〜32 ACU で自動スケーリング。深夜帯は最小構成に縮小してコスト節約。Multi-AZ 標準。
+      </div>
+      <div class="card-specs">
+        <span class="spec-tag highlight">自動スケーリング</span>
+        <span class="spec-tag">Multi-AZ</span>
+        <span class="spec-tag">自動バックアップ 7日</span>
+        <span class="spec-tag">Prisma ORM</span>
+        <span class="spec-tag">Writer + Reader</span>
+      </div>
+      <div class="card-reason">
+        <span class="reason-icon">&#10003;</span>
+        <span>手動でのインスタンスサイズ変更が不要。マッチングのような複雑なクエリにリレーショナルDBが最適。</span>
+      </div>
+    </div>
+
+    <!-- ElastiCache Serverless -->
+    <div class="service-card cat-database">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(236,72,153,0.15); color:var(--pink);">&#9889;</div>
+        <div>
+          <div class="card-title">ElastiCache Serverless</div>
+          <div class="card-subtitle">Redis</div>
+        </div>
+      </div>
+      <div class="card-body">
+        セッション管理とマッチング結果のキャッシュ。ノードタイプの選定やフェイルオーバー設定が不要。
+      </div>
+      <div class="card-specs">
+        <span class="spec-tag highlight">ノード管理不要</span>
+        <span class="spec-tag">自動スケーリング</span>
+        <span class="spec-tag">パッチ自動適用</span>
+        <span class="spec-tag">従量課金</span>
+      </div>
+      <div class="card-reason">
+        <span class="reason-icon">&#10003;</span>
+        <span>プロビジョンド版のようなノードサイズ選定・監視が不要。使った分だけ課金で初期コストも最小。</span>
+      </div>
+    </div>
+
+    <!-- CloudFront -->
+    <div class="service-card cat-network">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(59,130,246,0.15); color:var(--blue);">CF</div>
+        <div>
+          <div class="card-title">CloudFront</div>
+          <div class="card-subtitle">CDN + SSL終端</div>
+        </div>
+      </div>
+      <div class="card-body">
+        世界中のエッジロケーションから静的アセットを高速配信。ACM証明書でHTTPS対応。WAFと統合。
+      </div>
+      <div class="card-specs">
+        <span class="spec-tag">グローバルCDN</span>
+        <span class="spec-tag">ACM証明書（無料）</span>
+        <span class="spec-tag">WAF統合</span>
+        <span class="spec-tag">キャッシュ制御</span>
+        <span class="spec-tag highlight">12ヶ月無料枠 1TB</span>
+      </div>
+      <div class="card-reason">
+        <span class="reason-icon">&#10003;</span>
+        <span>SSL証明書が無料で自動更新。画像・CSS・JSを高速配信してページ表示を高速化。</span>
+      </div>
+    </div>
+
+    <!-- ALB -->
+    <div class="service-card cat-network">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(6,182,212,0.15); color:var(--secondary);">ALB</div>
+        <div>
+          <div class="card-title">Application Load Balancer</div>
+          <div class="card-subtitle">L7 ロードバランサー</div>
+        </div>
+      </div>
+      <div class="card-body">
+        ECS Fargateタスクへのリクエスト振り分け。ヘルスチェックで異常なタスクを自動除外。
+      </div>
+      <div class="card-specs">
+        <span class="spec-tag">L7ルーティング</span>
+        <span class="spec-tag">ヘルスチェック</span>
+        <span class="spec-tag">Multi-AZ</span>
+        <span class="spec-tag">スティッキーセッション</span>
+      </div>
+      <div class="card-reason">
+        <span class="reason-icon">&#10003;</span>
+        <span>パスベースルーティングでAPIとSSRを柔軟に振り分け。ECSサービスディスカバリと自動連携。</span>
+      </div>
+    </div>
+
+    <!-- S3 -->
+    <div class="service-card cat-storage">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(34,197,94,0.15); color:var(--green);">S3</div>
+        <div>
+          <div class="card-title">Amazon S3</div>
+          <div class="card-subtitle">オブジェクトストレージ</div>
+        </div>
+      </div>
+      <div class="card-body">
+        静的アセット（JS/CSS/画像）とユーザーアップロード画像の保存。ライフサイクルポリシーで自動管理。
+      </div>
+      <div class="card-specs">
+        <span class="spec-tag">99.999999999% 耐久性</span>
+        <span class="spec-tag">ライフサイクル管理</span>
+        <span class="spec-tag">バケット2つ</span>
+        <span class="spec-tag">CloudFront連携</span>
+      </div>
+      <div class="card-reason">
+        <span class="reason-icon">&#10003;</span>
+        <span>業界標準のストレージ。容量無制限で従量課金。VPCエンドポイントでNAT費用も削減可能。</span>
+      </div>
+    </div>
+
+    <!-- Cognito -->
+    <div class="service-card cat-security">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(234,179,8,0.15); color:var(--yellow);">&#128274;</div>
+        <div>
+          <div class="card-title">Amazon Cognito</div>
+          <div class="card-subtitle">認証・認可</div>
+        </div>
+      </div>
+      <div class="card-body">
+        ユーザー登録・ログイン・パスワードリセットをマネージドで提供。Google/Apple IDのソーシャルログインも標準対応。
+      </div>
+      <div class="card-specs">
+        <span class="spec-tag highlight">5万MAUまで無料</span>
+        <span class="spec-tag">JWT発行</span>
+        <span class="spec-tag">MFA対応</span>
+        <span class="spec-tag">Google/Apple連携</span>
+      </div>
+      <div class="card-reason">
+        <span class="reason-icon">&#10003;</span>
+        <span>認証を自前実装するリスクを排除。5万MAUまで完全無料なので、BandMatchの規模では十分。</span>
+      </div>
+    </div>
+
+    <!-- SES -->
+    <div class="service-card cat-devops">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(6,182,212,0.15); color:var(--secondary);">&#9993;</div>
+        <div>
+          <div class="card-title">Amazon SES</div>
+          <div class="card-subtitle">メール送信</div>
+        </div>
+      </div>
+      <div class="card-body">
+        パスワードリセット・イベントリマインダー・通知メールを送信。Cognitoと統合して認証メールも自動化。
+      </div>
+      <div class="card-specs">
+        <span class="spec-tag">$0.10/1,000通</span>
+        <span class="spec-tag">Cognito統合</span>
+        <span class="spec-tag">バウンス管理</span>
+        <span class="spec-tag">テンプレート対応</span>
+      </div>
+      <div class="card-reason">
+        <span class="reason-icon">&#10003;</span>
+        <span>月1万通なら月額$1。外部メールサービス不要でAWS内で完結。</span>
+      </div>
+    </div>
+
+    <!-- Secrets Manager -->
+    <div class="service-card cat-security">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(249,112,102,0.15); color:var(--accent);">&#128273;</div>
+        <div>
+          <div class="card-title">Secrets Manager</div>
+          <div class="card-subtitle">シークレット管理</div>
+        </div>
+      </div>
+      <div class="card-body">
+        DB接続情報・Stripe APIキー・JWT秘密鍵等を安全に管理。自動ローテーション対応。
+      </div>
+      <div class="card-specs">
+        <span class="spec-tag">暗号化保存</span>
+        <span class="spec-tag">自動ローテーション</span>
+        <span class="spec-tag">IAMアクセス制御</span>
+        <span class="spec-tag">$0.40/シークレット/月</span>
+      </div>
+      <div class="card-reason">
+        <span class="reason-icon">&#10003;</span>
+        <span>環境変数や設定ファイルにシークレットを書かずに済む。ECSタスクから安全に参照可能。</span>
+      </div>
+    </div>
+
+    <!-- CDK -->
+    <div class="service-card cat-devops">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(255,153,0,0.15); color:var(--aws-orange);">CDK</div>
+        <div>
+          <div class="card-title">AWS CDK</div>
+          <div class="card-subtitle">TypeScript IaC</div>
+        </div>
+      </div>
+      <div class="card-body">
+        インフラをTypeScriptで定義・管理。アプリと同じ言語で書けるため学習コスト最小。環境別スタック対応。
+      </div>
+      <div class="card-specs">
+        <span class="spec-tag highlight">TypeScript</span>
+        <span class="spec-tag">L2コンストラクト</span>
+        <span class="spec-tag">環境別スタック</span>
+        <span class="spec-tag">無料</span>
+      </div>
+      <div class="card-reason">
+        <span class="reason-icon">&#10003;</span>
+        <span>Next.jsプロジェクトと同じTypeScriptで統一。YAMLの数百行がTypeScriptの数十行に。</span>
+      </div>
+    </div>
+
+    <!-- CloudWatch -->
+    <div class="service-card cat-monitoring">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(59,130,246,0.15); color:var(--blue);">&#128202;</div>
+        <div>
+          <div class="card-title">CloudWatch</div>
+          <div class="card-subtitle">監視・ログ・アラーム</div>
+        </div>
+      </div>
+      <div class="card-body">
+        ECS/Aurora/ALBのメトリクスを一元管理。閾値超過時にSNS経由でSlack/メール通知。
+      </div>
+      <div class="card-specs">
+        <span class="spec-tag">メトリクス監視</span>
+        <span class="spec-tag">ログ集約</span>
+        <span class="spec-tag">アラーム通知</span>
+        <span class="spec-tag">ダッシュボード</span>
+      </div>
+      <div class="card-reason">
+        <span class="reason-icon">&#10003;</span>
+        <span>AWS標準の監視ツール。追加の監視SaaSなしで全サービスのメトリクスを横断的に把握。</span>
+      </div>
+    </div>
+
+    <!-- WAF -->
+    <div class="service-card cat-security">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(249,112,102,0.15); color:var(--accent);">WAF</div>
+        <div>
+          <div class="card-title">AWS WAF</div>
+          <div class="card-subtitle">Web Application Firewall</div>
+        </div>
+      </div>
+      <div class="card-body">
+        CloudFrontに適用してDDoS・ボット・SQLインジェクション・XSSを防御。レートリミットで不正リクエストを制限。
+      </div>
+      <div class="card-specs">
+        <span class="spec-tag">レートリミット</span>
+        <span class="spec-tag">SQLi/XSS防御</span>
+        <span class="spec-tag">ボット対策</span>
+        <span class="spec-tag">マネージドルール</span>
+      </div>
+      <div class="card-reason">
+        <span class="reason-icon">&#10003;</span>
+        <span>AWSマネージドルールで主要な攻撃を自動防御。カスタムルールで日本国外からのアクセス制限も可能。</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+</section>
+
+<!-- ===== 4. DATA FLOW ===== -->
+<section id="dataflow">
+<div class="container">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(6,182,212,0.15); color:var(--secondary);">&#8644;</span> リクエストフロー</h2>
+    <p>ユーザーのリクエストがレスポンスとして返るまでの流れ</p>
+  </div>
+
+  <div class="flow-container">
+
+    <div class="flow-step">
+      <div class="flow-number" style="background: var(--indigo); color: #fff;">1</div>
+      <div class="flow-card">
+        <h4 style="color: var(--indigo);">DNS解決</h4>
+        <p>ユーザーが bandmatch.jp にアクセス → Route 53 が CloudFront のエンドポイントに解決</p>
+      </div>
+    </div>
+    <div class="flow-connector"></div>
+
+    <div class="flow-step">
+      <div class="flow-number" style="background: var(--accent); color: #fff;">2</div>
+      <div class="flow-card">
+        <h4 style="color: var(--accent);">WAFフィルタリング</h4>
+        <p>AWS WAF がリクエストを検査。ボット・SQLi・XSS・レートリミット超過をブロック</p>
+      </div>
+    </div>
+    <div class="flow-connector"></div>
+
+    <div class="flow-step">
+      <div class="flow-number" style="background: var(--blue); color: #fff;">3</div>
+      <div class="flow-card">
+        <h4 style="color: var(--blue);">CDN判定</h4>
+        <p>CloudFront がキャッシュヒットなら即返却。ミスなら静的 → S3、動的 → ALB にルーティング</p>
+      </div>
+    </div>
+    <div class="flow-connector"></div>
+
+    <div class="flow-step">
+      <div class="flow-number" style="background: var(--secondary); color: #000;">4</div>
+      <div class="flow-card">
+        <h4 style="color: var(--secondary);">ロードバランシング</h4>
+        <p>ALB が正常な ECS Fargate タスクにリクエストを振り分け（ラウンドロビン + ヘルスチェック）</p>
+      </div>
+    </div>
+    <div class="flow-connector"></div>
+
+    <div class="flow-step">
+      <div class="flow-number" style="background: var(--aws-orange); color: #000;">5</div>
+      <div class="flow-card">
+        <h4 style="color: var(--aws-orange);">アプリ処理</h4>
+        <p>Next.js (SSR) が Cognito でトークン検証 → ElastiCache でキャッシュ確認 → Aurora にクエリ</p>
+      </div>
+    </div>
+    <div class="flow-connector"></div>
+
+    <div class="flow-step">
+      <div class="flow-number" style="background: var(--primary-light); color: #fff;">6</div>
+      <div class="flow-card">
+        <h4 style="color: var(--primary-light);">データ取得</h4>
+        <p>RDS Proxy 経由で Aurora にアクセス。読み取りはリードレプリカに自動ルーティング</p>
+      </div>
+    </div>
+    <div class="flow-connector"></div>
+
+    <div class="flow-step">
+      <div class="flow-number" style="background: var(--green); color: #000;">7</div>
+      <div class="flow-card">
+        <h4 style="color: var(--green);">レスポンス返却</h4>
+        <p>SSR レンダリング結果を ALB → CloudFront → ユーザーに返却。CloudFront がキャッシュ保存</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+</section>
+
+<!-- ===== 5. SECURITY ===== -->
+<section id="security">
+<div class="container">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(249,112,102,0.15); color:var(--accent);">&#128737;</span> セキュリティ多層防御</h2>
+    <p>外側から内側へ5層のセキュリティレイヤーでアプリケーションを保護</p>
+  </div>
+
+  <div class="security-layers">
+    <div class="security-layer">
+      <div class="security-ring ring-1">
+        <h4>Layer 1: エッジ防御</h4>
+        <p>AWS WAF（DDoS / ボット / SQLi / XSS 防御）+ CloudFront（TLS 1.2+ 強制）+ AWS Shield Standard</p>
+        <div class="security-ring ring-2">
+          <h4>Layer 2: ネットワーク分離</h4>
+          <p>VPC + パブリック/プライベートサブネット分離 + セキュリティグループ（最小権限ポート開放）+ NACLs</p>
+          <div class="security-ring ring-3">
+            <h4>Layer 3: 認証・認可</h4>
+            <p>Cognito（JWT + MFA対応）+ IAMロール（最小権限原則）+ API認可（管理者ロール制限）</p>
+            <div class="security-ring ring-4">
+              <h4>Layer 4: アプリケーション</h4>
+              <p>入力バリデーション + CSPヘッダー + CSRF対策 + パラメータバインディング（Prisma ORM）</p>
+              <div class="security-ring ring-5">
+                <h4>Layer 5: データ保護</h4>
+                <p>Aurora暗号化（AES-256）+ Secrets Manager（自動ローテーション）+ S3暗号化 + bcryptパスワードハッシュ</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box" style="margin-top: 24px;">
+    <span class="info-icon">&#128737;</span>
+    <div>
+      <strong>セキュリティグループ フロー:</strong><br>
+      ALB (443/tcp from 0.0.0.0) → ECS (3000/tcp from ALB-SG) → RDS Proxy (5432/tcp from ECS-SG) → Aurora<br>
+      ECS (6379/tcp) → ElastiCache | すべてのアウトバウンドはNAT Gateway経由
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ===== 6. CI/CD ===== -->
+<section id="cicd">
+<div class="container">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(34,197,94,0.15); color:var(--green);">&#128640;</span> CI/CD パイプライン</h2>
+    <p>コードのプッシュから本番デプロイまでの自動化フロー</p>
+  </div>
+
+  <div class="pipeline">
+    <div class="pipeline-step">
+      <div class="pipeline-step-inner">
+        <div class="step-num">1</div>
+        <div class="step-title">コードプッシュ</div>
+        <div class="step-desc">PRマージ or<br>mainブランチへのpush</div>
+        <div class="step-tool">GitHub</div>
+      </div>
+    </div>
+    <div class="pipeline-arrow">&#8594;</div>
+
+    <div class="pipeline-step">
+      <div class="pipeline-step-inner">
+        <div class="step-num">2</div>
+        <div class="step-title">品質チェック</div>
+        <div class="step-desc">ESLint + TypeScript<br>型チェック</div>
+        <div class="step-tool">GitHub Actions</div>
+      </div>
+    </div>
+    <div class="pipeline-arrow">&#8594;</div>
+
+    <div class="pipeline-step">
+      <div class="pipeline-step-inner">
+        <div class="step-num">3</div>
+        <div class="step-title">テスト実行</div>
+        <div class="step-desc">Jest + RTL<br>ユニット/コンポーネント</div>
+        <div class="step-tool">GitHub Actions</div>
+      </div>
+    </div>
+    <div class="pipeline-arrow">&#8594;</div>
+
+    <div class="pipeline-step">
+      <div class="pipeline-step-inner">
+        <div class="step-num">4</div>
+        <div class="step-title">ビルド & プッシュ</div>
+        <div class="step-desc">Docker マルチステージ<br>ビルド → ECR</div>
+        <div class="step-tool">Docker + ECR</div>
+      </div>
+    </div>
+    <div class="pipeline-arrow">&#8594;</div>
+
+    <div class="pipeline-step">
+      <div class="pipeline-step-inner">
+        <div class="step-num">5</div>
+        <div class="step-title">Staging デプロイ</div>
+        <div class="step-desc">ECS サービス更新<br>ローリングデプロイ</div>
+        <div class="step-tool">ECS + ALB</div>
+      </div>
+    </div>
+    <div class="pipeline-arrow">&#8594;</div>
+
+    <div class="pipeline-step">
+      <div class="pipeline-step-inner">
+        <div class="step-num">6</div>
+        <div class="step-title">E2Eテスト</div>
+        <div class="step-desc">Staging環境で<br>主要フロー検証</div>
+        <div class="step-tool">Playwright</div>
+      </div>
+    </div>
+    <div class="pipeline-arrow">&#8594;</div>
+
+    <div class="pipeline-step">
+      <div class="pipeline-step-inner" style="border-color: var(--green);">
+        <div class="step-num" style="background: var(--green);">7</div>
+        <div class="step-title" style="color: var(--green);">本番デプロイ</div>
+        <div class="step-desc">手動承認後<br>本番ECS更新</div>
+        <div class="step-tool">手動トリガー</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span class="info-icon">&#128161;</span>
+    <div>
+      <strong>デプロイ戦略:</strong> ECS ローリングアップデートにより、新しいタスクが正常起動してからヘルスチェック通過後に古いタスクを停止。ダウンタイムゼロでデプロイ可能。ロールバックはECSの前回タスク定義に戻すだけ。
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ===== 7. MONITORING ===== -->
+<section id="monitoring">
+<div class="container">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(234,179,8,0.15); color:var(--yellow);">&#128202;</span> 監視ダッシュボード</h2>
+    <p>CloudWatch で監視する主要メトリクスとアラーム閾値</p>
+  </div>
+
+  <div class="monitor-grid">
+    <div class="monitor-card">
+      <div class="monitor-value" style="color: var(--green);">99.9%</div>
+      <div class="monitor-label">稼働率 SLA</div>
+      <div class="monitor-bar"><div class="monitor-bar-fill" style="width: 99.9%; background: var(--green);"></div></div>
+    </div>
+    <div class="monitor-card">
+      <div class="monitor-value" style="color: var(--secondary);">&lt;2s</div>
+      <div class="monitor-label">ページ表示 P95</div>
+      <div class="monitor-bar"><div class="monitor-bar-fill" style="width: 40%; background: var(--secondary);"></div></div>
+    </div>
+    <div class="monitor-card">
+      <div class="monitor-value" style="color: var(--blue);">&lt;500ms</div>
+      <div class="monitor-label">API応答 P95</div>
+      <div class="monitor-bar"><div class="monitor-bar-fill" style="width: 25%; background: var(--blue);"></div></div>
+    </div>
+    <div class="monitor-card">
+      <div class="monitor-value" style="color: var(--accent);">&lt;1%</div>
+      <div class="monitor-label">5xxエラー率</div>
+      <div class="monitor-bar"><div class="monitor-bar-fill" style="width: 5%; background: var(--accent);"></div></div>
+    </div>
+    <div class="monitor-card">
+      <div class="monitor-value" style="color: var(--aws-orange);">&lt;80%</div>
+      <div class="monitor-label">ECS CPU使用率</div>
+      <div class="monitor-bar"><div class="monitor-bar-fill" style="width: 55%; background: var(--aws-orange);"></div></div>
+    </div>
+    <div class="monitor-card">
+      <div class="monitor-value" style="color: var(--primary-light);">&lt;70%</div>
+      <div class="monitor-label">Aurora CPU使用率</div>
+      <div class="monitor-bar"><div class="monitor-bar-fill" style="width: 45%; background: var(--primary-light);"></div></div>
+    </div>
+  </div>
+
+  <div style="margin-top: 30px;">
+    <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 16px;">アラート通知フロー</h3>
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center;">
+      <div style="background: var(--surface-light); border: 1px solid var(--border); border-radius: 8px; padding: 12px 20px; text-align: center;">
+        <div style="font-size: 0.8rem; font-weight: 700;">CloudWatch</div>
+        <div style="font-size: 0.68rem; color: var(--text-muted);">メトリクス監視</div>
+      </div>
+      <span style="color: var(--text-muted);">&#8594;</span>
+      <div style="background: var(--surface-light); border: 1px solid var(--border); border-radius: 8px; padding: 12px 20px; text-align: center;">
+        <div style="font-size: 0.8rem; font-weight: 700;">CloudWatch Alarm</div>
+        <div style="font-size: 0.68rem; color: var(--text-muted);">閾値超過検出</div>
+      </div>
+      <span style="color: var(--text-muted);">&#8594;</span>
+      <div style="background: var(--surface-light); border: 1px solid var(--border); border-radius: 8px; padding: 12px 20px; text-align: center;">
+        <div style="font-size: 0.8rem; font-weight: 700;">SNS Topic</div>
+        <div style="font-size: 0.68rem; color: var(--text-muted);">通知配信</div>
+      </div>
+      <span style="color: var(--text-muted);">&#8594;</span>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); border-radius: 8px; padding: 8px 16px; text-align: center;">
+          <div style="font-size: 0.8rem; font-weight: 700; color: var(--green);">Slack</div>
+        </div>
+        <div style="background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); border-radius: 8px; padding: 8px 16px; text-align: center;">
+          <div style="font-size: 0.8rem; font-weight: 700; color: var(--blue);">Email</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ===== 8. COST ===== -->
+<section id="cost">
+<div class="container">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(34,197,94,0.15); color:var(--green);">&#128176;</span> コスト概算</h2>
+    <p>フェーズ別の月額AWSコスト（1USD = 150円換算）</p>
+  </div>
+
+  <!-- Cost Chart -->
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 30px; margin-bottom: 30px;">
+    <h3 style="text-align: center; font-size: 1rem; margin-bottom: 8px;">月額コスト推移</h3>
+    <p style="text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 20px;">MAU増加に伴うスケーリングコスト</p>
+    <div class="cost-chart">
+      <div class="chart-bar-group">
+        <div class="chart-bar" style="height: 100px; background: linear-gradient(180deg, var(--primary-light), var(--primary));">
+          <div class="bar-value" style="color: var(--primary-light);">&#165;38,000</div>
+        </div>
+        <div class="chart-bar-label">初期</div>
+        <div class="chart-bar-sub">〜1,000 MAU</div>
+      </div>
+      <div class="chart-bar-group">
+        <div class="chart-bar" style="height: 190px; background: linear-gradient(180deg, var(--secondary), #0891b2);">
+          <div class="bar-value" style="color: var(--secondary);">&#165;72,500</div>
+        </div>
+        <div class="chart-bar-label">成長期</div>
+        <div class="chart-bar-sub">〜5,000 MAU</div>
+      </div>
+      <div class="chart-bar-group">
+        <div class="chart-bar" style="height: 300px; background: linear-gradient(180deg, var(--green), #16a34a);">
+          <div class="bar-value" style="color: var(--green);">&#165;181,000</div>
+        </div>
+        <div class="chart-bar-label">拡大期</div>
+        <div class="chart-bar-sub">〜20,000 MAU</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cost Table: Initial Phase -->
+  <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 12px; color: var(--primary-light);">初期フェーズ詳細（〜1,000 MAU）</h3>
+  <div class="cost-table-wrapper" style="margin-bottom: 30px;">
+    <table class="cost-table">
+      <thead>
+        <tr>
+          <th>サービス</th>
+          <th>構成</th>
+          <th style="text-align:right;">月額 (USD)</th>
+          <th style="text-align:right;">月額 (円)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>ECS Fargate</td><td>0.5 vCPU / 1GB × 2タスク</td><td class="cost-value" style="text-align:right;">$30</td><td class="cost-value" style="text-align:right;">&#165;4,500</td></tr>
+        <tr><td>Aurora Serverless v2</td><td>0.5〜2 ACU × 2 (Multi-AZ)</td><td class="cost-value" style="text-align:right;">$90</td><td class="cost-value" style="text-align:right;">&#165;13,500</td></tr>
+        <tr><td>RDS Proxy</td><td>1エンドポイント</td><td class="cost-value" style="text-align:right;">$20</td><td class="cost-value" style="text-align:right;">&#165;3,000</td></tr>
+        <tr><td>ElastiCache Serverless</td><td>Redis 最小構成</td><td class="cost-value" style="text-align:right;">$18</td><td class="cost-value" style="text-align:right;">&#165;2,700</td></tr>
+        <tr><td>ALB</td><td>1台</td><td class="cost-value" style="text-align:right;">$22</td><td class="cost-value" style="text-align:right;">&#165;3,300</td></tr>
+        <tr><td>NAT Gateway</td><td>1台 + 10GB処理</td><td class="cost-value" style="text-align:right;">$37</td><td class="cost-value" style="text-align:right;">&#165;5,550</td></tr>
+        <tr><td>CloudFront</td><td>100GB転送</td><td class="cost-value" style="text-align:right;">$10</td><td class="cost-value" style="text-align:right;">&#165;1,500</td></tr>
+        <tr><td>CloudWatch</td><td>ログ10GB + メトリクス</td><td class="cost-value" style="text-align:right;">$12</td><td class="cost-value" style="text-align:right;">&#165;1,800</td></tr>
+        <tr><td>WAF</td><td>1 Web ACL + 3ルール</td><td class="cost-value" style="text-align:right;">$9</td><td class="cost-value" style="text-align:right;">&#165;1,350</td></tr>
+        <tr><td>その他</td><td>S3, Route53, SES, Secrets Manager, ECR</td><td class="cost-value" style="text-align:right;">$6</td><td class="cost-value" style="text-align:right;">&#165;900</td></tr>
+        <tr><td>Cognito</td><td>〜1,000 MAU</td><td class="cost-value cost-free" style="text-align:right;">$0</td><td class="cost-value cost-free" style="text-align:right;">&#165;0 (無料)</td></tr>
+        <tr><td>GitHub Actions</td><td>CI/CD</td><td class="cost-value cost-free" style="text-align:right;">$0</td><td class="cost-value cost-free" style="text-align:right;">&#165;0 (無料)</td></tr>
+        <tr><td>ACM</td><td>SSL証明書</td><td class="cost-value cost-free" style="text-align:right;">$0</td><td class="cost-value cost-free" style="text-align:right;">&#165;0 (無料)</td></tr>
+        <tr class="cost-total"><td colspan="2"><strong>合計</strong></td><td class="cost-value" style="text-align:right;"><strong>$254</strong></td><td class="cost-value" style="text-align:right;"><strong>&#165;38,000</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Break Even -->
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 30px;">
+    <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 16px;">損益分岐点</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+      <div style="background: var(--surface-light); border-radius: 10px; padding: 20px; text-align: center;">
+        <div style="font-size: 2rem; font-weight: 800; color: var(--primary-light);">32名</div>
+        <div style="font-size: 0.78rem; color: var(--text-dim);">初期フェーズ<br>有料ユーザーで黒字化</div>
+        <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 4px;">（月額&#165;1,200平均）</div>
+      </div>
+      <div style="background: var(--surface-light); border-radius: 10px; padding: 20px; text-align: center;">
+        <div style="font-size: 2rem; font-weight: 800; color: var(--secondary);">56名</div>
+        <div style="font-size: 0.78rem; color: var(--text-dim);">成長期<br>有料ユーザーで黒字化</div>
+        <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 4px;">（月額&#165;1,300平均）</div>
+      </div>
+      <div style="background: var(--surface-light); border-radius: 10px; padding: 20px; text-align: center;">
+        <div style="font-size: 2rem; font-weight: 800; color: var(--green);">130名</div>
+        <div style="font-size: 0.78rem; color: var(--text-dim);">拡大期<br>有料ユーザーで黒字化</div>
+        <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 4px;">（月額&#165;1,400平均）</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cost Optimization -->
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px;">
+    <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 16px; color: var(--green);">&#128161; コスト最適化ポイント</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;">
+      <div style="background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.15); border-radius: 8px; padding: 14px;">
+        <div style="font-size: 0.82rem; font-weight: 700; color: var(--green); margin-bottom: 4px;">Savings Plans</div>
+        <div style="font-size: 0.73rem; color: var(--text-dim);">Fargate 1年コミットで最大52%割引。成長期以降に適用推奨。</div>
+      </div>
+      <div style="background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.15); border-radius: 8px; padding: 14px;">
+        <div style="font-size: 0.82rem; font-weight: 700; color: var(--green); margin-bottom: 4px;">Graviton (ARM)</div>
+        <div style="font-size: 0.73rem; color: var(--text-dim);">Fargate ARM対応で約20%安価。拡大期にコスト削減効果大。</div>
+      </div>
+      <div style="background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.15); border-radius: 8px; padding: 14px;">
+        <div style="font-size: 0.82rem; font-weight: 700; color: var(--green); margin-bottom: 4px;">VPCエンドポイント</div>
+        <div style="font-size: 0.73rem; color: var(--text-dim);">S3/ECR等をVPCエンドポイント化してNAT Gateway費用を削減。</div>
+      </div>
+      <div style="background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.15); border-radius: 8px; padding: 14px;">
+        <div style="font-size: 0.82rem; font-weight: 700; color: var(--green); margin-bottom: 4px;">Aurora自動縮小</div>
+        <div style="font-size: 0.73rem; color: var(--text-dim);">Serverless v2は深夜帯に0.5 ACUまで自動縮小。常に最適コスト。</div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ===== 9. PHASES ===== -->
+<section id="phases">
+<div class="container">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(236,72,153,0.15); color:var(--pink);">&#128197;</span> フェーズ別スケーリング計画</h2>
+    <p>ユーザー成長に合わせた段階的なインフラ拡張</p>
+  </div>
+
+  <div class="timeline">
+
+    <div class="timeline-item">
+      <div class="timeline-dot"></div>
+      <h4 style="color: var(--primary-light);">Phase 1: 初期（ローンチ〜半年）</h4>
+      <div class="timeline-meta">MAU: 500〜1,000 / DAU: 100〜300</div>
+      <div class="timeline-body">
+        <p><strong>インフラ:</strong> ECS 2タスク（最小構成）、Aurora 0.5〜2 ACU、ElastiCache Serverless、NAT Gateway 1台</p>
+        <p><strong>重点:</strong> 安定稼働の確認、ユーザーフィードバック収集、パフォーマンスベースライン確立</p>
+        <p><strong>開発体制:</strong> 1〜2名のフルスタックエンジニア</p>
+        <span class="timeline-cost" style="background: rgba(124,58,237,0.12); color: var(--primary-light);">月額 &#165;38,000</span>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-dot"></div>
+      <h4 style="color: var(--secondary);">Phase 2: 成長期（半年〜1年）</h4>
+      <div class="timeline-meta">MAU: 1,000〜5,000 / DAU: 300〜1,500</div>
+      <div class="timeline-body">
+        <p><strong>インフラ:</strong> ECS 2〜4タスク（オートスケーリング有効化）、Aurora 1〜8 ACU、Savings Plans適用検討</p>
+        <p><strong>重点:</strong> オートスケーリング最適化、CDNキャッシュ戦略改善、リードレプリカ準備</p>
+        <p><strong>追加機能:</strong> プッシュ通知（SNS + FCM）、画像最適化（Lambda@Edge）</p>
+        <span class="timeline-cost" style="background: rgba(6,182,212,0.12); color: var(--secondary);">月額 &#165;72,500</span>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-dot"></div>
+      <h4 style="color: var(--green);">Phase 3: 拡大期（1年〜）</h4>
+      <div class="timeline-meta">MAU: 5,000〜20,000 / DAU: 1,500〜6,000</div>
+      <div class="timeline-body">
+        <p><strong>インフラ:</strong> ECS 3〜6タスク（Graviton ARM）、Aurora 2〜32 ACU + Reader、NAT Gateway 2台（AZ冗長）</p>
+        <p><strong>重点:</strong> コスト最適化（Savings Plans/Graviton）、リアルタイムチャット（WebSocket）、モバイルアプリ検討</p>
+        <p><strong>追加機能:</strong> AI推薦（Amazon Personalize）、多言語対応、API Gateway WebSocket</p>
+        <span class="timeline-cost" style="background: rgba(34,197,94,0.12); color: var(--green);">月額 &#165;181,000</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer style="background: var(--surface); border-top: 1px solid var(--border); padding: 30px 40px; text-align: center;">
+  <p style="font-size: 0.82rem; color: var(--text-dim); margin-bottom: 8px;">
+    <strong>BandMatch</strong> AWS Infrastructure Design Document
+  </p>
+  <p style="font-size: 0.7rem; color: var(--text-muted);">
+    リージョン: ap-northeast-1 (Tokyo) &nbsp;|&nbsp; 可用性: Multi-AZ 99.9% SLA &nbsp;|&nbsp; IaC: AWS CDK (TypeScript)
+  </p>
+  <p style="font-size: 0.65rem; color: var(--text-muted); margin-top: 8px;">
+    &#169; 2026 BandMatch. Generated for infrastructure planning purposes.
+  </p>
+</footer>
+
+</body>
+</html>

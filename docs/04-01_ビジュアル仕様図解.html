@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BandMatch - ビジュアル仕様書</title>
+<style>
+  :root {
+    --bg: #0a0a1a;
+    --surface: #1a1a2e;
+    --surface-light: #25253d;
+    --surface-lighter: #2d2d4a;
+    --primary: #7c3aed;
+    --primary-light: #8b5cf6;
+    --secondary: #06b6d4;
+    --secondary-light: #22d3ee;
+    --accent: #f97066;
+    --accent-light: #fb923c;
+    --text: #f0f0f5;
+    --text-secondary: #d1d5db;
+    --text-muted: #9ca3af;
+    --border: rgba(124,58,237,0.2);
+    --border-light: rgba(255,255,255,0.1);
+    --glass-bg: rgba(26,26,46,0.7);
+    --glass-border: rgba(124,58,237,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+
+  /* ===== Header ===== */
+  .doc-header {
+    text-align: center;
+    padding: 80px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .doc-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -20%;
+    width: 60%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .doc-header::after {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: -20%;
+    width: 50%;
+    height: 180%;
+    background: radial-gradient(circle, rgba(6,182,212,0.1) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .doc-header h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .doc-header p {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    position: relative;
+  }
+  .doc-header .version {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 4px 16px;
+    border-radius: 20px;
+    background: var(--primary);
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 600;
+    position: relative;
+  }
+
+  /* ===== Section ===== */
+  .section {
+    margin-bottom: 80px;
+  }
+  .section-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-title .icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .section-desc {
+    color: var(--text-muted);
+    margin-bottom: 32px;
+    padding-left: 52px;
+  }
+
+  /* ===== Glass Card ===== */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+
+  /* ===== Color Palette ===== */
+  .color-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+  }
+  .color-card {
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border-light);
+    background: var(--surface);
+  }
+  .color-swatch {
+    height: 80px;
+    display: flex;
+    align-items: flex-end;
+    padding: 8px 12px;
+  }
+  .color-info {
+    padding: 12px;
+  }
+  .color-info .name {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  .color-info .hex {
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+  .color-info .usage {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* ===== Flow Chart ===== */
+  .flow-chart {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+  }
+  .flow-step {
+    text-align: center;
+    padding: 20px;
+    min-width: 140px;
+  }
+  .flow-circle {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    font-size: 1.6rem;
+    box-shadow: 0 4px 20px rgba(124,58,237,0.3);
+  }
+  .flow-step .label {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  .flow-step .desc {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  .flow-arrow {
+    font-size: 1.5rem;
+    color: var(--primary-light);
+    padding: 0 8px;
+  }
+
+  /* ===== Page Map ===== */
+  .page-map {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  @media (max-width: 768px) { .page-map { grid-template-columns: 1fr; } }
+  .page-group {
+    border-radius: 16px;
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+  }
+  .page-group-header {
+    padding: 16px 20px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .page-group-header.auth { background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(124,58,237,0.05)); }
+  .page-group-header.main { background: linear-gradient(135deg, rgba(6,182,212,0.2), rgba(6,182,212,0.05)); }
+  .page-group-header.admin { background: linear-gradient(135deg, rgba(249,112,102,0.2), rgba(249,112,102,0.05)); }
+  .page-list {
+    padding: 12px 20px;
+    background: var(--surface);
+  }
+  .page-item {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .page-item:last-child { border-bottom: none; }
+  .page-item .path {
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: var(--secondary-light);
+  }
+  .page-item .name {
+    font-size: 0.85rem;
+  }
+
+  /* ===== Feature Cards ===== */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.3s;
+  }
+  .feature-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 20px rgba(124,58,237,0.15);
+    transform: translateY(-2px);
+  }
+  .feature-card .emoji {
+    font-size: 2rem;
+    margin-bottom: 12px;
+  }
+  .feature-card h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .feature-card p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* ===== Score Bar ===== */
+  .score-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+  }
+  @media (max-width: 768px) { .score-section { grid-template-columns: 1fr; } }
+  .score-bar-group { display: flex; flex-direction: column; gap: 16px; }
+  .score-bar-item { display: flex; align-items: center; gap: 12px; }
+  .score-bar-label {
+    width: 100px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-align: right;
+  }
+  .score-bar-track {
+    flex: 1;
+    height: 12px;
+    background: var(--surface-lighter);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+  }
+  .score-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 1s ease-out;
+  }
+  .score-bar-value {
+    width: 40px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: right;
+  }
+  .bar-area { background: linear-gradient(90deg, #10b981, #34d399); }
+  .bar-instrument { background: linear-gradient(90deg, var(--primary), var(--primary-light)); }
+  .bar-genre { background: linear-gradient(90deg, var(--secondary), var(--secondary-light)); }
+  .bar-skill { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+  .bar-schedule { background: linear-gradient(90deg, var(--accent), var(--accent-light)); }
+
+  /* ===== Plan Table ===== */
+  .plan-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  @media (max-width: 768px) { .plan-grid { grid-template-columns: 1fr; } }
+  .plan-card {
+    border-radius: 16px;
+    border: 1px solid var(--border-light);
+    background: var(--surface);
+    padding: 32px 24px;
+    text-align: center;
+    position: relative;
+    transition: all 0.3s;
+  }
+  .plan-card.featured {
+    border-color: var(--primary);
+    box-shadow: 0 0 40px rgba(124,58,237,0.15);
+  }
+  .plan-card.featured::before {
+    content: 'おすすめ';
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    padding: 4px 16px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .plan-name {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .plan-price {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .plan-price .currency { font-size: 1rem; }
+  .plan-price .period { font-size: 0.85rem; color: var(--text-muted); font-weight: 400; }
+  .plan-features {
+    list-style: none;
+    margin: 24px 0;
+    text-align: left;
+  }
+  .plan-features li {
+    padding: 8px 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .plan-features .check { color: #10b981; font-weight: bold; }
+  .plan-features .cross { color: #6b7280; }
+  .plan-btn {
+    display: inline-block;
+    padding: 10px 32px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+  .plan-btn.primary {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+  }
+  .plan-btn.secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--primary-light);
+  }
+
+  /* ===== Security Table ===== */
+  .sec-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .sec-table th, .sec-table td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 0.85rem;
+  }
+  .sec-table th {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .sec-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .sec-badge.green { background: rgba(16,185,129,0.15); color: #34d399; }
+  .sec-badge.blue { background: rgba(6,182,212,0.15); color: #22d3ee; }
+  .sec-badge.purple { background: rgba(124,58,237,0.15); color: #8b5cf6; }
+
+  /* ===== Data Model ===== */
+  .model-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  .model-card {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .model-header {
+    padding: 16px 20px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .model-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  .model-fields {
+    padding: 12px 20px;
+  }
+  .model-field {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 0.8rem;
+  }
+  .model-field .fname { color: var(--text-secondary); }
+  .model-field .ftype { font-family: monospace; color: var(--secondary-light); font-size: 0.75rem; }
+
+  /* ===== Wireframe ===== */
+  .wireframe {
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--surface);
+    margin-bottom: 24px;
+  }
+  .wf-browser-bar {
+    height: 36px;
+    background: var(--surface-lighter);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 8px;
+  }
+  .wf-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--surface-light);
+  }
+  .wf-dot.red { background: #ef4444; }
+  .wf-dot.yellow { background: #eab308; }
+  .wf-dot.green { background: #22c55e; }
+  .wf-url {
+    flex: 1;
+    text-align: center;
+    font-family: monospace;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+  }
+  .wf-content {
+    padding: 24px;
+    min-height: 300px;
+  }
+  .wf-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-light);
+    margin-bottom: 20px;
+  }
+  .wf-logo {
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .wf-nav { display: flex; gap: 16px; }
+  .wf-nav span {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+  .wf-nav span.active {
+    color: var(--primary-light);
+    background: rgba(124,58,237,0.1);
+  }
+  .wf-placeholder {
+    background: var(--surface-lighter);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
+
+  /* ===== Divider ===== */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 60px 0;
+  }
+
+  /* ===== TOC ===== */
+  .toc {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+  .toc a {
+    display: block;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+  }
+  .toc a:hover {
+    border-color: var(--primary);
+    color: var(--text);
+    background: var(--surface-light);
+  }
+
+  /* ===== Mobile Nav Demo ===== */
+  .mobile-nav-demo {
+    max-width: 375px;
+    margin: 0 auto;
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .mobile-screen {
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+  }
+  .mobile-status {
+    height: 24px;
+    background: var(--surface-lighter);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    color: var(--text-muted);
+  }
+  .mobile-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
+  .mobile-bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0 12px;
+    background: var(--glass-bg);
+    border-top: 1px solid var(--border-light);
+  }
+  .mobile-nav-item {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.6rem;
+  }
+  .mobile-nav-item.active { color: var(--primary-light); }
+  .mobile-nav-item .nav-icon {
+    font-size: 1.2rem;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  /* ===== Animation Demo ===== */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(124,58,237,0.2); }
+    50% { box-shadow: 0 0 40px rgba(124,58,237,0.4); }
+  }
+  .animate-demo {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 768px) { .animate-demo { grid-template-columns: 1fr; } }
+  .anim-box {
+    height: 100px;
+    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+  .anim-box.fade { animation: fadeUp 1s ease-out infinite alternate; }
+  .anim-box.glow { animation: glow 2s ease-in-out infinite; }
+  @keyframes slideIn {
+    from { transform: translateX(-20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  .anim-box.slide { animation: slideIn 1s ease-out infinite alternate; }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<div class="doc-header">
+  <h1>BandMatch</h1>
+  <p>初心者バンドマン向けコミュニティアプリ ビジュアル仕様書</p>
+  <span class="version">v1.0.0 | 2026.03</span>
+</div>
+
+<div class="container">
+
+<!-- ===== TOC ===== -->
+<nav class="toc">
+  <a href="#colors">🎨 カラーパレット</a>
+  <a href="#flow">🔄 ユーザーフロー</a>
+  <a href="#pages">📄 ページマップ</a>
+  <a href="#features">⚡ 機能一覧</a>
+  <a href="#matching">🎯 マッチング</a>
+  <a href="#plans">💎 料金プラン</a>
+  <a href="#models">🗄️ データモデル</a>
+  <a href="#wireframes">🖥️ ワイヤーフレーム</a>
+  <a href="#mobile">📱 モバイル</a>
+  <a href="#security">🔒 セキュリティ</a>
+  <a href="#animations">✨ アニメーション</a>
+</nav>
+
+<div class="divider"></div>
+
+<!-- ===== COLORS ===== -->
+<section class="section" id="colors">
+  <h2 class="section-title"><span class="icon">🎨</span>カラーパレット</h2>
+  <p class="section-desc">ダークモード基調のデザイン。パープル/インディゴを主色に、シアンとコーラルでアクセントを加えます。</p>
+
+  <div class="color-grid">
+    <div class="color-card">
+      <div class="color-swatch" style="background:#7c3aed;"></div>
+      <div class="color-info">
+        <div class="name">Primary</div>
+        <div class="hex">#7c3aed</div>
+        <div class="usage">ボタン・リンク・アクティブ状態</div>
+      </div>
+    </div>
+    <div class="color-card">
+      <div class="color-swatch" style="background:#8b5cf6;"></div>
+      <div class="color-info">
+        <div class="name">Primary Light</div>
+        <div class="hex">#8b5cf6</div>
+        <div class="usage">ホバー・フォーカス状態</div>
+      </div>
+    </div>
+    <div class="color-card">
+      <div class="color-swatch" style="background:#06b6d4;"></div>
+      <div class="color-info">
+        <div class="name">Secondary</div>
+        <div class="hex">#06b6d4</div>
+        <div class="usage">アクセント・グラデーション</div>
+      </div>
+    </div>
+    <div class="color-card">
+      <div class="color-swatch" style="background:#f97066;"></div>
+      <div class="color-info">
+        <div class="name">Accent</div>
+        <div class="hex">#f97066</div>
+        <div class="usage">ハイライト・警告・通知</div>
+      </div>
+    </div>
+    <div class="color-card">
+      <div class="color-swatch" style="background:#0a0a1a;"></div>
+      <div class="color-info">
+        <div class="name">Background</div>
+        <div class="hex">#0a0a1a</div>
+        <div class="usage">ページ背景</div>
+      </div>
+    </div>
+    <div class="color-card">
+      <div class="color-swatch" style="background:#1a1a2e;"></div>
+      <div class="color-info">
+        <div class="name">Surface</div>
+        <div class="hex">#1a1a2e</div>
+        <div class="usage">カード・コンテナ背景</div>
+      </div>
+    </div>
+    <div class="color-card">
+      <div class="color-swatch" style="background:#25253d;"></div>
+      <div class="color-info">
+        <div class="name">Surface Light</div>
+        <div class="hex">#25253d</div>
+        <div class="usage">ホバー背景・入力欄</div>
+      </div>
+    </div>
+    <div class="color-card">
+      <div class="color-swatch" style="background: linear-gradient(135deg, #7c3aed, #06b6d4);"></div>
+      <div class="color-info">
+        <div class="name">Gradient Primary</div>
+        <div class="hex">135deg purple→cyan</div>
+        <div class="usage">CTA・重要要素</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== USER FLOW ===== -->
+<section class="section" id="flow">
+  <h2 class="section-title"><span class="icon">🔄</span>ユーザーフロー</h2>
+  <p class="section-desc">初回訪問からライブ出演までの理想的なフロー</p>
+
+  <div class="glass" style="overflow-x: auto;">
+    <div class="flow-chart">
+      <div class="flow-step">
+        <div class="flow-circle">🏠</div>
+        <div class="label">ランディング</div>
+        <div class="desc">サービス紹介</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-circle">📝</div>
+        <div class="label">ユーザー登録</div>
+        <div class="desc">3ステップ</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-circle">🎯</div>
+        <div class="label">マッチング</div>
+        <div class="desc">メンバー探し</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-circle">🎸</div>
+        <div class="label">バンド結成</div>
+        <div class="desc">メンバー集結</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-circle">🎤</div>
+        <div class="label">ライブ出演</div>
+        <div class="desc">ステージデビュー</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 32px;">
+    <h3 style="font-size: 1.1rem; margin-bottom: 16px;">継続エンゲージメントフロー</h3>
+    <div class="glass" style="overflow-x: auto;">
+      <div class="flow-chart">
+        <div class="flow-step">
+          <div class="flow-circle">📖</div>
+          <div class="label">練習ログ</div>
+          <div class="desc">日々の記録</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-circle">🏆</div>
+          <div class="label">マイルストーン</div>
+          <div class="desc">達成記録</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-circle">💬</div>
+          <div class="label">コミュニティ</div>
+          <div class="desc">仲間と交流</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-circle">💎</div>
+          <div class="label">プラン昇格</div>
+          <div class="desc">Premium化</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== PAGE MAP ===== -->
+<section class="section" id="pages">
+  <h2 class="section-title"><span class="icon">📄</span>ページマップ</h2>
+  <p class="section-desc">3つのルートグループで構成。認証・メイン・管理者それぞれにレイアウトとアクセス制御を分離。</p>
+
+  <div class="page-map">
+    <div class="page-group">
+      <div class="page-group-header auth">🔐 認証 (auth)</div>
+      <div class="page-list">
+        <div class="page-item">
+          <span class="name">ログイン</span>
+          <span class="path">/login</span>
+        </div>
+        <div class="page-item">
+          <span class="name">新規登録</span>
+          <span class="path">/register</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-group">
+      <div class="page-group-header main">🎵 メイン (main)</div>
+      <div class="page-list">
+        <div class="page-item">
+          <span class="name">ダッシュボード</span>
+          <span class="path">/dashboard</span>
+        </div>
+        <div class="page-item">
+          <span class="name">マッチング</span>
+          <span class="path">/matching</span>
+        </div>
+        <div class="page-item">
+          <span class="name">バンド一覧</span>
+          <span class="path">/bands</span>
+        </div>
+        <div class="page-item">
+          <span class="name">バンド作成</span>
+          <span class="path">/bands/create</span>
+        </div>
+        <div class="page-item">
+          <span class="name">バンド詳細</span>
+          <span class="path">/bands/[id]</span>
+        </div>
+        <div class="page-item">
+          <span class="name">イベント一覧</span>
+          <span class="path">/events</span>
+        </div>
+        <div class="page-item">
+          <span class="name">イベント詳細</span>
+          <span class="path">/events/[id]</span>
+        </div>
+        <div class="page-item">
+          <span class="name">コミュニティ</span>
+          <span class="path">/community</span>
+        </div>
+        <div class="page-item">
+          <span class="name">プロフィール</span>
+          <span class="path">/profile</span>
+        </div>
+        <div class="page-item">
+          <span class="name">サブスクリプション</span>
+          <span class="path">/subscription</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-group">
+      <div class="page-group-header admin">⚙️ 管理者 (admin)</div>
+      <div class="page-list">
+        <div class="page-item">
+          <span class="name">ダッシュボード</span>
+          <span class="path">/admin</span>
+        </div>
+        <div class="page-item">
+          <span class="name">ユーザー管理</span>
+          <span class="path">/admin/users</span>
+        </div>
+        <div class="page-item">
+          <span class="name">売上管理</span>
+          <span class="path">/admin/revenue</span>
+        </div>
+        <div class="page-item">
+          <span class="name">サブスク管理</span>
+          <span class="path">/admin/subscriptions</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== FEATURES ===== -->
+<section class="section" id="features">
+  <h2 class="section-title"><span class="icon">⚡</span>主要機能</h2>
+  <p class="section-desc">初心者バンドマンのライフサイクル全体をカバーする6つのコア機能</p>
+
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="emoji">👤</div>
+      <h3>プロフィール管理</h3>
+      <p>楽器（複数可）、スキルレベル、ジャンル、活動地域、練習スケジュールを細かく設定。マッチング精度を高めます。</p>
+    </div>
+    <div class="feature-card">
+      <div class="emoji">🎯</div>
+      <h3>スマートマッチング</h3>
+      <p>5つの軸（地域・楽器・ジャンル・スキル・スケジュール）で相性スコアを算出。補完的な楽器構成を高く評価。</p>
+    </div>
+    <div class="feature-card">
+      <div class="emoji">🎸</div>
+      <h3>バンド管理</h3>
+      <p>楽器スロット制でメンバーを募集。空きポジションが一目でわかる直感的なUI。</p>
+    </div>
+    <div class="feature-card">
+      <div class="emoji">🎤</div>
+      <h3>ライブイベントボード</h3>
+      <p>初心者歓迎のライブ・イベントを探して参加。バンド単位で登録できます。</p>
+    </div>
+    <div class="feature-card">
+      <div class="emoji">💬</div>
+      <h3>コミュニティ</h3>
+      <p>練習ログ、マイルストーン達成、質問投稿で仲間と交流。モチベーション維持をサポート。</p>
+    </div>
+    <div class="feature-card">
+      <div class="emoji">💎</div>
+      <h3>サブスクリプション</h3>
+      <p>Free/Basic/Premiumの3プラン。段階的な機能開放で継続利用を促進。</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== MATCHING ===== -->
+<section class="section" id="matching">
+  <h2 class="section-title"><span class="icon">🎯</span>マッチングアルゴリズム</h2>
+  <p class="section-desc">5つの評価軸で相性スコアを算出。バンド結成に最適なメンバーを提案。</p>
+
+  <div class="score-section">
+    <div>
+      <h3 style="font-size: 1rem; margin-bottom: 16px; color: var(--text-secondary);">スコア配分（例: 相性85点のケース）</h3>
+      <div class="score-bar-group">
+        <div class="score-bar-item">
+          <span class="score-bar-label">地域</span>
+          <div class="score-bar-track">
+            <div class="score-bar-fill bar-area" style="width: 70%;"></div>
+          </div>
+          <span class="score-bar-value">35/50</span>
+        </div>
+        <div class="score-bar-item">
+          <span class="score-bar-label">楽器</span>
+          <div class="score-bar-track">
+            <div class="score-bar-fill bar-instrument" style="width: 100%;"></div>
+          </div>
+          <span class="score-bar-value">25/25</span>
+        </div>
+        <div class="score-bar-item">
+          <span class="score-bar-label">ジャンル</span>
+          <div class="score-bar-track">
+            <div class="score-bar-fill bar-genre" style="width: 67%;"></div>
+          </div>
+          <span class="score-bar-value">20/30</span>
+        </div>
+        <div class="score-bar-item">
+          <span class="score-bar-label">スキル</span>
+          <div class="score-bar-track">
+            <div class="score-bar-fill bar-skill" style="width: 67%;"></div>
+          </div>
+          <span class="score-bar-value">10/15</span>
+        </div>
+        <div class="score-bar-item">
+          <span class="score-bar-label">スケジュール</span>
+          <div class="score-bar-track">
+            <div class="score-bar-fill bar-schedule" style="width: 57%;"></div>
+          </div>
+          <span class="score-bar-value">20/35</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="glass" style="padding: 20px;">
+      <h3 style="font-size: 1rem; margin-bottom: 16px;">評価ロジック</h3>
+      <div style="font-size: 0.8rem; color: var(--text-secondary); line-height: 2;">
+        <div><strong style="color: #34d399;">地域 (50pt)</strong>: 同市50pt / 同県35pt</div>
+        <div><strong style="color: var(--primary-light);">楽器 (25pt)</strong>: 補完的=25 / 一部重複=15 / 全重複=5</div>
+        <div><strong style="color: var(--secondary-light);">ジャンル (30pt)</strong>: 共通率 × 30</div>
+        <div><strong style="color: #fbbf24;">スキル (15pt)</strong>: 15 - (レベル差 × 5)</div>
+        <div><strong style="color: var(--accent);">スケジュール (35pt)</strong>: 共通曜日率 × 35 + 時間重複ボーナス</div>
+        <div style="margin-top: 12px; border-top: 1px solid var(--border-light); padding-top: 12px;">
+          <strong>合計</strong>: 最大155pt → 100点に正規化
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== PLANS ===== -->
+<section class="section" id="plans">
+  <h2 class="section-title"><span class="icon">💎</span>料金プラン</h2>
+  <p class="section-desc">段階的な機能開放で、無料から始めてアップグレード</p>
+
+  <div class="plan-grid">
+    <div class="plan-card">
+      <div class="plan-name">Free</div>
+      <div class="plan-price"><span class="currency">¥</span>0<span class="period">/月</span></div>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> プロフィール作成</li>
+        <li><span class="check">✓</span> マッチング検索（1日3回）</li>
+        <li><span class="check">✓</span> コミュニティ閲覧</li>
+        <li><span class="check">✓</span> イベント閲覧</li>
+        <li><span class="cross">✕</span> バンド作成は1つまで</li>
+        <li><span class="cross">✕</span> イベント作成不可</li>
+      </ul>
+      <button class="plan-btn secondary">現在のプラン</button>
+    </div>
+
+    <div class="plan-card featured">
+      <div class="plan-name">Basic</div>
+      <div class="plan-price"><span class="currency">¥</span>980<span class="period">/月</span></div>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> マッチング無制限</li>
+        <li><span class="check">✓</span> バンド作成（3つまで）</li>
+        <li><span class="check">✓</span> メッセージ無制限</li>
+        <li><span class="check">✓</span> イベント作成</li>
+        <li><span class="check">✓</span> 練習ログ機能</li>
+        <li><span class="check">✓</span> マイルストーン機能</li>
+      </ul>
+      <button class="plan-btn primary">アップグレード</button>
+    </div>
+
+    <div class="plan-card">
+      <div class="plan-name">Premium</div>
+      <div class="plan-price"><span class="currency">¥</span>1,980<span class="period">/月</span></div>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> 全Basic機能</li>
+        <li><span class="check">✓</span> バンド作成無制限</li>
+        <li><span class="check">✓</span> 優先マッチング</li>
+        <li><span class="check">✓</span> アナリティクス</li>
+        <li><span class="check">✓</span> プレミアムバッジ</li>
+        <li><span class="check">✓</span> イベント優先掲載</li>
+      </ul>
+      <button class="plan-btn secondary">アップグレード</button>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== DATA MODELS ===== -->
+<section class="section" id="models">
+  <h2 class="section-title"><span class="icon">🗄️</span>データモデル</h2>
+  <p class="section-desc">主要な4つのデータモデルとその関連</p>
+
+  <div class="model-grid">
+    <div class="model-card">
+      <div class="model-header"><span class="model-dot" style="background: var(--primary);"></span> User</div>
+      <div class="model-fields">
+        <div class="model-field"><span class="fname">id</span><span class="ftype">string</span></div>
+        <div class="model-field"><span class="fname">email / password</span><span class="ftype">string</span></div>
+        <div class="model-field"><span class="fname">name / nickname</span><span class="ftype">string</span></div>
+        <div class="model-field"><span class="fname">bio / avatar</span><span class="ftype">string</span></div>
+        <div class="model-field"><span class="fname">prefecture / city</span><span class="ftype">string</span></div>
+        <div class="model-field"><span class="fname">instruments</span><span class="ftype">UserInstrument[]</span></div>
+        <div class="model-field"><span class="fname">genres</span><span class="ftype">string[]</span></div>
+        <div class="model-field"><span class="fname">schedule</span><span class="ftype">Schedule[]</span></div>
+        <div class="model-field"><span class="fname">subscription</span><span class="ftype">free|basic|premium</span></div>
+        <div class="model-field"><span class="fname">isAdmin</span><span class="ftype">boolean</span></div>
+      </div>
+    </div>
+
+    <div class="model-card">
+      <div class="model-header"><span class="model-dot" style="background: var(--secondary);"></span> Band</div>
+      <div class="model-fields">
+        <div class="model-field"><span class="fname">id / name</span><span class="ftype">string</span></div>
+        <div class="model-field"><span class="fname">description</span><span class="ftype">string</span></div>
+        <div class="model-field"><span class="fname">genre</span><span class="ftype">string[]</span></div>
+        <div class="model-field"><span class="fname">prefecture / city</span><span class="ftype">string</span></div>
+        <div class="model-field"><span class="fname">members</span><span class="ftype">BandMember[]</span></div>
+        <div class="model-field"><span class="fname">instrumentSlots</span><span class="ftype">InstrumentSlot[]</span></div>
+        <div class="model-field"><span class="fname">isRecruiting</span><span class="ftype">boolean</span></div>
+        <div class="model-field"><span class="fname">createdBy</span><span class="ftype">→ User.id</span></div>
+      </div>
+    </div>
+
+    <div class="model-card">
+      <div class="model-header"><span class="model-dot" style="background: var(--accent);"></span> LiveEvent</div>
+      <div class="model-fields">
+        <div class="model-field"><span class="fname">id / title</span><span class="ftype">string</span></div>
+        <div class="model-field"><span class="fname">venue / address</span><span class="ftype">string</span></div>
+        <div class="model-field"><span class="fname">date / time</span><span class="ftype">string</span></div>
+        <div class="model-field"><span class="fname">capacity / fee</span><span class="ftype">number</span></div>
+        <div class="model-field"><span class="fname">registeredBands</span><span class="ftype">→ Band.id[]</span></div>
+        <div class="model-field"><span class="fname">tags</span><span class="ftype">string[]</span></div>
+        <div class="model-field"><span class="fname">isBeginnerFriendly</span><span class="ftype">boolean</span></div>
+        <div class="model-field"><span class="fname">organizerId</span><span class="ftype">→ User.id</span></div>
+      </div>
+    </div>
+
+    <div class="model-card">
+      <div class="model-header"><span class="model-dot" style="background: #fbbf24;"></span> Post</div>
+      <div class="model-fields">
+        <div class="model-field"><span class="fname">id / userId</span><span class="ftype">string / → User.id</span></div>
+        <div class="model-field"><span class="fname">type</span><span class="ftype">general|practice_log|...</span></div>
+        <div class="model-field"><span class="fname">content</span><span class="ftype">string</span></div>
+        <div class="model-field"><span class="fname">likes</span><span class="ftype">→ User.id[]</span></div>
+        <div class="model-field"><span class="fname">comments</span><span class="ftype">Comment[]</span></div>
+        <div class="model-field"><span class="fname">practiceMinutes</span><span class="ftype">number?</span></div>
+        <div class="model-field"><span class="fname">milestoneType</span><span class="ftype">string?</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ER Diagram (text-based) -->
+  <div class="glass" style="margin-top: 32px; font-family: monospace; font-size: 0.8rem; color: var(--text-secondary); overflow-x: auto; white-space: pre; line-height: 1.8; padding: 24px;">
+┌──────────┐       ┌──────────┐       ┌──────────┐
+│   User   │──1:N──│   Band   │──N:M──│LiveEvent │
+│          │       │  Member  │       │          │
+│ id       │       │ id       │       │ id       │
+│ email    │       │ name     │       │ title    │
+│ name     │       │ members[]│       │ bands[]  │
+│ instruments[]    │ slots[]  │       │ venue    │
+│ genres[] │       │ genres[] │       │ date     │
+│ schedule[]│      │ createdBy│       │ fee      │
+│ subscription     └──────────┘       └──────────┘
+└──────────┘
+     │
+     │ 1:N
+     ▼
+┌──────────┐
+│   Post   │
+│ id       │
+│ userId   │
+│ type     │
+│ content  │
+│ likes[]  │
+│ comments[]│
+└──────────┘</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== WIREFRAMES ===== -->
+<section class="section" id="wireframes">
+  <h2 class="section-title"><span class="icon">🖥️</span>画面ワイヤーフレーム</h2>
+  <p class="section-desc">主要画面のレイアウト概要</p>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 24px;">
+    <!-- Landing Page -->
+    <div class="wireframe">
+      <div class="wf-browser-bar">
+        <div class="wf-dot red"></div>
+        <div class="wf-dot yellow"></div>
+        <div class="wf-dot green"></div>
+        <div class="wf-url">bandmatch.jp/</div>
+      </div>
+      <div class="wf-content">
+        <div class="wf-header">
+          <span class="wf-logo">BandMatch</span>
+          <div class="wf-nav">
+            <span>ログイン</span>
+            <span style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border-radius: 8px;">新規登録</span>
+          </div>
+        </div>
+        <div style="text-align: center; padding: 30px 0;">
+          <div style="font-size: 1.4rem; font-weight: 800; margin-bottom: 8px;">
+            <span style="background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">仲間を見つけて、</span><br>ステージに立とう。
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 16px;">初心者バンドマンのためのコミュニティ</div>
+          <div style="display: flex; gap: 8px; justify-content: center;">
+            <span style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 6px 16px; border-radius: 8px; font-size: 0.75rem;">無料で始める</span>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+          <div class="wf-placeholder" style="height: 50px; font-size: 0.6rem;">🎯 マッチング</div>
+          <div class="wf-placeholder" style="height: 50px; font-size: 0.6rem;">🎤 ライブ</div>
+          <div class="wf-placeholder" style="height: 50px; font-size: 0.6rem;">🤝 コミュニティ</div>
+          <div class="wf-placeholder" style="height: 50px; font-size: 0.6rem;">🎸 バンド管理</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="wireframe">
+      <div class="wf-browser-bar">
+        <div class="wf-dot red"></div>
+        <div class="wf-dot yellow"></div>
+        <div class="wf-dot green"></div>
+        <div class="wf-url">bandmatch.jp/dashboard</div>
+      </div>
+      <div class="wf-content">
+        <div class="wf-header">
+          <span class="wf-logo">BandMatch</span>
+          <div class="wf-nav">
+            <span class="active">ダッシュ</span>
+            <span>マッチ</span>
+            <span>バンド</span>
+            <span>イベント</span>
+          </div>
+        </div>
+        <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 12px;">おかえり、タロー！</div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px;">
+          <div class="wf-placeholder" style="height: 55px; flex-direction: column; padding: 4px; font-size: 0.55rem;">
+            <div style="font-size: 1.1rem; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">12</div>
+            マッチ数
+          </div>
+          <div class="wf-placeholder" style="height: 55px; flex-direction: column; padding: 4px; font-size: 0.55rem;">
+            <div style="font-size: 1.1rem; font-weight: 700; color: var(--secondary);">2</div>
+            バンド
+          </div>
+          <div class="wf-placeholder" style="height: 55px; flex-direction: column; padding: 4px; font-size: 0.55rem;">
+            <div style="font-size: 1.1rem; font-weight: 700; color: var(--accent);">5h</div>
+            練習時間
+          </div>
+          <div class="wf-placeholder" style="height: 55px; flex-direction: column; padding: 4px; font-size: 0.55rem;">
+            <div style="font-size: 1.1rem; font-weight: 700; color: #fbbf24;">3</div>
+            イベント
+          </div>
+        </div>
+        <div class="wf-placeholder" style="height: 80px; margin-bottom: 8px;">最近のアクティビティ</div>
+        <div class="wf-placeholder" style="height: 50px;">今後のイベント</div>
+      </div>
+    </div>
+
+    <!-- Matching -->
+    <div class="wireframe">
+      <div class="wf-browser-bar">
+        <div class="wf-dot red"></div>
+        <div class="wf-dot yellow"></div>
+        <div class="wf-dot green"></div>
+        <div class="wf-url">bandmatch.jp/matching</div>
+      </div>
+      <div class="wf-content">
+        <div class="wf-header">
+          <span class="wf-logo">BandMatch</span>
+          <div class="wf-nav">
+            <span>ダッシュ</span>
+            <span class="active">マッチ</span>
+            <span>バンド</span>
+            <span>イベント</span>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div style="font-size: 0.85rem; font-weight: 600;">マッチング</div>
+          <span style="font-size: 0.7rem; padding: 4px 10px; border: 1px solid var(--border); border-radius: 6px; color: var(--primary-light);">フィルター</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div class="glass" style="padding: 12px; display: flex; gap: 12px; align-items: center; border-radius: 12px;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); flex-shrink: 0;"></div>
+            <div style="flex: 1; font-size: 0.7rem;">
+              <div style="font-weight: 600;">鈴木 美咲</div>
+              <div style="color: var(--text-muted); font-size: 0.6rem;">🥁 ドラム（初心者）</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.2rem; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">87</div>
+              <div style="font-size: 0.5rem; color: var(--text-muted);">相性</div>
+            </div>
+          </div>
+          <div class="glass" style="padding: 12px; display: flex; gap: 12px; align-items: center; border-radius: 12px;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--secondary), var(--accent)); flex-shrink: 0;"></div>
+            <div style="flex: 1; font-size: 0.7rem;">
+              <div style="font-weight: 600;">佐藤 花</div>
+              <div style="color: var(--text-muted); font-size: 0.6rem;">🎤 ボーカル（中級者）</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.2rem; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">72</div>
+              <div style="font-size: 0.5rem; color: var(--text-muted);">相性</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin -->
+    <div class="wireframe">
+      <div class="wf-browser-bar">
+        <div class="wf-dot red"></div>
+        <div class="wf-dot yellow"></div>
+        <div class="wf-dot green"></div>
+        <div class="wf-url">bandmatch.jp/admin</div>
+      </div>
+      <div class="wf-content">
+        <div class="wf-header">
+          <span class="wf-logo">Admin</span>
+          <div class="wf-nav">
+            <span class="active">統計</span>
+            <span>ユーザー</span>
+            <span>売上</span>
+            <span>課金</span>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px;">
+          <div class="wf-placeholder" style="height: 50px; flex-direction: column; font-size: 0.55rem;">
+            <div style="font-weight: 700; font-size: 1rem;">1,247</div>総ユーザー
+          </div>
+          <div class="wf-placeholder" style="height: 50px; flex-direction: column; font-size: 0.55rem;">
+            <div style="font-weight: 700; font-size: 1rem;">¥892K</div>月間売上
+          </div>
+          <div class="wf-placeholder" style="height: 50px; flex-direction: column; font-size: 0.55rem;">
+            <div style="font-weight: 700; font-size: 1rem;">356</div>バンド数
+          </div>
+        </div>
+        <div class="wf-placeholder" style="height: 80px; margin-bottom: 8px;">売上チャート</div>
+        <div class="wf-placeholder" style="height: 60px;">ユーザーテーブル</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== MOBILE ===== -->
+<section class="section" id="mobile">
+  <h2 class="section-title"><span class="icon">📱</span>モバイルUI</h2>
+  <p class="section-desc">ボトムナビゲーションによるモバイルファーストな操作性</p>
+
+  <div style="display: flex; gap: 32px; justify-content: center; flex-wrap: wrap;">
+    <div class="mobile-nav-demo">
+      <div class="mobile-screen">
+        <div class="mobile-status">9:41 AM</div>
+        <div class="mobile-content" style="flex-direction: column; gap: 8px; padding: 16px;">
+          <div style="font-weight: 700; font-size: 0.9rem; width: 100%;">ダッシュボード</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%;">
+            <div class="wf-placeholder" style="height: 50px; font-size: 0.6rem;">12 マッチ</div>
+            <div class="wf-placeholder" style="height: 50px; font-size: 0.6rem;">2 バンド</div>
+          </div>
+          <div class="wf-placeholder" style="height: 60px; width: 100%; font-size: 0.6rem;">最近のアクティビティ</div>
+          <div class="wf-placeholder" style="height: 40px; width: 100%; font-size: 0.6rem;">今後のイベント</div>
+        </div>
+        <div class="mobile-bottom-nav">
+          <div class="mobile-nav-item active"><span class="nav-icon">🏠</span>ホーム</div>
+          <div class="mobile-nav-item"><span class="nav-icon">👥</span>マッチ</div>
+          <div class="mobile-nav-item"><span class="nav-icon">📅</span>イベント</div>
+          <div class="mobile-nav-item"><span class="nav-icon">💬</span>コミュニティ</div>
+          <div class="mobile-nav-item"><span class="nav-icon">👤</span>プロフィール</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-nav-demo">
+      <div class="mobile-screen">
+        <div class="mobile-status">9:41 AM</div>
+        <div class="mobile-content" style="flex-direction: column; gap: 8px; padding: 16px;">
+          <div style="font-weight: 700; font-size: 0.9rem; width: 100%;">マッチング結果</div>
+          <div class="glass" style="padding: 10px; border-radius: 10px; width: 100%; display: flex; gap: 8px; align-items: center;">
+            <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(var(--primary), var(--secondary)); flex-shrink: 0;"></div>
+            <div style="flex: 1; font-size: 0.65rem;">
+              <div style="font-weight: 600;">鈴木 美咲</div>
+              <div style="color: var(--text-muted);">ドラム・東京</div>
+            </div>
+            <div style="font-weight: 700; background: linear-gradient(var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">87</div>
+          </div>
+          <div class="glass" style="padding: 10px; border-radius: 10px; width: 100%; display: flex; gap: 8px; align-items: center;">
+            <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(var(--accent), var(--accent-light)); flex-shrink: 0;"></div>
+            <div style="flex: 1; font-size: 0.65rem;">
+              <div style="font-weight: 600;">佐藤 花</div>
+              <div style="color: var(--text-muted);">ボーカル・神奈川</div>
+            </div>
+            <div style="font-weight: 700; background: linear-gradient(var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">72</div>
+          </div>
+          <div class="glass" style="padding: 10px; border-radius: 10px; width: 100%; display: flex; gap: 8px; align-items: center;">
+            <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(#fbbf24, var(--accent)); flex-shrink: 0;"></div>
+            <div style="flex: 1; font-size: 0.65rem;">
+              <div style="font-weight: 600;">山本 健一</div>
+              <div style="color: var(--text-muted);">ベース・東京</div>
+            </div>
+            <div style="font-weight: 700; background: linear-gradient(var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">68</div>
+          </div>
+        </div>
+        <div class="mobile-bottom-nav">
+          <div class="mobile-nav-item"><span class="nav-icon">🏠</span>ホーム</div>
+          <div class="mobile-nav-item active"><span class="nav-icon">👥</span>マッチ</div>
+          <div class="mobile-nav-item"><span class="nav-icon">📅</span>イベント</div>
+          <div class="mobile-nav-item"><span class="nav-icon">💬</span>コミュニティ</div>
+          <div class="mobile-nav-item"><span class="nav-icon">👤</span>プロフィール</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== SECURITY ===== -->
+<section class="section" id="security">
+  <h2 class="section-title"><span class="icon">🔒</span>セキュリティ対策</h2>
+  <p class="section-desc">多層的なセキュリティ対策を実装</p>
+
+  <div class="glass" style="overflow-x: auto;">
+    <table class="sec-table">
+      <thead>
+        <tr>
+          <th>対策</th>
+          <th>実装</th>
+          <th>カテゴリ</th>
+          <th>詳細</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>入力バリデーション</td>
+          <td><code>validators.ts</code></td>
+          <td><span class="sec-badge green">防御</span></td>
+          <td>メール形式、パスワード強度、文字数制限チェック</td>
+        </tr>
+        <tr>
+          <td>XSS防止</td>
+          <td><code>security.ts</code> + React</td>
+          <td><span class="sec-badge green">防御</span></td>
+          <td>HTMLエスケープ + JSXの自動エスケープ</td>
+        </tr>
+        <tr>
+          <td>CSRFトークン</td>
+          <td><code>security.ts</code></td>
+          <td><span class="sec-badge blue">認証</span></td>
+          <td>sessionStorage ベースのトークン生成・検証</td>
+        </tr>
+        <tr>
+          <td>セキュリティヘッダー</td>
+          <td><code>next.config.ts</code></td>
+          <td><span class="sec-badge purple">インフラ</span></td>
+          <td>X-Frame-Options, CSP, X-Content-Type-Options</td>
+        </tr>
+        <tr>
+          <td>認証ガード</td>
+          <td><code>ProtectedRoute</code></td>
+          <td><span class="sec-badge blue">認証</span></td>
+          <td>未認証ユーザーのリダイレクト</td>
+        </tr>
+        <tr>
+          <td>管理者権限</td>
+          <td><code>ProtectedRoute</code> (adminOnly)</td>
+          <td><span class="sec-badge blue">認証</span></td>
+          <td>非管理者の管理画面アクセスブロック</td>
+        </tr>
+        <tr>
+          <td>パスワード要件</td>
+          <td><code>validators.ts</code></td>
+          <td><span class="sec-badge green">防御</span></td>
+          <td>8文字以上、英字+数字必須</td>
+        </tr>
+        <tr>
+          <td>名前空間分離</td>
+          <td><code>storage.ts</code></td>
+          <td><span class="sec-badge purple">インフラ</span></td>
+          <td><code>bandmatch-</code> プレフィックスで他アプリと分離</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== ANIMATIONS ===== -->
+<section class="section" id="animations">
+  <h2 class="section-title"><span class="icon">✨</span>アニメーション</h2>
+  <p class="section-desc">framer-motion によるページ遷移・要素出現アニメーション</p>
+
+  <div class="animate-demo">
+    <div class="anim-box fade">Fade Up<br><span style="font-size: 0.6rem;">ページ読み込み時</span></div>
+    <div class="anim-box glow">Glow Pulse<br><span style="font-size: 0.6rem;">フォーカス要素</span></div>
+    <div class="anim-box slide">Slide In<br><span style="font-size: 0.6rem;">リスト要素</span></div>
+  </div>
+
+  <div class="glass" style="margin-top: 24px; font-size: 0.85rem; color: var(--text-secondary);">
+    <h4 style="margin-bottom: 12px;">使用アニメーション一覧</h4>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.8rem;">
+      <div><strong>Fade Up:</strong> ページ読み込み、カード出現</div>
+      <div><strong>Scale:</strong> モーダル開閉、ボタンクリック</div>
+      <div><strong>Slide:</strong> サイドバー、フィルターパネル</div>
+      <div><strong>Stagger:</strong> リスト要素の順次表示</div>
+      <div><strong>Spring:</strong> トグル切り替え、タブ移動</div>
+      <div><strong>Shimmer:</strong> スケルトンローディング</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== FOOTER ===== -->
+<div style="text-align: center; padding: 40px 0; color: var(--text-muted); font-size: 0.8rem;">
+  <p>BandMatch Visual Specification v1.0.0</p>
+  <p style="margin-top: 4px;">Generated: 2026-03-09</p>
+</div>
+
+</div>
+</body>
+</html>

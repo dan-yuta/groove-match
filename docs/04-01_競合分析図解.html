@@ -1,0 +1,1651 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BandMatch - 競合分析・差別化戦略</title>
+<style>
+  :root {
+    --bg: #0a0a1a;
+    --surface: #1a1a2e;
+    --surface-light: #25253d;
+    --surface-hover: #2f2f4a;
+    --primary: #7c3aed;
+    --primary-light: #8b5cf6;
+    --secondary: #06b6d4;
+    --accent: #f97066;
+    --green: #22c55e;
+    --yellow: #eab308;
+    --orange: #f59e0b;
+    --pink: #ec4899;
+    --blue: #3b82f6;
+    --indigo: #6366f1;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --competitor-a: #64748b;
+    --competitor-b: #78716c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #0a0a1a 50%, #1a1a2e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 60px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 50%, rgba(124,58,237,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 70% 50%, rgba(6,182,212,0.06) 0%, transparent 50%);
+    animation: heroFloat 20s ease-in-out infinite;
+  }
+  @keyframes heroFloat {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(-2%, 2%); }
+  }
+  .hero h1 {
+    font-size: 2.8rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary-light), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .hero .subtitle {
+    font-size: 1.15rem;
+    color: var(--text-dim);
+    position: relative;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .hero .badge-row {
+    margin-top: 20px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  .hero .badge {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid;
+  }
+  .badge-primary { background: rgba(124,58,237,0.12); border-color: rgba(124,58,237,0.3) !important; color: var(--primary-light); }
+  .badge-secondary { background: rgba(6,182,212,0.12); border-color: rgba(6,182,212,0.3) !important; color: var(--secondary); }
+  .badge-accent { background: rgba(249,112,102,0.12); border-color: rgba(249,112,102,0.3) !important; color: var(--accent); }
+  .badge-green { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.3) !important; color: var(--green); }
+
+  /* ===== NAV ===== */
+  .nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav a {
+    color: var(--text-dim);
+    text-decoration: none;
+    padding: 14px 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .nav a:hover {
+    color: var(--text);
+    border-bottom-color: var(--primary);
+    background: rgba(124,58,237,0.05);
+  }
+
+  /* ===== SECTIONS ===== */
+  .section {
+    padding: 60px 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .section-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--primary-light), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .section-desc {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    margin-bottom: 36px;
+  }
+  .section-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+
+  /* ===== COMPETITOR CARDS ===== */
+  .competitor-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+  }
+  .competitor-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    position: relative;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .competitor-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  }
+  .competitor-card .card-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .competitor-card .card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .competitor-card.oursounds .card-icon {
+    background: linear-gradient(135deg, rgba(100,116,139,0.3), rgba(100,116,139,0.1));
+    color: var(--competitor-a);
+  }
+  .competitor-card.rockjoint .card-icon {
+    background: linear-gradient(135deg, rgba(120,113,108,0.3), rgba(120,113,108,0.1));
+    color: var(--competitor-b);
+  }
+  .card-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+  .card-url {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+  .info-table {
+    width: 100%;
+    margin-bottom: 20px;
+    border-collapse: collapse;
+  }
+  .info-table td {
+    padding: 6px 0;
+    font-size: 0.88rem;
+    border-bottom: 1px solid rgba(51,65,85,0.5);
+    vertical-align: top;
+  }
+  .info-table td:first-child {
+    color: var(--text-muted);
+    width: 90px;
+    font-weight: 500;
+  }
+  .strengths-weaknesses {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .sw-column h4 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .sw-column.strengths h4 { color: var(--green); }
+  .sw-column.weaknesses h4 { color: var(--accent); }
+  .sw-column ul {
+    list-style: none;
+    font-size: 0.82rem;
+    color: var(--text-dim);
+  }
+  .sw-column ul li {
+    padding: 4px 0;
+    padding-left: 16px;
+    position: relative;
+  }
+  .sw-column.strengths ul li::before {
+    content: '+';
+    position: absolute;
+    left: 0;
+    color: var(--green);
+    font-weight: 700;
+  }
+  .sw-column.weaknesses ul li::before {
+    content: '-';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* Visual ratings */
+  .rating-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .rating-bar .label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    width: 100px;
+    flex-shrink: 0;
+  }
+  .rating-bar .bar-bg {
+    flex: 1;
+    height: 8px;
+    background: rgba(51,65,85,0.5);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .rating-bar .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s ease;
+  }
+  .bar-fill.muted { background: var(--competitor-a); }
+  .bar-fill.brand { background: linear-gradient(90deg, var(--primary), var(--secondary)); }
+
+  /* ===== COMPARISON TABLE ===== */
+  .comparison-wrapper {
+    overflow-x: auto;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+  }
+  .comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 700px;
+  }
+  .comparison-table thead th {
+    background: var(--surface);
+    padding: 16px 14px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+    position: sticky;
+    top: 0;
+  }
+  .comparison-table thead th:first-child {
+    width: 160px;
+  }
+  .comparison-table thead th.col-bandmatch {
+    background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(6,182,212,0.1));
+    color: var(--primary-light);
+    border-bottom-color: var(--primary);
+  }
+  .comparison-table thead th.col-competitor {
+    color: var(--text-muted);
+  }
+  .comparison-table tbody td {
+    padding: 12px 14px;
+    font-size: 0.85rem;
+    border-bottom: 1px solid rgba(51,65,85,0.4);
+    vertical-align: top;
+  }
+  .comparison-table tbody tr:hover {
+    background: rgba(124,58,237,0.03);
+  }
+  .comparison-table tbody td:first-child {
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+  .comparison-table tbody td.col-bandmatch {
+    background: rgba(124,58,237,0.04);
+    font-weight: 500;
+  }
+  .comparison-table .check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+  .check-yes { background: rgba(34,197,94,0.15); color: var(--green); }
+  .check-no { background: rgba(249,112,102,0.12); color: var(--accent); }
+  .check-partial { background: rgba(234,179,8,0.12); color: var(--yellow); }
+  .check-star { background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(6,182,212,0.15)); color: var(--primary-light); }
+  .highlight-text { color: var(--primary-light); font-weight: 600; }
+
+  /* ===== POSITIONING MAP ===== */
+  .map-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    position: relative;
+  }
+  .map-chart {
+    width: 100%;
+    max-width: 600px;
+    height: 400px;
+    margin: 0 auto;
+    position: relative;
+    border-left: 2px solid var(--border);
+    border-bottom: 2px solid var(--border);
+  }
+  .map-chart .axis-label {
+    position: absolute;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .axis-label.x-left { bottom: -30px; left: 0; }
+  .axis-label.x-right { bottom: -30px; right: 0; }
+  .axis-label.y-top { top: -10px; left: -10px; transform: translateX(-100%); }
+  .axis-label.y-bottom { bottom: -10px; left: -10px; transform: translateX(-100%); }
+  .axis-label.x-title {
+    bottom: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-weight: 600;
+    color: var(--text-dim);
+  }
+  .axis-label.y-title {
+    top: 50%;
+    left: -80px;
+    transform: rotate(-90deg) translateX(-50%);
+    transform-origin: center;
+    font-weight: 600;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+  .map-dot {
+    position: absolute;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: transform 0.3s;
+    cursor: default;
+  }
+  .map-dot:hover {
+    transform: scale(1.1);
+  }
+  .map-dot .dot-label {
+    position: absolute;
+    bottom: -32px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .map-dot .dot-sublabel {
+    position: absolute;
+    bottom: -48px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 0.68rem;
+    color: var(--text-muted);
+  }
+  .map-dot.bandmatch {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, rgba(124,58,237,0.3), rgba(6,182,212,0.2));
+    border: 2px solid var(--primary);
+    box-shadow: 0 0 30px rgba(124,58,237,0.3), 0 0 60px rgba(124,58,237,0.1);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--primary-light);
+  }
+  .map-dot.competitor {
+    width: 60px;
+    height: 60px;
+    background: rgba(100,116,139,0.15);
+    border: 1px solid rgba(100,116,139,0.3);
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+  .positioning-statement {
+    margin-top: 50px;
+    padding: 24px;
+    background: linear-gradient(135deg, rgba(124,58,237,0.08), rgba(6,182,212,0.05));
+    border: 1px solid rgba(124,58,237,0.2);
+    border-radius: 12px;
+    text-align: center;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  /* ===== PILLARS ===== */
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .pillar-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 28px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .pillar-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  }
+  .pillar-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+  }
+  .pillar-card.pillar-1::before { background: linear-gradient(90deg, var(--primary), var(--primary-light)); }
+  .pillar-card.pillar-2::before { background: linear-gradient(90deg, var(--secondary), var(--blue)); }
+  .pillar-card.pillar-3::before { background: linear-gradient(90deg, var(--orange), var(--yellow)); }
+  .pillar-number {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .pillar-1 .pillar-number { color: var(--primary-light); }
+  .pillar-2 .pillar-number { color: var(--secondary); }
+  .pillar-3 .pillar-number { color: var(--orange); }
+  .pillar-icon {
+    font-size: 2.5rem;
+    margin-bottom: 16px;
+  }
+  .pillar-card h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+  .pillar-card p {
+    font-size: 0.88rem;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    line-height: 1.7;
+  }
+  .pillar-card ul {
+    list-style: none;
+    font-size: 0.84rem;
+    color: var(--text-dim);
+  }
+  .pillar-card ul li {
+    padding: 5px 0;
+    padding-left: 18px;
+    position: relative;
+  }
+  .pillar-card ul li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    font-weight: 700;
+  }
+  .pillar-1 ul li::before { color: var(--primary-light); }
+  .pillar-2 ul li::before { color: var(--secondary); }
+  .pillar-3 ul li::before { color: var(--orange); }
+
+  /* ===== GOAL CALLOUT ===== */
+  .goal-callout {
+    background: linear-gradient(135deg, rgba(124,58,237,0.1), rgba(6,182,212,0.07));
+    border: 1px solid rgba(124,58,237,0.25);
+    border-left: 4px solid var(--primary);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 36px;
+  }
+  .goal-callout p {
+    font-size: 0.95rem;
+    color: var(--text);
+    line-height: 1.7;
+  }
+  .goal-callout strong {
+    color: var(--primary-light);
+  }
+
+  /* ===== DIFFERENTIATION GRID ===== */
+  .diff-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .diff-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    gap: 16px;
+    transition: transform 0.2s;
+  }
+  .diff-item:hover {
+    transform: translateY(-2px);
+  }
+  .diff-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(6,182,212,0.1));
+  }
+  .diff-content h4 {
+    font-size: 0.92rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+  .diff-content p {
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    line-height: 1.6;
+  }
+  .diff-advantage {
+    font-size: 0.75rem;
+    padding: 3px 10px;
+    border-radius: 12px;
+    display: inline-block;
+    background: rgba(124,58,237,0.1);
+    color: var(--primary-light);
+    border: 1px solid rgba(124,58,237,0.2);
+  }
+
+  /* ===== GAMIFICATION SECTION ===== */
+  .gamification-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .gami-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .gami-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .gami-icon {
+    font-size: 2.2rem;
+    margin-bottom: 12px;
+  }
+  .gami-card h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .gami-card p {
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+  .gami-example {
+    margin-top: 12px;
+    padding: 10px;
+    background: rgba(124,58,237,0.06);
+    border: 1px solid rgba(124,58,237,0.12);
+    border-radius: 8px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  /* ===== CATCHPHRASE CARDS ===== */
+  .catchphrase-main {
+    background: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(6,182,212,0.08));
+    border: 2px solid rgba(124,58,237,0.3);
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+    margin-bottom: 30px;
+    position: relative;
+  }
+  .catchphrase-main::before {
+    content: '\201C';
+    position: absolute;
+    top: 10px;
+    left: 24px;
+    font-size: 4rem;
+    color: rgba(124,58,237,0.2);
+    font-family: Georgia, serif;
+    line-height: 1;
+  }
+  .catchphrase-main blockquote {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .catchphrase-main .label {
+    display: inline-block;
+    margin-bottom: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--primary-light);
+    text-transform: uppercase;
+  }
+  .catchphrase-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 30px;
+  }
+  .catchphrase-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    position: relative;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+    transition: transform 0.2s;
+  }
+  .catchphrase-card:hover {
+    transform: translateY(-2px);
+  }
+  .catchphrase-card::before {
+    content: '\201C';
+    position: absolute;
+    top: 8px;
+    left: 12px;
+    font-size: 2rem;
+    color: rgba(100,116,139,0.15);
+    font-family: Georgia, serif;
+    line-height: 1;
+  }
+  .vs-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .vs-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .vs-card .vs-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .vs-card p {
+    font-size: 0.88rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* ===== KPI CARDS ===== */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    text-align: center;
+    transition: transform 0.3s;
+  }
+  .kpi-card:hover {
+    transform: translateY(-4px);
+  }
+  .kpi-icon {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+  }
+  .kpi-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .kpi-card:nth-child(1) .kpi-value { color: var(--primary-light); }
+  .kpi-card:nth-child(2) .kpi-value { color: var(--secondary); }
+  .kpi-card:nth-child(3) .kpi-value { color: var(--green); }
+  .kpi-card:nth-child(4) .kpi-value { color: var(--orange); }
+  .kpi-card:nth-child(5) .kpi-value { color: var(--pink); }
+  .kpi-card:nth-child(6) .kpi-value { color: var(--blue); }
+  .kpi-card:nth-child(7) .kpi-value { color: var(--yellow); }
+  .kpi-card:nth-child(8) .kpi-value { color: var(--indigo); }
+  .kpi-label {
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+  .kpi-detail {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+  .kpi-priority {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+  .priority-high { background: rgba(249,112,102,0.12); color: var(--accent); }
+  .priority-mid { background: rgba(234,179,8,0.12); color: var(--yellow); }
+  .priority-low { background: rgba(100,116,139,0.12); color: var(--text-muted); }
+
+  /* ===== FUTURE FEATURES TABLE ===== */
+  .future-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .future-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    transition: transform 0.2s;
+  }
+  .future-item:hover {
+    transform: translateY(-2px);
+  }
+  .future-priority {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .future-priority.high { background: rgba(249,112,102,0.15); color: var(--accent); }
+  .future-priority.mid { background: rgba(234,179,8,0.15); color: var(--yellow); }
+  .future-priority.low { background: rgba(100,116,139,0.15); color: var(--text-muted); }
+  .future-content h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .future-content p {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+  .future-tag {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    background: rgba(124,58,237,0.1);
+    color: var(--primary-light);
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 900px) {
+    .hero h1 { font-size: 2rem; }
+    .section { padding: 40px 20px; }
+    .nav { padding: 0 16px; }
+    .nav a { padding: 12px 14px; font-size: 0.8rem; }
+    .competitor-grid { grid-template-columns: 1fr; }
+    .pillars-grid { grid-template-columns: 1fr; }
+    .diff-grid { grid-template-columns: 1fr; }
+    .gamification-grid { grid-template-columns: 1fr 1fr; }
+    .catchphrase-grid { grid-template-columns: 1fr; }
+    .vs-cards { grid-template-columns: 1fr; }
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .future-grid { grid-template-columns: 1fr; }
+    .map-chart { height: 350px; }
+  }
+  @media (max-width: 600px) {
+    .hero { padding: 40px 20px; }
+    .hero h1 { font-size: 1.6rem; }
+    .section-title { font-size: 1.4rem; }
+    .gamification-grid { grid-template-columns: 1fr; }
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .strengths-weaknesses { grid-template-columns: 1fr; }
+    .map-chart { height: 300px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HERO ===== -->
+<div class="hero">
+  <h1>BandMatch 競合分析・差別化戦略</h1>
+  <p class="subtitle">
+    本アプリのゴールは「コピバンを組んでライブに出ること」です。<br>
+    メインフローは「仲間探し → コピバン結成 → ライブ出演」。<br>
+    練習トラッカーやフレンド機能は、そのゴールに到達するまでの挫折を防ぐサポート機能として位置づけています。<br>
+  </p>
+  <div class="badge-row">
+    <span class="badge badge-primary">コピバン特化</span>
+    <span class="badge badge-secondary">曲ベースマッチング</span>
+    <span class="badge badge-accent">Duolingo型挫折防止</span>
+    <span class="badge badge-green">一気通貫サポート</span>
+  </div>
+</div>
+
+<!-- ===== NAV ===== -->
+<nav class="nav">
+  <a href="#competitors">競合サービス</a>
+  <a href="#comparison">比較表</a>
+  <a href="#positioning">ポジショニング</a>
+  <a href="#pillars">差別化の3本柱</a>
+  <a href="#differentiation">差別化詳細</a>
+  <a href="#gamification">ゲーミフィケーション</a>
+  <a href="#future">今後の強化機能</a>
+  <a href="#catchphrase">キャッチコピー</a>
+  <a href="#kpi">成功指標</a>
+</nav>
+
+<!-- ===== 1. COMPETITOR PROFILES ===== -->
+<div class="section" id="competitors">
+  <h2 class="section-title">1. 競合サービス概要</h2>
+  <p class="section-desc">BandMatchの主要競合2社のプロフィールと強み・弱みの分析</p>
+
+  <div class="competitor-grid">
+    <!-- OURSOUNDS -->
+    <div class="competitor-card oursounds">
+      <div class="card-header">
+        <div class="card-icon">OS</div>
+        <div>
+          <div class="card-title">OURSOUNDS</div>
+          <div class="card-url">oursounds.net</div>
+        </div>
+      </div>
+      <table class="info-table">
+        <tr><td>形態</td><td>バンドメンバー募集 掲示板（Web）</td></tr>
+        <tr><td>運営歴</td><td>2005年〜（20年以上）</td></tr>
+        <tr><td>料金</td><td>無料</td></tr>
+        <tr><td>主な機能</td><td>募集記事の投稿・検索、メンバー検索、メッセージ、お気に入り</td></tr>
+        <tr><td>検索方法</td><td>都道府県別、テーマ別（初心者・シニア等）で絞り込み</td></tr>
+        <tr><td>ターゲット</td><td>全年代・全レベル</td></tr>
+        <tr><td>UI</td><td>従来型の掲示板スタイル</td></tr>
+      </table>
+
+      <div class="rating-bar">
+        <span class="label">UI/UX</span>
+        <div class="bar-bg"><div class="bar-fill muted" style="width: 25%"></div></div>
+      </div>
+      <div class="rating-bar">
+        <span class="label">マッチング力</span>
+        <div class="bar-bg"><div class="bar-fill muted" style="width: 30%"></div></div>
+      </div>
+      <div class="rating-bar">
+        <span class="label">継続支援</span>
+        <div class="bar-bg"><div class="bar-fill muted" style="width: 10%"></div></div>
+      </div>
+      <div class="rating-bar">
+        <span class="label">ユーザー数</span>
+        <div class="bar-bg"><div class="bar-fill muted" style="width: 80%"></div></div>
+      </div>
+
+      <div class="strengths-weaknesses">
+        <div class="sw-column strengths">
+          <h4>&#9650; 強み</h4>
+          <ul>
+            <li>無料で利用可能</li>
+            <li>20年以上の運営実績でユーザー数が多い</li>
+            <li>不正ユーザーの徹底排除に注力</li>
+            <li>都道府県別・テーマ別の検索が可能</li>
+          </ul>
+        </div>
+        <div class="sw-column weaknesses">
+          <h4>&#9660; 弱み</h4>
+          <ul>
+            <li>UIが古い掲示板スタイルで、若年層には馴染みにくい</li>
+            <li>マッチング機能なし（自力で検索するのみ）</li>
+            <li>挫折防止やモチベーション維持の仕組みがない</li>
+            <li>バンド結成後のサポートがない</li>
+            <li>用が済んだら使わなくなる（継続利用の動機がない）</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROCKJOINT -->
+    <div class="competitor-card rockjoint">
+      <div class="card-header">
+        <div class="card-icon">RJ</div>
+        <div>
+          <div class="card-title">ROCKJOINT</div>
+          <div class="card-url">rockjoint.link</div>
+        </div>
+      </div>
+      <table class="info-table">
+        <tr><td>形態</td><td>オフラインイベント運営 + マッチングアプリ</td></tr>
+        <tr><td>実績</td><td>累計4,601名参加</td></tr>
+        <tr><td>料金</td><td>イベント参加費（詳細非公開）</td></tr>
+        <tr><td>主な機能</td><td>バンドメンバー募集交流会、バンドサークル「コピフェス」、ライブイベント</td></tr>
+        <tr><td>展開地域</td><td>東京・大阪・京都・神戸・横浜・福岡</td></tr>
+        <tr><td>ターゲット</td><td>初心者〜経験者</td></tr>
+        <tr><td>アプリ</td><td>1,000名以上登録</td></tr>
+      </table>
+
+      <div class="rating-bar">
+        <span class="label">UI/UX</span>
+        <div class="bar-bg"><div class="bar-fill muted" style="width: 40%"></div></div>
+      </div>
+      <div class="rating-bar">
+        <span class="label">マッチング力</span>
+        <div class="bar-bg"><div class="bar-fill muted" style="width: 50%"></div></div>
+      </div>
+      <div class="rating-bar">
+        <span class="label">継続支援</span>
+        <div class="bar-bg"><div class="bar-fill muted" style="width: 20%"></div></div>
+      </div>
+      <div class="rating-bar">
+        <span class="label">ライブ支援</span>
+        <div class="bar-bg"><div class="bar-fill muted" style="width: 75%"></div></div>
+      </div>
+
+      <div class="strengths-weaknesses">
+        <div class="sw-column strengths">
+          <h4>&#9650; 強み</h4>
+          <ul>
+            <li>リアルイベントでの対面交流（実際に会える）</li>
+            <li>ライブ出演機会を直接提供</li>
+            <li>プロアーティストとのコラボ実績（DOESなど）</li>
+            <li>累計参加者数の実績</li>
+            <li>メンバー募集から演奏機会まで一貫提供</li>
+          </ul>
+        </div>
+        <div class="sw-column weaknesses">
+          <h4>&#9660; 弱み</h4>
+          <ul>
+            <li>対面前提のため地方ユーザーには弱い</li>
+            <li>オンライン機能が弱い（アプリは補助的）</li>
+            <li>継続的な関係構築の仕組みが薄い</li>
+            <li>料金情報の透明性が低い</li>
+            <li>イベント日程に合わせる必要がある</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ===== 2. COMPARISON TABLE ===== -->
+<div class="section" id="comparison">
+  <h2 class="section-title">2. 競合比較表</h2>
+  <p class="section-desc">主要機能の包括的な比較。<br>BandMatchの独自機能をハイライト表示しています。<br></p>
+
+  <div class="comparison-wrapper">
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>項目</th>
+          <th class="col-competitor">OURSOUNDS</th>
+          <th class="col-competitor">ROCKJOINT</th>
+          <th class="col-bandmatch">★ BandMatch</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>形態</td>
+          <td>Web掲示板</td>
+          <td>オフラインイベント+アプリ</td>
+          <td class="col-bandmatch"><span class="highlight-text">コピバン特化 Webアプリ</span></td>
+        </tr>
+        <tr>
+          <td>対象バンド形態</td>
+          <td>オリジナル・コピー混在</td>
+          <td>オリジナル・コピー混在</td>
+          <td class="col-bandmatch"><span class="highlight-text">コピバン専門</span></td>
+        </tr>
+        <tr>
+          <td>マッチング方法</td>
+          <td>自力検索</td>
+          <td>対面交流会</td>
+          <td class="col-bandmatch"><span class="highlight-text">6要素自動スコアリング</span><br>（曲ベースマッチング含む）</td>
+        </tr>
+        <tr>
+          <td>曲ベース検索</td>
+          <td><span class="check check-no">✗</span></td>
+          <td><span class="check check-no">✗</span></td>
+          <td class="col-bandmatch"><span class="check check-star">★</span> やりたい曲・アーティストで検索</td>
+        </tr>
+        <tr>
+          <td>セットリスト管理</td>
+          <td><span class="check check-no">✗</span></td>
+          <td><span class="check check-no">✗</span></td>
+          <td class="col-bandmatch"><span class="check check-star">★</span> コピバンのセットリスト管理</td>
+        </tr>
+        <tr>
+          <td>挫折防止</td>
+          <td><span class="check check-no">✗</span></td>
+          <td><span class="check check-no">✗</span></td>
+          <td class="col-bandmatch"><span class="check check-star">★</span> 練習ログ・マイルストーン</td>
+        </tr>
+        <tr>
+          <td>バンド管理</td>
+          <td><span class="check check-no">✗</span></td>
+          <td><span class="check check-no">✗</span></td>
+          <td class="col-bandmatch"><span class="check check-star">★</span> 楽器スロット制</td>
+        </tr>
+        <tr>
+          <td>ライブ支援</td>
+          <td><span class="check check-no">✗</span></td>
+          <td><span class="check check-yes">✓</span> イベント開催</td>
+          <td class="col-bandmatch"><span class="check check-yes">✓</span> イベントボード</td>
+        </tr>
+        <tr>
+          <td>コミュニティ</td>
+          <td>掲示板</td>
+          <td>イベント限定</td>
+          <td class="col-bandmatch"><span class="highlight-text">タイムライン常設</span></td>
+        </tr>
+        <tr>
+          <td>料金</td>
+          <td>無料</td>
+          <td>イベント参加費</td>
+          <td class="col-bandmatch">Free(¥0) / Pro(¥500)<br>初回2週間無料</td>
+        </tr>
+        <tr>
+          <td>UI/UX</td>
+          <td>掲示板（古い）</td>
+          <td>イベント紹介サイト</td>
+          <td class="col-bandmatch"><span class="highlight-text">モダンUI</span></td>
+        </tr>
+        <tr>
+          <td>対象レベル</td>
+          <td>全レベル混在</td>
+          <td>全レベル混在</td>
+          <td class="col-bandmatch"><span class="highlight-text">初心者特化</span></td>
+        </tr>
+        <tr>
+          <td>スケジュール考慮</td>
+          <td><span class="check check-no">✗</span></td>
+          <td>イベント日程のみ</td>
+          <td class="col-bandmatch"><span class="check check-star">★</span> 曜日・時間帯マッチング</td>
+        </tr>
+        <tr>
+          <td>オンライン完結</td>
+          <td><span class="check check-yes">✓</span></td>
+          <td><span class="check check-no">✗</span></td>
+          <td class="col-bandmatch"><span class="check check-yes">✓</span></td>
+        </tr>
+        <tr>
+          <td>プラットフォーム</td>
+          <td>Web</td>
+          <td>Web + オフライン</td>
+          <td class="col-bandmatch"><span class="highlight-text">Web + iOS + Android</span></td>
+        </tr>
+        <tr>
+          <td>練習トラッキング</td>
+          <td><span class="check check-no">✗</span></td>
+          <td><span class="check check-no">✗</span></td>
+          <td class="col-bandmatch"><span class="check check-star">★</span> ストリーク・ランキング・バッジ</td>
+        </tr>
+        <tr>
+          <td>ゲーミフィケーション</td>
+          <td><span class="check check-no">✗</span></td>
+          <td><span class="check check-no">✗</span></td>
+          <td class="col-bandmatch"><span class="check check-star">★</span> Duolingo型の継続支援</td>
+        </tr>
+        <tr>
+          <td>SNS連携</td>
+          <td><span class="check check-no">✗</span></td>
+          <td><span class="check check-no">✗</span></td>
+          <td class="col-bandmatch"><span class="check check-star">★</span> X/Instagram/LINE/YouTube</td>
+        </tr>
+        <tr>
+          <td>フレンド機能</td>
+          <td><span class="check check-no">✗</span></td>
+          <td>イベント限定</td>
+          <td class="col-bandmatch"><span class="check check-star">★</span> 練習状況の相互共有</td>
+        </tr>
+        <tr>
+          <td>一気通貫</td>
+          <td><span class="check check-no">✗</span> 募集まで</td>
+          <td><span class="check check-partial">△</span> イベントのみ</td>
+          <td class="col-bandmatch"><span class="check check-star">★</span> 曲マッチング→コピバン結成→ライブ</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ===== 3. POSITIONING MAP ===== -->
+<div class="section" id="positioning">
+  <h2 class="section-title">3. ポジショニングマップ</h2>
+  <p class="section-desc">競合各社の立ち位置を2軸で可視化。<br>BandMatchの独自ポジションが明確に見えます。<br></p>
+
+  <div class="map-container">
+    <div class="map-chart">
+      <!-- Axis labels -->
+      <span class="axis-label x-left">出会いだけ</span>
+      <span class="axis-label x-right">ライブまでサポート</span>
+      <span class="axis-label y-top" style="left: -6px;">オンライン完結</span>
+      <span class="axis-label y-bottom" style="left: -6px;">オフライン中心</span>
+
+      <!-- Grid lines -->
+      <div style="position:absolute; left:50%; top:0; bottom:0; border-left:1px dashed rgba(51,65,85,0.5);"></div>
+      <div style="position:absolute; top:50%; left:0; right:0; border-top:1px dashed rgba(51,65,85,0.5);"></div>
+
+      <!-- OURSOUNDS: top-left (online + just matching) -->
+      <div class="map-dot competitor" style="left: 15%; top: 18%; transform: translate(-50%, -50%);">
+        OS
+        <span class="dot-label" style="color: var(--competitor-a);">OURSOUNDS</span>
+        <span class="dot-sublabel">掲示板</span>
+      </div>
+
+      <!-- ROCKJOINT: bottom-right (offline + events) -->
+      <div class="map-dot competitor" style="left: 62%; top: 72%; transform: translate(-50%, -50%);">
+        RJ
+        <span class="dot-label" style="color: var(--competitor-b);">ROCKJOINT</span>
+        <span class="dot-sublabel">対面イベント</span>
+      </div>
+
+      <!-- BandMatch: top-right (online + full support) -->
+      <div class="map-dot bandmatch" style="left: 78%; top: 15%; transform: translate(-50%, -50%);">
+        BM
+        <span class="dot-label" style="color: var(--primary-light);">★ BandMatch</span>
+        <span class="dot-sublabel">自動マッチング+コミュニティ</span>
+      </div>
+    </div>
+
+    <div class="positioning-statement">
+      <strong style="color: var(--primary-light);">BandMatchの独自ポジション:</strong><br>
+      「コピバン特化 × オンライン完結 × 仲間探し→コピバン結成→ライブ出演を一気通貫サポート（＋Duolingo型挫折防止）」
+    </div>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ===== 4. THREE PILLARS ===== -->
+<div class="section" id="pillars">
+  <h2 class="section-title">4. 差別化の3本柱</h2>
+
+  <div class="goal-callout">
+    <p>
+      <strong>本アプリのゴールは「コピバンを組んでライブに出ること」。</strong><br>
+      3つの柱はこのゴールを実現するために設計されています。<br>
+    </p>
+  </div>
+
+  <div class="pillars-grid">
+    <!-- Pillar 1 -->
+    <div class="pillar-card pillar-1">
+      <div class="pillar-number">PILLAR 01</div>
+      <div class="pillar-icon">🎵</div>
+      <h3>曲ベースのスマートマッチング</h3>
+      <p>
+        <strong style="color:var(--primary-light);">「やりたい曲が同じ仲間が、すぐ見つかる」</strong>がコアバリュー。<br>
+      </p>
+      <ul>
+        <li>6要素スコアリング（曲マッチングが最重要ウェイト）で「探す手間」をゼロに</li>
+        <li>曲名・アーティスト名で直接検索 → 同じ曲をやりたい人がすぐ見つかる</li>
+        <li>Freeプランでも1日3回のマッチングが可能</li>
+      </ul>
+    </div>
+
+    <!-- Pillar 2 -->
+    <div class="pillar-card pillar-2">
+      <div class="pillar-number">PILLAR 02</div>
+      <div class="pillar-icon">🎸</div>
+      <h3>コピバン結成→ライブまで一気通貫</h3>
+      <p>
+        <strong style="color:var(--secondary);">「仲間探し → コピバン結成 → ライブ出演」がメインフロー。</strong><br>
+      </p>
+      <ul>
+        <li>曲マッチングで同じ曲をやりたい仲間を見つける</li>
+        <li>コピバン作成＋セットリスト管理でチームを組む</li>
+        <li>イベントボードでコピバンライブを見つけてエントリー</li>
+        <li>1つのアプリで完結（複数サービスを行き来しなくてよい）</li>
+      </ul>
+    </div>
+
+    <!-- Pillar 3 -->
+    <div class="pillar-card pillar-3">
+      <div class="pillar-number">PILLAR 03</div>
+      <div class="pillar-icon">🔥</div>
+      <h3>Duolingo型挫折防止エコシステム</h3>
+      <p>
+        メインゴール「コピバンを組んでライブに出る」に到達するまでの挫折を防ぐサポート機能群です。<br>
+        Duolingoの語学学習と同様に、毎日の小さな練習を継続する仕組みで挫折を防止します。<br>
+      </p>
+      <ul>
+        <li>練習トラッカー: 曲ごとの練習時間を記録、ストリークで継続を可視化</li>
+        <li>バッジ＆マイルストーン: 12種類のバッジで成長を実感</li>
+        <li>フレンドランキング: 週間練習ランキングで切磋琢磨</li>
+        <li>通知システム: リマインド・ストリーク危機・フレンド活動通知</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ===== 5. DIFFERENTIATION DETAILS ===== -->
+<div class="section" id="differentiation">
+  <h2 class="section-title">5. 差別化ポイント詳細</h2>
+  <p class="section-desc">BandMatchだけが持つ強みと競合との具体的な違い</p>
+
+  <div class="diff-grid">
+    <div class="diff-item">
+      <div class="diff-icon">🎯</div>
+      <div class="diff-content">
+        <h4>コピバン特化</h4>
+        <p>コピバンに完全特化したサービス設計。<br></p>
+        <span class="diff-advantage">vs 競合: オリジナル・コピー混在でコピバン向け機能なし</span>
+      </div>
+    </div>
+    <div class="diff-item">
+      <div class="diff-icon">🎵</div>
+      <div class="diff-content">
+        <h4>曲ベースマッチング</h4>
+        <p>やりたい曲・好きなアーティストでスコアリング。<br>「天体観測やりたい人」を即発見。<br></p>
+        <span class="diff-advantage">vs 競合: 曲ベースの検索/マッチング機能がない</span>
+      </div>
+    </div>
+    <div class="diff-item">
+      <div class="diff-icon">📋</div>
+      <div class="diff-content">
+        <h4>セットリスト管理</h4>
+        <p>コピバンのセットリストをアプリ内で管理・共有。<br></p>
+        <span class="diff-advantage">vs 競合: バンド管理機能自体がない</span>
+      </div>
+    </div>
+    <div class="diff-item">
+      <div class="diff-icon">🤖</div>
+      <div class="diff-content">
+        <h4>自動マッチング</h4>
+        <p>地域・楽器・ジャンル・スキル・スケジュール・曲の6要素でスコアリング。<br></p>
+        <span class="diff-advantage">vs OURSOUNDS: 自力検索 / vs ROCKJOINT: 対面のみ</span>
+      </div>
+    </div>
+    <div class="diff-item">
+      <div class="diff-icon">📊</div>
+      <div class="diff-content">
+        <h4>練習トラッキング</h4>
+        <p>曲ごとの練習時間記録、ストリーク、週間目標、バッジ12種。<br></p>
+        <span class="diff-advantage">vs 競合: 練習支援機能なし</span>
+      </div>
+    </div>
+    <div class="diff-item">
+      <div class="diff-icon">👥</div>
+      <div class="diff-content">
+        <h4>フレンド＆ランキング</h4>
+        <p>フレンド間の練習状況共有、週間ランキング、応援機能。<br></p>
+        <span class="diff-advantage">vs OURSOUNDS: フレンド機能なし / vs ROCKJOINT: イベント限定</span>
+      </div>
+    </div>
+    <div class="diff-item">
+      <div class="diff-icon">🔗</div>
+      <div class="diff-content">
+        <h4>SNS連携</h4>
+        <p>X / Instagram / LINE / YouTube アカウント連携。<br></p>
+        <span class="diff-advantage">vs 競合: SNS連携なし</span>
+      </div>
+    </div>
+    <div class="diff-item">
+      <div class="diff-icon">🔄</div>
+      <div class="diff-content">
+        <h4>一気通貫サポート</h4>
+        <p>曲マッチング→コピバン結成→セットリスト管理→イベント登録が1アプリで完結。<br></p>
+        <span class="diff-advantage">vs OURSOUNDS: 募集まで / vs ROCKJOINT: イベントのみ</span>
+      </div>
+    </div>
+    <div class="diff-item">
+      <div class="diff-icon">✨</div>
+      <div class="diff-content">
+        <h4>モダンUI/UX</h4>
+        <p>ダークモード・グラスモーフィズム・レスポンシブ。<br></p>
+        <span class="diff-advantage">vs OURSOUNDS: 掲示板UI</span>
+      </div>
+    </div>
+    <div class="diff-item">
+      <div class="diff-icon">📅</div>
+      <div class="diff-content">
+        <h4>スケジュールマッチング</h4>
+        <p>練習可能な曜日・時間帯で絞り込み。<br></p>
+        <span class="diff-advantage">vs 競合: 地域とジャンルだけ</span>
+      </div>
+    </div>
+    <div class="diff-item">
+      <div class="diff-icon">🎸</div>
+      <div class="diff-content">
+        <h4>楽器スロット制</h4>
+        <p>コピバンに「何が足りないか」が一目瞭然。<br></p>
+        <span class="diff-advantage">vs 掲示板: 文章で「ギター募集」と書くだけ</span>
+      </div>
+    </div>
+    <div class="diff-item">
+      <div class="diff-icon">🌱</div>
+      <div class="diff-content">
+        <h4>初心者特化</h4>
+        <p>初心者歓迎バッジ、スキルレベル別マッチング。<br></p>
+        <span class="diff-advantage">vs 競合: 全レベル混在で初心者が萎縮しがち</span>
+      </div>
+    </div>
+    <div class="diff-item">
+      <div class="diff-icon">📱</div>
+      <div class="diff-content">
+        <h4>クロスプラットフォーム</h4>
+        <p>Web・iOS・Androidで同じ体験を提供。<br></p>
+        <span class="diff-advantage">vs OURSOUNDS: Web掲示板のみ</span>
+      </div>
+    </div>
+    <div class="diff-item">
+      <div class="diff-icon">💰</div>
+      <div class="diff-content">
+        <h4>プラットフォーム対応料金戦略</h4>
+        <p>Web(Stripe 3.6%)・iOS/Android(ストア手数料15%)を併用し、手取りを最適化。<br></p>
+        <span class="diff-advantage">vs 競合: 料金戦略の言及なし</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ===== 6. GAMIFICATION ===== -->
+<div class="section" id="gamification">
+  <h2 class="section-title">6. Duolingo型ゲーミフィケーション</h2>
+  <p class="section-desc">毎日の小さな練習を継続する仕組みで挫折を防止。<br>Duolingoの語学学習モデルをバンド活動に応用しています。<br></p>
+
+  <div class="gamification-grid">
+    <div class="gami-card">
+      <div class="gami-icon">🔥</div>
+      <h4>練習トラッカー</h4>
+      <p>曲ごとの練習時間を記録。<br>ストリーク（連続練習日数）で継続を可視化。<br></p>
+      <div class="gami-example">例: 🔥 14日連続練習中！</div>
+    </div>
+    <div class="gami-card">
+      <div class="gami-icon">🏅</div>
+      <h4>バッジ＆マイルストーン</h4>
+      <p>12種類のバッジ（7日連続練習、累計100時間、初ライブ等）で成長を実感。<br></p>
+      <div class="gami-example">例: 「初ライブ達成」バッジ獲得！</div>
+    </div>
+    <div class="gami-card">
+      <div class="gami-icon">🏆</div>
+      <h4>フレンドランキング</h4>
+      <p>フレンド間の週間練習ランキングで、仲間と切磋琢磨。<br></p>
+      <div class="gami-example">例: 今週のランキング 1位/8人中</div>
+    </div>
+    <div class="gami-card">
+      <div class="gami-icon">🔔</div>
+      <h4>通知システム</h4>
+      <p>練習リマインド、ストリーク危機通知、フレンド活動通知でモチベーション維持。<br></p>
+      <div class="gami-example">例: ⚠️ ストリークが途切れそうです！</div>
+    </div>
+    <div class="gami-card">
+      <div class="gami-icon">🌐</div>
+      <h4>SNS連携</h4>
+      <p>X / Instagram / LINE / YouTube アカウント連携で、バンド活動のアピールも簡単。<br></p>
+      <div class="gami-example">例: 練習成果をXでシェア</div>
+    </div>
+    <div class="gami-card">
+      <div class="gami-icon">💬</div>
+      <h4>コミュニティタイムライン</h4>
+      <p>コミュニティのタイムラインで孤独感を解消。<br>同じレベルの仲間と繋がれるスキルマッチング。<br></p>
+      <div class="gami-example">例: 「天体観測」練習仲間の投稿</div>
+    </div>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ===== 7. FUTURE FEATURES ===== -->
+<div class="section" id="future">
+  <h2 class="section-title">7. 今後強化すべき機能</h2>
+  <p class="section-desc">競合との差をさらに広げるための優先ロードマップ</p>
+
+  <div class="future-grid">
+    <div class="future-item">
+      <div class="future-priority high">高</div>
+      <div class="future-content">
+        <h4>プッシュ通知</h4>
+        <p>マッチング通知・メッセージ通知をリアルタイム配信。<br></p>
+        <span class="future-tag">競合にない機能</span>
+      </div>
+    </div>
+    <div class="future-item">
+      <div class="future-priority high">高</div>
+      <div class="future-content">
+        <h4>リアルタイムチャット</h4>
+        <p>マッチング後の即座のコミュニケーション。<br></p>
+        <span class="future-tag">OURSOUNDSのメッセージ機能を超える</span>
+      </div>
+    </div>
+    <div class="future-item">
+      <div class="future-priority high">高</div>
+      <div class="future-content">
+        <h4>練習マッチング</h4>
+        <p>「今週末セッションしたい人」のリアルタイム募集。<br></p>
+        <span class="future-tag">競合にない機能</span>
+      </div>
+    </div>
+    <div class="future-item">
+      <div class="future-priority mid">中</div>
+      <div class="future-content">
+        <h4>成長トラッキング</h4>
+        <p>練習時間の推移グラフ、スキルレベルの自動更新提案。<br></p>
+        <span class="future-tag">競合にない機能</span>
+      </div>
+    </div>
+    <div class="future-item">
+      <div class="future-priority mid">中</div>
+      <div class="future-content">
+        <h4>バンド活動カレンダー</h4>
+        <p>練習日程・イベント日程の共有カレンダー。<br></p>
+        <span class="future-tag">競合にない機能</span>
+      </div>
+    </div>
+    <div class="future-item">
+      <div class="future-priority mid">中</div>
+      <div class="future-content">
+        <h4>レコメンドエンジン</h4>
+        <p>行動履歴ベースのおすすめ（Amazon Personalize）。<br></p>
+        <span class="future-tag">OURSOUNDSの検索を超える</span>
+      </div>
+    </div>
+    <div class="future-item">
+      <div class="future-priority low">低</div>
+      <div class="future-content">
+        <h4>動画プロフィール</h4>
+        <p>自己紹介動画・演奏動画のアップロード。<br>演奏力が事前に分かる。<br></p>
+        <span class="future-tag">差別化効果あり</span>
+      </div>
+    </div>
+    <div class="future-item">
+      <div class="future-priority low">低</div>
+      <div class="future-content">
+        <h4>オンラインセッション</h4>
+        <p>WebRTCでリモートセッション。<br>ROCKJOINTの地域制約を超える。<br></p>
+        <span class="future-tag">差別化効果あり</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ===== 8. CATCHPHRASES ===== -->
+<div class="section" id="catchphrase">
+  <h2 class="section-title">8. キャッチコピー案</h2>
+  <p class="section-desc">BandMatchのブランドメッセージと競合との差を表現するコピー</p>
+
+  <!-- Main catchphrase -->
+  <div class="catchphrase-main">
+    <span class="label">メインコピー</span>
+    <blockquote>やりたい曲で仲間を見つけて、<br>コピバン組んで、ライブに出よう</blockquote>
+  </div>
+
+  <!-- Sub copies -->
+  <div class="catchphrase-grid">
+    <div class="catchphrase-card">
+      「天体観測」やりたい人、3人見つかりました ── BandMatchで、コピバンライブデビューしよう
+    </div>
+    <div class="catchphrase-card">
+      好きな曲でつながる → コピバン結成 → ライブ出演。<br>全部このアプリで
+    </div>
+    <div class="catchphrase-card">
+      掲示板で探す時代は終わり。<br>やりたい曲を登録するだけで仲間が見つかる
+    </div>
+    <div class="catchphrase-card">
+      仲間探しからライブまで一気通貫。<br>BandMatchがぜんぶサポート
+    </div>
+  </div>
+
+  <!-- VS competitors -->
+  <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; color: var(--text-dim);">競合との違いを一言で</h3>
+  <div class="vs-cards">
+    <div class="vs-card">
+      <div class="vs-label">vs OURSOUNDS</div>
+      <p>「曲名で検索できる。<br>同じ曲をやりたい人だけが見つかる」</p>
+    </div>
+    <div class="vs-card">
+      <div class="vs-label">vs ROCKJOINT</div>
+      <p>「イベントを待たなくていい。<br>やりたい曲を登録するだけで仲間が見つかる」</p>
+    </div>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ===== 9. KPI / SUCCESS METRICS ===== -->
+<div class="section" id="kpi">
+  <h2 class="section-title">9. 主要成功指標（KPI）</h2>
+  <p class="section-desc">BandMatchの差別化戦略の成果を測定する指標とターゲット値</p>
+
+  <!-- Target Positioning Statement -->
+  <div class="goal-callout" style="margin-bottom: 40px; border-left-color: var(--secondary); background: linear-gradient(135deg, rgba(6,182,212,0.08), rgba(124,58,237,0.05));">
+    <p style="text-align: center; font-size: 1.05rem;">
+      <strong style="color: var(--secondary);">ターゲットポジショニング</strong><br>
+      「コピバンをやりたい初心者〜中級者」に対して、<br>
+      「やりたい曲で仲間を見つけて、コピバン結成からライブ出演までを一気通貫でサポートする」<br>
+      唯一のアプリ。<br>
+      Duolingo型の挫折防止機能で、継続率と満足度で競合を大きく上回る。<br>
+    </p>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon">🎯</div>
+      <div class="kpi-value">70%</div>
+      <div class="kpi-label">マッチング成功率</div>
+      <div class="kpi-detail">6要素スコアリングによる精度</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">🔥</div>
+      <div class="kpi-value">60%</div>
+      <div class="kpi-label">7日継続率</div>
+      <div class="kpi-detail">Duolingo型ゲーミフィケーション効果</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">🎸</div>
+      <div class="kpi-value">30%</div>
+      <div class="kpi-label">コピバン結成率</div>
+      <div class="kpi-detail">マッチング後のバンド結成割合</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">🎤</div>
+      <div class="kpi-value">15%</div>
+      <div class="kpi-label">ライブ出演率</div>
+      <div class="kpi-detail">結成バンドのライブ出演割合</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">⭐</div>
+      <div class="kpi-value">4.5+</div>
+      <div class="kpi-label">ストアレーティング</div>
+      <div class="kpi-detail">iOS / Android ストア評価</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">💜</div>
+      <div class="kpi-value">8%</div>
+      <div class="kpi-label">Pro転換率</div>
+      <div class="kpi-detail">Free→Pro アップグレード率</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">📈</div>
+      <div class="kpi-value">40%</div>
+      <div class="kpi-label">MAU/DAU比率</div>
+      <div class="kpi-detail">月間/日間アクティブ比</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">👥</div>
+      <div class="kpi-value">10K</div>
+      <div class="kpi-label">初年度ユーザー目標</div>
+      <div class="kpi-detail">登録ユーザー数</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<div style="text-align: center; padding: 40px 20px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem;">
+  BandMatch 競合分析・差別化戦略 ビジュアルガイド
+</div>
+
+</body>
+</html>

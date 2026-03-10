@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BandMatch - AWSコスト概算書</title>
+<style>
+  :root {
+    --bg: #0a0a1a;
+    --surface: #1a1a2e;
+    --surface-light: #25253d;
+    --surface-hover: #2f2f4a;
+    --primary: #7c3aed;
+    --primary-light: #8b5cf6;
+    --secondary: #06b6d4;
+    --accent: #f97066;
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.15);
+    --yellow: #eab308;
+    --orange: #f59e0b;
+    --pink: #ec4899;
+    --blue: #3b82f6;
+    --indigo: #6366f1;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --aws-orange: #ff9900;
+    --aws-dark: #232f3e;
+    --cost-red: #f87171;
+    --revenue-green: #4ade80;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #0a0a1a 50%, #1a1a2e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 60px 40px 50px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle at 30% 50%, rgba(124,58,237,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 70% 50%, rgba(6,182,212,0.06) 0%, transparent 50%);
+    animation: heroFloat 20s ease-in-out infinite;
+  }
+  @keyframes heroFloat {
+    0%, 100% { transform: translate(0,0); }
+    50% { transform: translate(-2%,2%); }
+  }
+  .hero h1 {
+    font-size: 2.8rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--primary-light), var(--secondary));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    position: relative; margin-bottom: 12px;
+  }
+  .hero .subtitle { font-size: 1.15rem; color: var(--text-dim); position: relative; }
+  .hero .badge-row {
+    margin-top: 24px; display: flex; gap: 12px;
+    justify-content: center; flex-wrap: wrap; position: relative;
+  }
+  .hero .badge {
+    padding: 8px 18px; border-radius: 20px;
+    font-size: 0.85rem; font-weight: 600; border: 1px solid;
+  }
+  .badge-cost { background: rgba(255,153,0,0.12); border-color: rgba(255,153,0,0.3) !important; color: var(--aws-orange); }
+  .badge-annual { background: rgba(124,58,237,0.12); border-color: rgba(124,58,237,0.3) !important; color: var(--primary-light); }
+  .badge-region { background: rgba(59,130,246,0.12); border-color: rgba(59,130,246,0.3) !important; color: var(--blue); }
+  .badge-green { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.3) !important; color: var(--green); }
+  .badge-red { background: rgba(248,113,113,0.12); border-color: rgba(248,113,113,0.3) !important; color: var(--cost-red); }
+
+  /* ===== NAV ===== */
+  .nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px; display: flex; gap: 0;
+    overflow-x: auto; position: sticky; top: 0; z-index: 100;
+  }
+  .nav a {
+    color: var(--text-dim); text-decoration: none;
+    padding: 14px 18px; font-size: 0.82rem; font-weight: 500;
+    white-space: nowrap; border-bottom: 2px solid transparent; transition: all 0.2s;
+  }
+  .nav a:hover { color: var(--text); background: var(--surface-light); border-bottom-color: var(--primary); }
+
+  /* ===== LAYOUT ===== */
+  .container { max-width: 1400px; margin: 0 auto; padding: 0 40px; }
+  section { padding: 60px 0; border-bottom: 1px solid var(--border); }
+  section:last-child { border-bottom: none; }
+  .section-header { margin-bottom: 40px; }
+  .section-header h2 {
+    font-size: 1.8rem; font-weight: 700; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-header h2 .icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+  }
+  .section-header p { color: var(--text-dim); font-size: 0.95rem; margin-left: 52px; }
+
+  /* ===== CARDS GRID ===== */
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+  .cards-grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 20px; }
+  .cards-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 28px; position: relative; overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .card:hover { transform: translateY(-2px); border-color: var(--primary); }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+  }
+  .card-orange::before { background: linear-gradient(90deg, var(--aws-orange), var(--orange)); }
+  .card-green::before { background: linear-gradient(90deg, var(--green), var(--secondary)); }
+  .card-red::before { background: linear-gradient(90deg, var(--accent), var(--pink)); }
+  .card-blue::before { background: linear-gradient(90deg, var(--blue), var(--indigo)); }
+
+  .card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+  .card h3 .card-icon { font-size: 1.3rem; }
+  .card p { color: var(--text-dim); font-size: 0.9rem; line-height: 1.7; }
+  .card .label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+
+  /* ===== PREMISE TABLE ===== */
+  .premise-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+  .premise-table th, .premise-table td {
+    padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.88rem;
+  }
+  .premise-table th { color: var(--text-muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px; }
+  .premise-table td:first-child { color: var(--secondary); font-weight: 600; }
+  .premise-table tr:hover td { background: var(--surface-light); }
+
+  /* ===== COMPARISON CARDS ===== */
+  .comparison-section { margin-bottom: 40px; }
+  .comparison-section h3 {
+    font-size: 1.2rem; font-weight: 700; margin-bottom: 16px;
+    padding-bottom: 8px; border-bottom: 2px solid var(--primary);
+    display: inline-block;
+  }
+  .comparison-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 16px; }
+  .comp-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; position: relative;
+  }
+  .comp-card.selected { border-color: var(--green); box-shadow: 0 0 20px rgba(34,197,94,0.1); }
+  .comp-card.rejected { opacity: 0.7; }
+  .comp-card .comp-name { font-weight: 700; font-size: 1rem; margin-bottom: 8px; }
+  .comp-card.selected .comp-name { color: var(--green); }
+  .verdict-badge {
+    display: inline-block; padding: 3px 10px; border-radius: 10px;
+    font-size: 0.7rem; font-weight: 700; margin-bottom: 10px;
+  }
+  .verdict-adopted { background: rgba(34,197,94,0.15); color: var(--green); }
+  .verdict-rejected { background: rgba(248,113,113,0.1); color: var(--cost-red); }
+  .comp-list { list-style: none; font-size: 0.82rem; color: var(--text-dim); }
+  .comp-list li { padding: 3px 0; padding-left: 16px; position: relative; }
+  .comp-list li::before { content: ''; position: absolute; left: 0; top: 10px; width: 6px; height: 6px; border-radius: 50%; }
+  .comp-list.pros li::before { background: var(--green); }
+  .comp-list.cons li::before { background: var(--cost-red); }
+  .comp-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px; }
+  .selection-reason {
+    background: var(--surface-light); border-left: 3px solid var(--green);
+    padding: 14px 18px; border-radius: 0 8px 8px 0; margin-top: 12px;
+    font-size: 0.88rem; color: var(--text-dim); line-height: 1.7;
+  }
+
+  /* ===== COST BARS ===== */
+  .cost-bars { margin-top: 24px; }
+  .cost-bar-row { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+  .cost-bar-label { width: 80px; font-size: 0.85rem; font-weight: 600; color: var(--text-dim); text-align: right; flex-shrink: 0; }
+  .cost-bar-track { flex: 1; height: 40px; background: var(--surface-light); border-radius: 8px; position: relative; overflow: hidden; }
+  .cost-bar-fill { height: 100%; border-radius: 8px; display: flex; align-items: center; padding-left: 14px; font-size: 0.85rem; font-weight: 700; transition: width 0.8s ease; }
+  .cost-bar-value { width: 140px; text-align: right; font-size: 0.9rem; font-weight: 700; flex-shrink: 0; }
+
+  /* ===== COST TABLE ===== */
+  .cost-table-wrap {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden; margin-top: 20px;
+  }
+  .cost-table-header {
+    background: var(--surface-light); padding: 16px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .cost-table-header h3 { font-size: 1.1rem; font-weight: 700; }
+  .cost-table-header .total { font-size: 1.3rem; font-weight: 800; color: var(--aws-orange); }
+  .cost-table { width: 100%; border-collapse: collapse; }
+  .cost-table th, .cost-table td { padding: 12px 20px; text-align: left; border-bottom: 1px solid rgba(51,65,85,0.5); font-size: 0.85rem; }
+  .cost-table th { color: var(--text-muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; background: var(--surface); }
+  .cost-table td:first-child { font-weight: 600; }
+  .cost-table .svc-icon { display: inline-flex; align-items: center; gap: 8px; }
+  .cost-table .svc-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .cost-table tr:hover td { background: var(--surface-light); }
+  .cost-table .total-row td { background: var(--surface-light); font-weight: 700; font-size: 0.95rem; border-top: 2px solid var(--primary); }
+  .cost-table .usd { color: var(--aws-orange); }
+  .cost-table .yen { color: var(--text); }
+  .cost-table .free { color: var(--green); }
+  .cost-table .note { color: var(--text-muted); font-size: 0.8rem; }
+
+  /* ===== PHASE TABS ===== */
+  .phase-tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+  .phase-tab {
+    padding: 10px 24px; border-radius: 10px; cursor: pointer;
+    font-size: 0.88rem; font-weight: 600; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text-dim); transition: all 0.2s;
+  }
+  .phase-tab:hover { border-color: var(--primary); color: var(--text); }
+  .phase-tab.active { background: var(--primary); border-color: var(--primary); color: white; }
+  .phase-content { display: none; }
+  .phase-content.active { display: block; }
+
+  /* ===== PLATFORM CARDS ===== */
+  .platform-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 24px; text-align: center;
+  }
+  .platform-card .platform-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+  .platform-card .fee-rate { font-size: 2rem; font-weight: 800; margin: 10px 0; }
+  .platform-card .fee-bar { height: 8px; background: var(--surface-light); border-radius: 4px; margin: 12px 0; overflow: hidden; }
+  .platform-card .fee-bar-fill { height: 100%; border-radius: 4px; }
+  .platform-card .net-amount { font-size: 0.9rem; color: var(--text-dim); }
+  .platform-card .net-value { font-size: 1.3rem; font-weight: 700; color: var(--green); }
+
+  /* ===== BREAKEVEN ===== */
+  .breakeven-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+  .breakeven-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 24px; text-align: center;
+  }
+  .breakeven-card .phase-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .breakeven-card .breakeven-num { font-size: 2.5rem; font-weight: 800; color: var(--aws-orange); }
+  .breakeven-card .breakeven-unit { font-size: 0.9rem; color: var(--text-dim); }
+  .breakeven-bar { height: 6px; background: var(--surface-light); border-radius: 3px; margin: 14px 0 8px; position: relative; }
+  .breakeven-bar .bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--green), var(--secondary)); }
+  .breakeven-bar .marker {
+    position: absolute; top: -6px; width: 3px; height: 18px;
+    background: var(--cost-red); border-radius: 2px;
+  }
+  .breakeven-info { font-size: 0.8rem; color: var(--text-muted); }
+
+  /* ===== REVENUE TABLE ===== */
+  .revenue-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+  .revenue-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 28px; position: relative; overflow: hidden;
+  }
+  .revenue-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  }
+  .revenue-card.positive::before { background: linear-gradient(90deg, var(--green), var(--secondary)); }
+  .revenue-card .phase-name { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+  .revenue-card .revenue-amount { font-size: 1.8rem; font-weight: 800; margin: 8px 0; }
+  .revenue-card .revenue-amount.positive { color: var(--green); }
+  .revenue-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.88rem; border-bottom: 1px solid rgba(51,65,85,0.3); }
+  .revenue-row:last-child { border-bottom: none; }
+  .revenue-row .label { color: var(--text-dim); }
+  .revenue-row .value { font-weight: 600; }
+  .revenue-row .value.cost { color: var(--cost-red); }
+  .revenue-row .value.income { color: var(--revenue-green); }
+
+  /* ===== STRATEGY CARDS ===== */
+  .strategy-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px; margin-bottom: 12px;
+    display: flex; align-items: flex-start; gap: 16px;
+  }
+  .strategy-card .strat-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+  }
+  .strategy-card .strat-content { flex: 1; }
+  .strategy-card .strat-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; }
+  .strategy-card .strat-desc { font-size: 0.85rem; color: var(--text-dim); }
+  .strategy-card .strat-save { font-size: 0.85rem; font-weight: 700; color: var(--green); margin-top: 4px; }
+
+  /* ===== PAYMENT FLOW ===== */
+  .flow-container {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 32px; margin-top: 20px;
+  }
+  .flow-row { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; margin: 16px 0; }
+  .flow-box {
+    padding: 14px 24px; border-radius: 12px; font-weight: 600;
+    font-size: 0.9rem; text-align: center; border: 1px solid var(--border);
+    min-width: 140px;
+  }
+  .flow-arrow { color: var(--text-muted); font-size: 1.5rem; }
+  .flow-web { background: rgba(6,182,212,0.1); border-color: rgba(6,182,212,0.3); color: var(--secondary); }
+  .flow-ios { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: var(--blue); }
+  .flow-android { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.3); color: var(--green); }
+  .flow-stripe { background: rgba(99,102,241,0.1); border-color: rgba(99,102,241,0.3); color: var(--indigo); }
+  .flow-apple { background: rgba(148,163,184,0.1); border-color: rgba(148,163,184,0.3); color: var(--text); }
+  .flow-google { background: rgba(234,179,8,0.1); border-color: rgba(234,179,8,0.3); color: var(--yellow); }
+  .flow-percent { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+
+  /* ===== NOTE BOX ===== */
+  .note-box {
+    background: var(--surface-light); border-left: 3px solid var(--blue);
+    padding: 14px 18px; border-radius: 0 8px 8px 0; margin-top: 16px;
+    font-size: 0.88rem; color: var(--text-dim); line-height: 1.7;
+  }
+  .note-box.warning { border-left-color: var(--aws-orange); }
+  .note-box.success { border-left-color: var(--green); }
+
+  /* ===== REVIEW TABLE ===== */
+  .review-table { width: 100%; border-collapse: collapse; }
+  .review-table th, .review-table td { padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+  .review-table th { color: var(--text-muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
+  .review-table tr:hover td { background: var(--surface-light); }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    .hero { padding: 40px 20px 30px; }
+    .hero h1 { font-size: 1.8rem; }
+    .container { padding: 0 20px; }
+    .nav { padding: 0 16px; }
+    .nav a { padding: 12px 14px; font-size: 0.78rem; }
+    section { padding: 40px 0; }
+    .section-header h2 { font-size: 1.4rem; }
+    .section-header p { margin-left: 0; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .cards-grid, .cards-grid-2, .cards-grid-3 { grid-template-columns: 1fr; }
+    .cost-bar-row { flex-wrap: wrap; }
+    .cost-bar-label { width: 100%; text-align: left; }
+    .cost-bar-value { width: 100%; text-align: left; }
+    .flow-row { flex-direction: column; }
+    .flow-arrow { transform: rotate(90deg); }
+    .breakeven-grid { grid-template-columns: 1fr; }
+    .revenue-grid { grid-template-columns: 1fr; }
+    .cost-table-wrap { overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HERO ===== -->
+<div class="hero">
+  <h1>BandMatch - AWSコスト概算書</h1>
+  <p class="subtitle">フェーズ別コスト分析・損益分岐点・最適化戦略</p>
+  <div class="badge-row">
+    <span class="badge badge-cost">初期 月額 $254 / ¥38,000</span>
+    <span class="badge badge-annual">成長期 月額 $483 / ¥72,500</span>
+    <span class="badge badge-red">拡大期 月額 $1,209 / ¥181,000</span>
+    <span class="badge badge-region">ap-northeast-1（東京）</span>
+    <span class="badge badge-green">1USD = 150円</span>
+  </div>
+</div>
+
+<!-- ===== NAV ===== -->
+<nav class="nav">
+  <a href="#premise">前提条件</a>
+  <a href="#policy">選定方針</a>
+  <a href="#selection">サービス選定</a>
+  <a href="#phase-cost">フェーズ別コスト</a>
+  <a href="#cost-summary">コスト推移</a>
+  <a href="#platform-fee">プラットフォーム手数料</a>
+  <a href="#breakeven">損益分岐点</a>
+  <a href="#revenue">収支分析</a>
+  <a href="#optimization">最適化戦略</a>
+  <a href="#payment-flow">決済戦略</a>
+  <a href="#review">運用レビュー</a>
+</nav>
+
+<div class="container">
+
+<!-- ===== 1. 前提条件 ===== -->
+<section id="premise">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(6,182,212,0.15);color:var(--secondary);">&#x1F4CB;</span> 1. 前提条件</h2>
+    <p>フェーズ別のトラフィック想定とインフラ規模の基準。<br>1USD = 150円で換算。</p>
+  </div>
+  <div class="cost-table-wrap">
+    <table class="premise-table">
+      <thead>
+        <tr><th>項目</th><th>初期（ローンチ〜半年）</th><th>成長期（半年〜1年）</th><th>拡大期（1年〜）</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>MAU</td><td>500〜1,000</td><td>1,000〜5,000</td><td>5,000〜20,000</td></tr>
+        <tr><td>DAU</td><td>100〜300</td><td>300〜1,500</td><td>1,500〜6,000</td></tr>
+        <tr><td>同時接続数</td><td>〜50</td><td>〜300</td><td>〜1,000</td></tr>
+        <tr><td>画像アップロード/月</td><td>500枚</td><td>3,000枚</td><td>15,000枚</td></tr>
+        <tr><td>APIリクエスト/月</td><td>100万</td><td>500万</td><td>2,000万</td></tr>
+        <tr><td>データ転送量/月</td><td>50GB</td><td>200GB</td><td>800GB</td></tr>
+        <tr><td>リージョン</td><td>ap-northeast-1（東京）</td><td>同左</td><td>同左</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ===== 2. サービス選定方針 ===== -->
+<section id="policy">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(124,58,237,0.15);color:var(--primary-light);">&#x1F3AF;</span> 2. サービス選定方針</h2>
+    <p>個人・小規模チームでの運用を想定し、運用しやすさを重視。</p>
+  </div>
+  <div class="cards-grid">
+    <div class="card card-blue">
+      <h3><span class="card-icon">&#x2601;</span> マネージドサービス優先</h3>
+      <p>サーバー管理・パッチ適用が不要なサービスを選択。<br>インフラ運用の負担を最小限に抑えます。</p>
+    </div>
+    <div class="card card-green">
+      <h3><span class="card-icon">&#x26A1;</span> サーバーレス活用</h3>
+      <p>スケーリング自動化、使った分だけ課金。<br>トラフィックの変動に柔軟に対応します。</p>
+    </div>
+    <div class="card card-orange">
+      <h3><span class="card-icon">&#x1F527;</span> 運用作業の最小化</h3>
+      <p>バックアップ・監視・ログが組み込まれたサービスを選択。<br>運用オペレーションを最小限にします。</p>
+    </div>
+    <div class="card">
+      <h3><span class="card-icon">&#x1F4D0;</span> シンプルな構成</h3>
+      <p>学習コストが低く、トラブルシュートしやすい構成。<br>小規模チームでも無理なく運用できます。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 3. サービス選定理由 ===== -->
+<section id="selection">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(255,153,0,0.15);color:var(--aws-orange);">&#x1F50D;</span> 3. サービス選定理由</h2>
+    <p>各カテゴリごとに候補を比較し、最適なサービスを選定。</p>
+  </div>
+
+  <!-- 3.1 コンピュート -->
+  <div class="comparison-section">
+    <h3>3.1 コンピュート: ECS Fargate</h3>
+    <div class="comparison-grid">
+      <div class="comp-card selected">
+        <span class="verdict-badge verdict-adopted">採用</span>
+        <div class="comp-name">ECS Fargate</div>
+        <div class="comp-label">メリット</div>
+        <ul class="comp-list pros">
+          <li>サーバー管理不要</li>
+          <li>オートスケーリング</li>
+          <li>Docker対応</li>
+        </ul>
+        <div class="comp-label">デメリット</div>
+        <ul class="comp-list cons">
+          <li>EC2比で単価が高い</li>
+        </ul>
+      </div>
+      <div class="comp-card rejected">
+        <span class="verdict-badge verdict-rejected">不採用</span>
+        <div class="comp-name">ECS on EC2</div>
+        <div class="comp-label">メリット</div>
+        <ul class="comp-list pros"><li>単価が安い</li><li>GPUサポート</li></ul>
+        <div class="comp-label">デメリット</div>
+        <ul class="comp-list cons"><li>EC2の管理が必要</li><li>AMI更新が必要</li></ul>
+      </div>
+      <div class="comp-card rejected">
+        <span class="verdict-badge verdict-rejected">不採用</span>
+        <div class="comp-name">Lambda + API Gateway</div>
+        <div class="comp-label">メリット</div>
+        <ul class="comp-list pros"><li>完全サーバーレス</li><li>最低コスト</li></ul>
+        <div class="comp-label">デメリット</div>
+        <ul class="comp-list cons"><li>Next.js SSRとの相性が悪い</li><li>コールドスタート</li></ul>
+      </div>
+      <div class="comp-card rejected">
+        <span class="verdict-badge verdict-rejected">不採用</span>
+        <div class="comp-name">App Runner</div>
+        <div class="comp-label">メリット</div>
+        <ul class="comp-list pros"><li>最もシンプル</li></ul>
+        <div class="comp-label">デメリット</div>
+        <ul class="comp-list cons"><li>VPC内リソースアクセスが制限的</li><li>カスタマイズ性が低い</li></ul>
+      </div>
+      <div class="comp-card rejected">
+        <span class="verdict-badge verdict-rejected">不採用</span>
+        <div class="comp-name">Lightsail Container</div>
+        <div class="comp-label">メリット</div>
+        <ul class="comp-list pros"><li>安価で簡単</li></ul>
+        <div class="comp-label">デメリット</div>
+        <ul class="comp-list cons"><li>スケーリングの柔軟性が低い</li></ul>
+      </div>
+    </div>
+    <div class="selection-reason">
+      <strong>選定理由:</strong> Next.js SSRを安定稼働させるには常時起動のコンテナが必要。<br>Fargateならインスタンス管理不要で、ECSのオートスケーリングもそのまま使える。<br>Dockerfileベースなのでローカル環境との差異も少ない。
+    </div>
+  </div>
+
+  <!-- 3.2 データベース -->
+  <div class="comparison-section">
+    <h3>3.2 データベース: Aurora PostgreSQL Serverless v2</h3>
+    <div class="comparison-grid">
+      <div class="comp-card selected">
+        <span class="verdict-badge verdict-adopted">採用</span>
+        <div class="comp-name">Aurora Serverless v2</div>
+        <div class="comp-label">メリット</div>
+        <ul class="comp-list pros"><li>自動スケーリング（0.5〜16 ACU）</li><li>Multi-AZ標準</li><li>管理不要</li></ul>
+        <div class="comp-label">デメリット</div>
+        <ul class="comp-list cons"><li>最低0.5 ACUの課金が発生</li></ul>
+      </div>
+      <div class="comp-card rejected">
+        <span class="verdict-badge verdict-rejected">不採用</span>
+        <div class="comp-name">Aurora Provisioned</div>
+        <div class="comp-label">メリット</div>
+        <ul class="comp-list pros"><li>固定性能で予測しやすい</li></ul>
+        <div class="comp-label">デメリット</div>
+        <ul class="comp-list cons"><li>手動スケーリングが必要</li></ul>
+      </div>
+      <div class="comp-card rejected">
+        <span class="verdict-badge verdict-rejected">不採用</span>
+        <div class="comp-name">RDS PostgreSQL</div>
+        <div class="comp-label">メリット</div>
+        <ul class="comp-list pros"><li>安価</li><li>実績豊富</li></ul>
+        <div class="comp-label">デメリット</div>
+        <ul class="comp-list cons"><li>フェイルオーバー手動</li><li>バージョン管理が必要</li></ul>
+      </div>
+      <div class="comp-card rejected">
+        <span class="verdict-badge verdict-rejected">不採用</span>
+        <div class="comp-name">DynamoDB</div>
+        <div class="comp-label">メリット</div>
+        <ul class="comp-list pros"><li>完全サーバーレス</li><li>超低遅延</li></ul>
+        <div class="comp-label">デメリット</div>
+        <ul class="comp-list cons"><li>リレーショナルクエリに不向き</li><li>設計が複雑</li></ul>
+      </div>
+    </div>
+    <div class="selection-reason">
+      <strong>選定理由:</strong> Serverless v2ならトラフィックに応じて自動スケール。<br>深夜帯は最小ACUまで縮小するためコスト効率が良い。<br>Multi-AZもデフォルトで有効。<br>バックアップも自動。<br>マッチングのような複雑なクエリにはリレーショナルDBが最適。
+    </div>
+  </div>
+
+  <!-- 3.3 キャッシュ -->
+  <div class="comparison-section">
+    <h3>3.3 キャッシュ: ElastiCache Serverless（Redis）</h3>
+    <div class="comparison-grid">
+      <div class="comp-card selected">
+        <span class="verdict-badge verdict-adopted">採用</span>
+        <div class="comp-name">ElastiCache Serverless</div>
+        <div class="comp-label">メリット</div>
+        <ul class="comp-list pros"><li>ノード管理不要</li><li>自動スケーリング</li><li>パッチ適用自動</li></ul>
+        <div class="comp-label">デメリット</div>
+        <ul class="comp-list cons"><li>プロビジョンド版より若干高い</li></ul>
+      </div>
+      <div class="comp-card rejected">
+        <span class="verdict-badge verdict-rejected">不採用</span>
+        <div class="comp-name">ElastiCache (プロビジョンド)</div>
+        <div class="comp-label">メリット</div>
+        <ul class="comp-list pros"><li>安価</li><li>性能が予測しやすい</li></ul>
+        <div class="comp-label">デメリット</div>
+        <ul class="comp-list cons"><li>ノードタイプ選定・スケーリング手動</li></ul>
+      </div>
+      <div class="comp-card rejected">
+        <span class="verdict-badge verdict-rejected">不採用</span>
+        <div class="comp-name">DynamoDB DAX</div>
+        <div class="comp-label">メリット</div>
+        <ul class="comp-list pros"><li>DynamoDBとの統合が良い</li></ul>
+        <div class="comp-label">デメリット</div>
+        <ul class="comp-list cons"><li>DynamoDB前提、用途が限定的</li></ul>
+      </div>
+    </div>
+    <div class="selection-reason">
+      <strong>選定理由:</strong> セッション管理とマッチング結果キャッシュ用。<br>Serverless版ならノードの監視・フェイルオーバー・パッチ適用すべて不要。
+    </div>
+  </div>
+
+  <!-- 3.4 ファイルストレージ -->
+  <div class="comparison-section">
+    <h3>3.4 ファイルストレージ: S3 + CloudFront</h3>
+    <div class="comparison-grid">
+      <div class="comp-card selected" style="grid-column: span 2;">
+        <span class="verdict-badge verdict-adopted">採用（デファクトスタンダード）</span>
+        <div class="comp-name">S3 + CloudFront</div>
+        <p style="color:var(--text-dim);font-size:0.88rem;margin-top:8px;">AWSでの画像・静的アセット配信のデファクトスタンダード。<br>特に比較不要。<br>S3にライフサイクルポリシーを設定し、未使用の一時ファイルを30日で自動削除。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3.5 認証 -->
+  <div class="comparison-section">
+    <h3>3.5 認証: Amazon Cognito</h3>
+    <div class="comparison-grid">
+      <div class="comp-card selected">
+        <span class="verdict-badge verdict-adopted">採用</span>
+        <div class="comp-name">Amazon Cognito</div>
+        <div class="comp-label">メリット</div>
+        <ul class="comp-list pros"><li>マネージド認証</li><li>ソーシャルログイン標準搭載</li><li>5万MAU無料</li></ul>
+        <div class="comp-label">デメリット</div>
+        <ul class="comp-list cons"><li>UIカスタマイズに制約あり</li></ul>
+      </div>
+      <div class="comp-card rejected">
+        <span class="verdict-badge verdict-rejected">不採用</span>
+        <div class="comp-name">自前実装（JWT）</div>
+        <div class="comp-label">メリット</div>
+        <ul class="comp-list pros"><li>完全カスタマイズ可能</li></ul>
+        <div class="comp-label">デメリット</div>
+        <ul class="comp-list cons"><li>セキュリティリスク</li><li>メンテコスト大</li></ul>
+      </div>
+      <div class="comp-card rejected">
+        <span class="verdict-badge verdict-rejected">不採用</span>
+        <div class="comp-name">Auth0</div>
+        <div class="comp-label">メリット</div>
+        <ul class="comp-list pros"><li>高機能、UI優秀</li></ul>
+        <div class="comp-label">デメリット</div>
+        <ul class="comp-list cons"><li>外部SaaS依存</li><li>有料プランが高い</li></ul>
+      </div>
+      <div class="comp-card rejected">
+        <span class="verdict-badge verdict-rejected">不採用</span>
+        <div class="comp-name">Firebase Auth</div>
+        <div class="comp-label">メリット</div>
+        <ul class="comp-list pros"><li>簡単、無料枠大きい</li></ul>
+        <div class="comp-label">デメリット</div>
+        <ul class="comp-list cons"><li>AWSエコシステムとの統合が弱い</li></ul>
+      </div>
+    </div>
+    <div class="selection-reason">
+      <strong>選定理由:</strong> AWSサービスとのIAM統合がシームレス。<br>5万MAUまで無料なので初期コストゼロ。<br>Google/Appleログインも標準対応。
+    </div>
+  </div>
+
+  <!-- 3.6 メール -->
+  <div class="comparison-section">
+    <h3>3.6 メール: Amazon SES</h3>
+    <div class="comparison-grid">
+      <div class="comp-card selected" style="grid-column: span 2;">
+        <span class="verdict-badge verdict-adopted">採用</span>
+        <div class="comp-name">Amazon SES</div>
+        <p style="color:var(--text-dim);font-size:0.88rem;margin-top:8px;">月10,000通程度なら月額$1以下。<br>Cognitoと統合して認証メールも自動送信。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3.7 CI/CD -->
+  <div class="comparison-section">
+    <h3>3.7 CI/CD: GitHub Actions + ECR</h3>
+    <div class="comparison-grid">
+      <div class="comp-card selected">
+        <span class="verdict-badge verdict-adopted">採用</span>
+        <div class="comp-name">GitHub Actions</div>
+        <div class="comp-label">メリット</div>
+        <ul class="comp-list pros"><li>GitHubに統合済み</li><li>YAMLベースで簡単</li><li>無料枠2,000分/月</li></ul>
+        <div class="comp-label">デメリット</div>
+        <ul class="comp-list cons"><li>大規模だと課金が増える</li></ul>
+      </div>
+      <div class="comp-card rejected">
+        <span class="verdict-badge verdict-rejected">不採用</span>
+        <div class="comp-name">CodePipeline + CodeBuild</div>
+        <div class="comp-label">メリット</div>
+        <ul class="comp-list pros"><li>AWS完結</li><li>IAM統合</li></ul>
+        <div class="comp-label">デメリット</div>
+        <ul class="comp-list cons"><li>設定が複雑</li><li>UIが使いにくい</li></ul>
+      </div>
+      <div class="comp-card rejected">
+        <span class="verdict-badge verdict-rejected">不採用</span>
+        <div class="comp-name">CircleCI</div>
+        <div class="comp-label">メリット</div>
+        <ul class="comp-list pros"><li>高機能</li><li>並列実行</li></ul>
+        <div class="comp-label">デメリット</div>
+        <ul class="comp-list cons"><li>外部サービス依存</li><li>有料</li></ul>
+      </div>
+    </div>
+    <div class="selection-reason">
+      <strong>選定理由:</strong> リポジトリがGitHubなので最も自然な選択。<br>無料枠で十分足りる。<br>ECRへのプッシュもGitHub公式アクションで簡単。
+    </div>
+  </div>
+
+  <!-- 3.8 監視 -->
+  <div class="comparison-section">
+    <h3>3.8 監視: CloudWatch + SNS</h3>
+    <div class="comparison-grid">
+      <div class="comp-card selected" style="grid-column: span 2;">
+        <span class="verdict-badge verdict-adopted">採用</span>
+        <div class="comp-name">CloudWatch + SNS</div>
+        <p style="color:var(--text-dim);font-size:0.88rem;margin-top:8px;">AWS標準の監視ツール。<br>追加ツール不要でECS/Aurora/ALBのメトリクスを一元管理。<br>SNSでSlack通知連携。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3.9 IaC -->
+  <div class="comparison-section">
+    <h3>3.9 IaC: AWS CDK（TypeScript）</h3>
+    <div class="comparison-grid">
+      <div class="comp-card selected">
+        <span class="verdict-badge verdict-adopted">採用</span>
+        <div class="comp-name">CDK (TypeScript)</div>
+        <div class="comp-label">メリット</div>
+        <ul class="comp-list pros"><li>アプリと同じ言語で記述可能</li><li>型安全</li><li>抽象度が高い</li></ul>
+        <div class="comp-label">デメリット</div>
+        <ul class="comp-list cons"><li>学習コストが若干ある</li></ul>
+      </div>
+      <div class="comp-card rejected">
+        <span class="verdict-badge verdict-rejected">不採用</span>
+        <div class="comp-name">CloudFormation (YAML)</div>
+        <div class="comp-label">メリット</div>
+        <ul class="comp-list pros"><li>AWS標準</li><li>ドキュメント豊富</li></ul>
+        <div class="comp-label">デメリット</div>
+        <ul class="comp-list cons"><li>記述量が多い</li><li>可読性が低い</li></ul>
+      </div>
+      <div class="comp-card rejected">
+        <span class="verdict-badge verdict-rejected">不採用</span>
+        <div class="comp-name">Terraform</div>
+        <div class="comp-label">メリット</div>
+        <ul class="comp-list pros"><li>マルチクラウド対応</li><li>エコシステム充実</li></ul>
+        <div class="comp-label">デメリット</div>
+        <ul class="comp-list cons"><li>HCL学習が必要</li><li>状態管理が複雑</li></ul>
+      </div>
+    </div>
+    <div class="selection-reason">
+      <strong>選定理由:</strong> Next.jsプロジェクトと同じTypeScriptで記述できるため、学習コストが最小。<br>L2コンストラクトが高い抽象度を提供し、少ないコードでインフラ構築可能。
+    </div>
+  </div>
+</section>
+
+<!-- ===== 4. フェーズ別コスト ===== -->
+<section id="phase-cost">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(255,153,0,0.15);color:var(--aws-orange);">&#x1F4B0;</span> 4. フェーズ別コスト詳細</h2>
+    <p>各フェーズのサービス構成と月額コスト。<br>タブをクリックしてフェーズを切り替えてください。</p>
+  </div>
+
+  <!-- CSS bar chart -->
+  <div class="cost-bars" style="margin-bottom:40px;">
+    <div class="cost-bar-row">
+      <div class="cost-bar-label">初期</div>
+      <div class="cost-bar-track">
+        <div class="cost-bar-fill" style="width:21%;background:linear-gradient(90deg,var(--aws-orange),var(--orange));">$254</div>
+      </div>
+      <div class="cost-bar-value" style="color:var(--aws-orange);">¥38,000/月</div>
+    </div>
+    <div class="cost-bar-row">
+      <div class="cost-bar-label">成長期</div>
+      <div class="cost-bar-track">
+        <div class="cost-bar-fill" style="width:40%;background:linear-gradient(90deg,var(--primary),var(--indigo));">$483</div>
+      </div>
+      <div class="cost-bar-value" style="color:var(--primary-light);">¥72,500/月</div>
+    </div>
+    <div class="cost-bar-row">
+      <div class="cost-bar-label">拡大期</div>
+      <div class="cost-bar-track">
+        <div class="cost-bar-fill" style="width:100%;background:linear-gradient(90deg,var(--accent),var(--pink));">$1,209</div>
+      </div>
+      <div class="cost-bar-value" style="color:var(--accent);">¥181,000/月</div>
+    </div>
+  </div>
+
+  <div class="phase-tabs">
+    <div class="phase-tab active" onclick="switchPhase('phase1',this)">初期（ローンチ〜半年）</div>
+    <div class="phase-tab" onclick="switchPhase('phase2',this)">成長期（半年〜1年）</div>
+    <div class="phase-tab" onclick="switchPhase('phase3',this)">拡大期（1年〜）</div>
+  </div>
+
+  <!-- Phase 1 -->
+  <div id="phase1" class="phase-content active">
+    <div class="cost-table-wrap">
+      <div class="cost-table-header">
+        <h3>初期フェーズ ― MAU: 500〜1,000 / 最小構成</h3>
+        <div class="total">合計 $254 / ¥38,000</div>
+      </div>
+      <table class="cost-table">
+        <thead><tr><th>サービス</th><th>構成</th><th>月額 (USD)</th><th>月額 (円)</th><th>備考</th></tr></thead>
+        <tbody>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--orange);"></span>ECS Fargate</span></td><td>0.5 vCPU / 1GB x 2タスク（24h稼働）</td><td class="usd">$30</td><td class="yen">¥4,500</td><td class="note">最小2タスクで冗長性確保</td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--orange);"></span>ECR</span></td><td>イメージ保存 10GB</td><td class="usd">$1</td><td class="yen">¥150</td><td class="note">ライフサイクルポリシーで古いイメージ自動削除</td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--blue);"></span>Aurora Serverless v2</span></td><td>0.5〜2 ACU x 2（Multi-AZ）</td><td class="usd">$90</td><td class="yen">¥13,500</td><td class="note">深夜帯は最小ACUに自動縮小</td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--blue);"></span>RDS Proxy</span></td><td>1エンドポイント</td><td class="usd">$20</td><td class="yen">¥3,000</td><td class="note">Fargate - Aurora の接続最適化</td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--accent);"></span>ElastiCache Serverless</span></td><td>Redis、最小構成</td><td class="usd">$18</td><td class="yen">¥2,700</td><td class="note">データ保存量・ECPU量に応じた従量課金</td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--indigo);"></span>ALB</span></td><td>1台、LCU課金</td><td class="usd">$22</td><td class="yen">¥3,300</td><td class="note">固定 $16.2 + LCU $5.8</td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--secondary);"></span>CloudFront</span></td><td>100GB転送/月</td><td class="usd">$10</td><td class="yen">¥1,500</td><td class="note">無料枠1TB/月（最初の12ヶ月）</td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--green);"></span>S3</span></td><td>50GB（Standard）</td><td class="usd">$1.2</td><td class="yen">¥180</td><td class="note">静的アセット + 画像アップロード</td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--blue);"></span>Route 53</span></td><td>1ホストゾーン + クエリ</td><td class="usd">$1</td><td class="yen">¥150</td><td class="note"></td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--cost-red);"></span>NAT Gateway</span></td><td>1台 + 10GBデータ処理</td><td class="usd">$37</td><td class="yen">¥5,550</td><td class="note">固定 $32.4 + データ処理 $4.6</td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--green);"></span>Cognito</span></td><td>500〜1,000 MAU</td><td class="free">$0</td><td class="free">¥0</td><td class="note">5万MAUまで無料</td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--yellow);"></span>SES</span></td><td>5,000通/月</td><td class="usd">$0.5</td><td class="yen">¥75</td><td class="note"></td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--pink);"></span>Secrets Manager</span></td><td>5シークレット</td><td class="usd">$2</td><td class="yen">¥300</td><td class="note">DB接続・Stripe APIキー等</td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--secondary);"></span>CloudWatch</span></td><td>ログ10GB + メトリクス</td><td class="usd">$12</td><td class="yen">¥1,800</td><td class="note"></td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--accent);"></span>WAF</span></td><td>1 Web ACL + 3ルール</td><td class="usd">$9</td><td class="yen">¥1,350</td><td class="note">レートリミット + SQLi/XSS対策</td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--green);"></span>ACM</span></td><td>SSL証明書</td><td class="free">$0</td><td class="free">¥0</td><td class="note">CloudFront/ALB用、無料</td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--green);"></span>GitHub Actions</span></td><td>CI/CD（無料枠内）</td><td class="free">$0</td><td class="free">¥0</td><td class="note">2,000分/月で十分</td></tr>
+          <tr class="total-row"><td colspan="2"><strong>合計</strong></td><td class="usd"><strong>$254</strong></td><td class="yen"><strong>¥38,000</strong></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Phase 2 -->
+  <div id="phase2" class="phase-content">
+    <div class="cost-table-wrap">
+      <div class="cost-table-header">
+        <h3>成長期フェーズ ― MAU: 1,000〜5,000 / スケールアップ</h3>
+        <div class="total">合計 $483 / ¥72,500</div>
+      </div>
+      <table class="cost-table">
+        <thead><tr><th>サービス</th><th>構成変更</th><th>月額 (USD)</th><th>月額 (円)</th><th>備考</th></tr></thead>
+        <tbody>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--orange);"></span>ECS Fargate</span></td><td>1 vCPU / 2GB x 2〜4タスク</td><td class="usd">$80</td><td class="yen">¥12,000</td><td class="note">オートスケーリング有効</td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--orange);"></span>ECR</span></td><td>イメージ保存 20GB</td><td class="usd">$2</td><td class="yen">¥300</td><td class="note"></td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--blue);"></span>Aurora Serverless v2</span></td><td>1〜8 ACU x 2（Multi-AZ）</td><td class="usd">$180</td><td class="yen">¥27,000</td><td class="note">トラフィック増に自動対応</td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--blue);"></span>RDS Proxy</span></td><td>1エンドポイント</td><td class="usd">$20</td><td class="yen">¥3,000</td><td class="note"></td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--accent);"></span>ElastiCache Serverless</span></td><td>Redis、中構成</td><td class="usd">$35</td><td class="yen">¥5,250</td><td class="note">セッション・キャッシュ増</td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--indigo);"></span>ALB</span></td><td>LCU増加</td><td class="usd">$30</td><td class="yen">¥4,500</td><td class="note"></td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--secondary);"></span>CloudFront</span></td><td>300GB転送/月</td><td class="usd">$30</td><td class="yen">¥4,500</td><td class="note">無料枠終了後の料金</td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--green);"></span>S3</span></td><td>200GB</td><td class="usd">$5</td><td class="yen">¥750</td><td class="note"></td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--blue);"></span>Route 53</span></td><td>同左</td><td class="usd">$1</td><td class="yen">¥150</td><td class="note"></td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--cost-red);"></span>NAT Gateway</span></td><td>1台 + 50GBデータ処理</td><td class="usd">$55</td><td class="yen">¥8,250</td><td class="note">AZ冗長化はまだ不要</td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--green);"></span>Cognito</span></td><td>5,000 MAU</td><td class="free">$0</td><td class="free">¥0</td><td class="note">まだ無料枠内</td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--yellow);"></span>SES</span></td><td>30,000通/月</td><td class="usd">$3</td><td class="yen">¥450</td><td class="note"></td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--pink);"></span>Secrets Manager</span></td><td>8シークレット</td><td class="usd">$3.2</td><td class="yen">¥480</td><td class="note"></td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--secondary);"></span>CloudWatch</span></td><td>ログ30GB + メトリクス</td><td class="usd">$25</td><td class="yen">¥3,750</td><td class="note"></td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--accent);"></span>WAF</span></td><td>1 Web ACL + 5ルール</td><td class="usd">$14</td><td class="yen">¥2,100</td><td class="note">ルール追加</td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--green);"></span>GitHub Actions</span></td><td>無料枠内</td><td class="free">$0</td><td class="free">¥0</td><td class="note"></td></tr>
+          <tr class="total-row"><td colspan="2"><strong>合計</strong></td><td class="usd"><strong>$483</strong></td><td class="yen"><strong>¥72,500</strong></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Phase 3 -->
+  <div id="phase3" class="phase-content">
+    <div class="cost-table-wrap">
+      <div class="cost-table-header">
+        <h3>拡大期フェーズ ― MAU: 5,000〜20,000 / 本格運用</h3>
+        <div class="total">合計 $1,209 / ¥181,000</div>
+      </div>
+      <table class="cost-table">
+        <thead><tr><th>サービス</th><th>構成変更</th><th>月額 (USD)</th><th>月額 (円)</th><th>備考</th></tr></thead>
+        <tbody>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--orange);"></span>ECS Fargate</span></td><td>2 vCPU / 4GB x 3〜6タスク</td><td class="usd">$250</td><td class="yen">¥37,500</td><td class="note"></td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--orange);"></span>ECR</span></td><td>イメージ保存 30GB</td><td class="usd">$3</td><td class="yen">¥450</td><td class="note"></td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--blue);"></span>Aurora Serverless v2</span></td><td>2〜32 ACU x 2 + Reader</td><td class="usd">$500</td><td class="yen">¥75,000</td><td class="note">リードレプリカ追加</td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--blue);"></span>RDS Proxy</span></td><td>2エンドポイント</td><td class="usd">$40</td><td class="yen">¥6,000</td><td class="note">Writer + Reader</td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--accent);"></span>ElastiCache Serverless</span></td><td>Redis、大構成</td><td class="usd">$70</td><td class="yen">¥10,500</td><td class="note"></td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--indigo);"></span>ALB</span></td><td>LCU増加</td><td class="usd">$45</td><td class="yen">¥6,750</td><td class="note"></td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--secondary);"></span>CloudFront</span></td><td>1TB転送/月</td><td class="usd">$90</td><td class="yen">¥13,500</td><td class="note"></td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--green);"></span>S3</span></td><td>500GB</td><td class="usd">$12</td><td class="yen">¥1,800</td><td class="note"></td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--blue);"></span>Route 53</span></td><td>同左</td><td class="usd">$1</td><td class="yen">¥150</td><td class="note"></td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--cost-red);"></span>NAT Gateway</span></td><td>2台（AZ冗長）+ 100GB</td><td class="usd">$100</td><td class="yen">¥15,000</td><td class="note">可用性向上</td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--green);"></span>Cognito</span></td><td>20,000 MAU</td><td class="free">$0</td><td class="free">¥0</td><td class="note">まだ無料枠内</td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--yellow);"></span>SES</span></td><td>100,000通/月</td><td class="usd">$10</td><td class="yen">¥1,500</td><td class="note"></td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--pink);"></span>Secrets Manager</span></td><td>10シークレット</td><td class="usd">$4</td><td class="yen">¥600</td><td class="note"></td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--secondary);"></span>CloudWatch</span></td><td>ログ100GB + メトリクス + Dashboards</td><td class="usd">$55</td><td class="yen">¥8,250</td><td class="note"></td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--accent);"></span>WAF</span></td><td>1 Web ACL + 8ルール</td><td class="usd">$20</td><td class="yen">¥3,000</td><td class="note"></td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--primary);"></span>Lambda@Edge</span></td><td>画像最適化</td><td class="usd">$5</td><td class="yen">¥750</td><td class="note"></td></tr>
+          <tr><td><span class="svc-icon"><span class="svc-dot" style="background:var(--text-dim);"></span>GitHub Actions</span></td><td>有料プラン</td><td class="usd">$4</td><td class="yen">¥600</td><td class="note"></td></tr>
+          <tr class="total-row"><td colspan="2"><strong>合計</strong></td><td class="usd"><strong>$1,209</strong></td><td class="yen"><strong>¥181,000</strong></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 5. コスト推移サマリー ===== -->
+<section id="cost-summary">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(249,115,102,0.15);color:var(--accent);">&#x1F4C8;</span> 5. コスト推移サマリー</h2>
+    <p>フェーズごとの月額・年額コストと対象MAU。</p>
+  </div>
+  <div class="cards-grid-3">
+    <div class="card card-orange">
+      <div class="label">初期フェーズ</div>
+      <h3 style="font-size:1.6rem;color:var(--aws-orange);">¥39,250<span style="font-size:0.8rem;color:var(--text-dim);font-weight:400;">/月</span></h3>
+      <p style="margin-top:8px;">年額: <strong style="color:var(--text);">¥471,000</strong><br>
+      MAU: 〜1,000<br>
+      $254 + モバイル ¥1,250</p>
+    </div>
+    <div class="card card-blue">
+      <div class="label">成長期フェーズ</div>
+      <h3 style="font-size:1.6rem;color:var(--primary-light);">¥72,500<span style="font-size:0.8rem;color:var(--text-dim);font-weight:400;">/月</span></h3>
+      <p style="margin-top:8px;">年額: <strong style="color:var(--text);">¥870,000</strong><br>
+      MAU: 〜5,000<br>
+      $483</p>
+    </div>
+    <div class="card card-red">
+      <div class="label">拡大期フェーズ</div>
+      <h3 style="font-size:1.6rem;color:var(--accent);">¥181,000<span style="font-size:0.8rem;color:var(--text-dim);font-weight:400;">/月</span></h3>
+      <p style="margin-top:8px;">年額: <strong style="color:var(--text);">¥2,172,000</strong><br>
+      MAU: 〜20,000<br>
+      $1,209</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 6. プラットフォーム手数料 ===== -->
+<section id="platform-fee">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(99,102,241,0.15);color:var(--indigo);">&#x1F4B3;</span> 6. プラットフォーム別決済手数料</h2>
+    <p>Proプラン ¥500/月 の場合の手数料比較。<br>Apple Small Business Program / Google Playサブスク初年度15%を前提。</p>
+  </div>
+
+  <div class="cards-grid-3">
+    <div class="platform-card" style="border-top:3px solid var(--secondary);">
+      <div class="platform-name" style="color:var(--secondary);">Web（Stripe）</div>
+      <div class="fee-rate" style="color:var(--secondary);">3.6%</div>
+      <div class="fee-bar"><div class="fee-bar-fill" style="width:12%;background:var(--secondary);"></div></div>
+      <div class="net-amount">¥500 の手取り</div>
+      <div class="net-value">¥482</div>
+    </div>
+    <div class="platform-card" style="border-top:3px solid var(--blue);">
+      <div class="platform-name" style="color:var(--blue);">iOS（App Store）</div>
+      <div class="fee-rate" style="color:var(--blue);">15%</div>
+      <div class="fee-bar"><div class="fee-bar-fill" style="width:50%;background:var(--blue);"></div></div>
+      <div class="net-amount">¥500 の手取り</div>
+      <div class="net-value">¥425</div>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;">Small Business Program適用時</p>
+    </div>
+    <div class="platform-card" style="border-top:3px solid var(--green);">
+      <div class="platform-name" style="color:var(--green);">Android（Google Play）</div>
+      <div class="fee-rate" style="color:var(--green);">15%</div>
+      <div class="fee-bar"><div class="fee-bar-fill" style="width:50%;background:var(--green);"></div></div>
+      <div class="net-amount">¥500 の手取り</div>
+      <div class="net-value">¥425</div>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;">サブスク初年度</p>
+    </div>
+  </div>
+
+  <div class="note-box warning" style="margin-top:24px;">
+    <strong>通常手数料（30%）の場合:</strong> iOS / Android とも手取りは ¥350 まで低下。<br>
+    BandMatchの想定売上規模では両ストアとも <strong>15%</strong> が適用されます。
+  </div>
+
+  <div style="margin-top:28px;text-align:center;">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;display:inline-block;">
+      <div style="font-size:0.8rem;color:var(--text-muted);letter-spacing:1px;">加重平均手取り（併用戦略）</div>
+      <div style="font-size:2.8rem;font-weight:800;color:var(--green);margin:8px 0;">¥449<span style="font-size:1rem;color:var(--text-dim);">/人</span></div>
+      <div style="font-size:0.85rem;color:var(--text-dim);">¥482 x 0.4 (Web) + ¥425 x 0.35 (iOS) + ¥425 x 0.25 (Android)</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 7. 損益分岐点 ===== -->
+<section id="breakeven">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(234,179,8,0.15);color:var(--yellow);">&#x1F4CA;</span> 7. 損益分岐点分析</h2>
+    <p>各フェーズでAWSコストを回収するために必要なPro有料ユーザー数。<br>手取り ¥449/人 で算出。</p>
+  </div>
+
+  <div class="breakeven-grid">
+    <div class="breakeven-card">
+      <div class="phase-label">初期フェーズ</div>
+      <div class="breakeven-num">88</div>
+      <div class="breakeven-unit">名で損益分岐</div>
+      <div class="breakeven-bar">
+        <div class="bar-fill" style="width:88%;"></div>
+        <div class="marker" style="left:88%;"></div>
+      </div>
+      <div class="breakeven-info">
+        コスト: ¥39,250/月<br>
+        MAU 1,000 の 8.8% が有料転換で達成<br>
+        <span style="color:var(--text-muted);">参考: Web決済のみ → 82名</span>
+      </div>
+    </div>
+    <div class="breakeven-card">
+      <div class="phase-label">成長期フェーズ</div>
+      <div class="breakeven-num">162</div>
+      <div class="breakeven-unit">名で損益分岐</div>
+      <div class="breakeven-bar">
+        <div class="bar-fill" style="width:32%;"></div>
+        <div class="marker" style="left:32%;"></div>
+      </div>
+      <div class="breakeven-info">
+        コスト: ¥72,500/月<br>
+        MAU 5,000 の 3.2% が有料転換で達成<br>
+        <span style="color:var(--text-muted);">参考: Web決済のみ → 151名</span>
+      </div>
+    </div>
+    <div class="breakeven-card">
+      <div class="phase-label">拡大期フェーズ</div>
+      <div class="breakeven-num">404</div>
+      <div class="breakeven-unit">名で損益分岐</div>
+      <div class="breakeven-bar">
+        <div class="bar-fill" style="width:20%;"></div>
+        <div class="marker" style="left:20%;"></div>
+      </div>
+      <div class="breakeven-info">
+        コスト: ¥181,000/月<br>
+        MAU 20,000 の 2.0% が有料転換で達成<br>
+        <span style="color:var(--text-muted);">参考: Web決済のみ → 376名</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note-box success" style="margin-top:20px;">
+    <strong>ポイント:</strong> 有料転換率10〜15%を想定しており、いずれのフェーズでも損益分岐点を大きく上回る見込みです。<br>
+    Web決済のみに誘導できれば損益分岐点がさらに低くなりますが、アプリ内課金のUXメリットも考慮して併用を推奨します。
+  </div>
+</section>
+
+<!-- ===== 8. 収支分析 ===== -->
+<section id="revenue">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(34,197,94,0.15);color:var(--green);">&#x1F4B5;</span> 8. フェーズ別収支分析</h2>
+    <p>Proプラン（¥500/月、初回2週間無料）への転換率10〜15%と想定。<br>プラットフォーム手数料込み。<br>人件費・その他運用費は除外。</p>
+  </div>
+
+  <div class="revenue-grid">
+    <div class="revenue-card positive">
+      <div class="phase-name">初期フェーズ</div>
+      <div class="revenue-amount positive">+¥5,650</div>
+      <div class="revenue-row"><span class="label">MAU</span><span class="value">1,000</span></div>
+      <div class="revenue-row"><span class="label">Pro有料ユーザー</span><span class="value">100名</span></div>
+      <div class="revenue-row"><span class="label">手取り/人</span><span class="value">¥449</span></div>
+      <div class="revenue-row"><span class="label">月間手取り</span><span class="value income">¥44,900</span></div>
+      <div class="revenue-row"><span class="label">AWSコスト+モバイル</span><span class="value cost">-¥39,250</span></div>
+    </div>
+    <div class="revenue-card positive">
+      <div class="phase-name">成長期フェーズ</div>
+      <div class="revenue-amount positive">+¥196,900</div>
+      <div class="revenue-row"><span class="label">MAU</span><span class="value">5,000</span></div>
+      <div class="revenue-row"><span class="label">Pro有料ユーザー</span><span class="value">600名</span></div>
+      <div class="revenue-row"><span class="label">手取り/人</span><span class="value">¥449</span></div>
+      <div class="revenue-row"><span class="label">月間手取り</span><span class="value income">¥269,400</span></div>
+      <div class="revenue-row"><span class="label">AWSコスト</span><span class="value cost">-¥72,500</span></div>
+    </div>
+    <div class="revenue-card positive">
+      <div class="phase-name">拡大期フェーズ</div>
+      <div class="revenue-amount positive">+¥941,500</div>
+      <div class="revenue-row"><span class="label">MAU</span><span class="value">20,000</span></div>
+      <div class="revenue-row"><span class="label">Pro有料ユーザー</span><span class="value">2,500名</span></div>
+      <div class="revenue-row"><span class="label">手取り/人</span><span class="value">¥449</span></div>
+      <div class="revenue-row"><span class="label">月間手取り</span><span class="value income">¥1,122,500</span></div>
+      <div class="revenue-row"><span class="label">AWSコスト</span><span class="value cost">-¥181,000</span></div>
+    </div>
+  </div>
+
+  <div class="note-box" style="margin-top:20px;">
+    AWSコスト+モバイル = AWSインフラ費 + Apple Developer年額の月割り(¥1,250)<br>
+    人件費・その他運用費は除外。
+  </div>
+</section>
+
+<!-- ===== 9. コスト最適化戦略 ===== -->
+<section id="optimization">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(34,197,94,0.15);color:var(--green);">&#x2699;</span> 9. コスト最適化戦略</h2>
+    <p>フェーズに応じた最適化施策。</p>
+  </div>
+
+  <h3 style="margin-bottom:16px;color:var(--secondary);font-size:1.1rem;">9.1 即時適用（ローンチ時から）</h3>
+  <div class="cards-grid-2" style="margin-bottom:32px;">
+    <div class="strategy-card">
+      <div class="strat-icon" style="background:rgba(6,182,212,0.15);color:var(--secondary);">&#x2601;</div>
+      <div class="strat-content">
+        <div class="strat-name">CloudFront 無料枠活用</div>
+        <div class="strat-desc">最初の12ヶ月は1TB/月まで無料。</div>
+        <div class="strat-save">削減: ¥1,500/月</div>
+      </div>
+    </div>
+    <div class="strategy-card">
+      <div class="strat-icon" style="background:rgba(34,197,94,0.15);color:var(--green);">&#x1F512;</div>
+      <div class="strat-content">
+        <div class="strat-name">Cognito 無料枠</div>
+        <div class="strat-desc">5万MAUまで無料。</div>
+        <div class="strat-save">元々無料</div>
+      </div>
+    </div>
+    <div class="strategy-card">
+      <div class="strat-icon" style="background:rgba(255,153,0,0.15);color:var(--aws-orange);">&#x1F5C4;</div>
+      <div class="strat-content">
+        <div class="strat-name">S3 ライフサイクルポリシー</div>
+        <div class="strat-desc">30日以上未使用の一時ファイルを自動削除。</div>
+        <div class="strat-save">削減: ¥100〜/月</div>
+      </div>
+    </div>
+    <div class="strategy-card">
+      <div class="strat-icon" style="background:rgba(255,153,0,0.15);color:var(--aws-orange);">&#x1F4E6;</div>
+      <div class="strat-content">
+        <div class="strat-name">ECR ライフサイクルポリシー</div>
+        <div class="strat-desc">古いイメージを自動削除（最新10保持）。</div>
+        <div class="strat-save">削減: ¥50〜/月</div>
+      </div>
+    </div>
+    <div class="strategy-card">
+      <div class="strat-icon" style="background:rgba(59,130,246,0.15);color:var(--blue);">&#x1F319;</div>
+      <div class="strat-content">
+        <div class="strat-name">Aurora 自動スケーリング</div>
+        <div class="strat-desc">深夜帯は最小ACUに縮小。</div>
+        <div class="strat-save">削減: ¥3,000〜/月</div>
+      </div>
+    </div>
+    <div class="strategy-card">
+      <div class="strat-icon" style="background:rgba(34,197,94,0.15);color:var(--green);">&#x1F504;</div>
+      <div class="strat-content">
+        <div class="strat-name">GitHub Actions 無料枠</div>
+        <div class="strat-desc">2,000分/月で十分。</div>
+        <div class="strat-save">元々無料</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin-bottom:16px;color:var(--primary-light);font-size:1.1rem;">9.2 成長期に検討</h3>
+  <div class="cards-grid-2" style="margin-bottom:32px;">
+    <div class="strategy-card">
+      <div class="strat-icon" style="background:rgba(124,58,237,0.15);color:var(--primary-light);">&#x1F4B0;</div>
+      <div class="strat-content">
+        <div class="strat-name">Savings Plans（Fargate）</div>
+        <div class="strat-desc">1年/3年コミットで最大52%割引。</div>
+        <div class="strat-save">削減: ¥3,000〜6,000/月</div>
+      </div>
+    </div>
+    <div class="strategy-card">
+      <div class="strat-icon" style="background:rgba(59,130,246,0.15);color:var(--blue);">&#x1F4BE;</div>
+      <div class="strat-content">
+        <div class="strat-name">Aurora Reserved Instance</div>
+        <div class="strat-desc">1年コミットで約30%割引。</div>
+        <div class="strat-save">削減: ¥8,000〜/月</div>
+      </div>
+    </div>
+    <div class="strategy-card">
+      <div class="strat-icon" style="background:rgba(234,179,8,0.15);color:var(--yellow);">&#x1F4CA;</div>
+      <div class="strat-content">
+        <div class="strat-name">S3 Intelligent-Tiering</div>
+        <div class="strat-desc">アクセス頻度に応じた自動階層化。</div>
+        <div class="strat-save">削減: ¥200〜/月</div>
+      </div>
+    </div>
+    <div class="strategy-card">
+      <div class="strat-icon" style="background:rgba(6,182,212,0.15);color:var(--secondary);">&#x26A1;</div>
+      <div class="strat-content">
+        <div class="strat-name">CloudFront キャッシュ最適化</div>
+        <div class="strat-desc">TTL延長でオリジンリクエスト削減。</div>
+        <div class="strat-save">削減: ¥1,000〜/月</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin-bottom:16px;color:var(--accent);font-size:1.1rem;">9.3 拡大期に検討</h3>
+  <div class="cards-grid-2">
+    <div class="strategy-card">
+      <div class="strat-icon" style="background:rgba(249,115,102,0.15);color:var(--accent);">&#x1F4AA;</div>
+      <div class="strat-content">
+        <div class="strat-name">Graviton (ARM) プロセッサ</div>
+        <div class="strat-desc">Fargate ARM対応で約20%安価。</div>
+        <div class="strat-save">削減: ¥7,500/月</div>
+      </div>
+    </div>
+    <div class="strategy-card">
+      <div class="strat-icon" style="background:rgba(248,113,113,0.15);color:var(--cost-red);">&#x1F310;</div>
+      <div class="strat-content">
+        <div class="strat-name">NAT Gateway → VPCエンドポイント</div>
+        <div class="strat-desc">S3/ECR等のVPCエンドポイント化でNAT費用削減。</div>
+        <div class="strat-save">削減: ¥5,000〜/月</div>
+      </div>
+    </div>
+    <div class="strategy-card">
+      <div class="strat-icon" style="background:rgba(236,72,153,0.15);color:var(--pink);">&#x1F4C5;</div>
+      <div class="strat-content">
+        <div class="strat-name">Reserved Capacity（ElastiCache）</div>
+        <div class="strat-desc">予約購入で割引。</div>
+        <div class="strat-save">削減: ¥2,000〜/月</div>
+      </div>
+    </div>
+    <div class="strategy-card">
+      <div class="strat-icon" style="background:rgba(234,179,8,0.15);color:var(--yellow);">&#x2B50;</div>
+      <div class="strat-content">
+        <div class="strat-name">Spot Fargate（バッチ処理用）</div>
+        <div class="strat-desc">非クリティカルなタスクをSpotで実行。</div>
+        <div class="strat-save">削減: ¥2,000〜/月</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 10. 決済戦略 ===== -->
+<section id="payment-flow">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(236,72,153,0.15);color:var(--pink);">&#x1F4B1;</span> 10. 決済戦略（併用戦略）</h2>
+    <p>Web/iOS/Android それぞれの決済経路と手数料。<br>本書では「併用」戦略を前提に、プラットフォーム別の損益を算出。</p>
+  </div>
+
+  <!-- Strategy comparison -->
+  <div class="cards-grid-3" style="margin-bottom:32px;">
+    <div class="card card-green">
+      <h3>Web決済誘導（推奨）</h3>
+      <p>アプリ内では「Webで申し込む」ボタンでブラウザ決済に誘導。<br>手数料3.6%で最大利益。<br><span style="color:var(--cost-red);">Apple審査でリジェクトリスクあり（2024年以降は一部緩和）。</span></p>
+    </div>
+    <div class="card card-blue">
+      <h3>アプリ内課金</h3>
+      <p>App Store / Google Play の課金APIを使用。<br>審査通りやすくUXがシームレス。<br><span style="color:var(--cost-red);">手数料15〜30%。</span></p>
+    </div>
+    <div class="card" style="border-color:var(--green);box-shadow:0 0 20px rgba(34,197,94,0.1);">
+      <h3 style="color:var(--green);">併用（採用）</h3>
+      <p>Webユーザーは Stripe、アプリユーザーはアプリ内課金。<br>双方のメリットを享受。<br><span style="color:var(--cost-red);">実装・運用が複雑。</span></p>
+    </div>
+  </div>
+
+  <!-- Payment Flow Visual -->
+  <div class="flow-container">
+    <h3 style="text-align:center;margin-bottom:24px;color:var(--text);">併用戦略フロー</h3>
+
+    <div class="flow-row">
+      <div class="flow-box flow-web">
+        Web ユーザー<br><span class="flow-percent">構成比: 40%</span>
+      </div>
+      <div class="flow-arrow">&#x2192;</div>
+      <div class="flow-box flow-stripe">
+        Stripe<br><span class="flow-percent">手数料: 3.6%</span>
+      </div>
+      <div class="flow-arrow">&#x2192;</div>
+      <div class="flow-box" style="background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.3);color:var(--green);">
+        手取り ¥482<br><span class="flow-percent">最高効率</span>
+      </div>
+    </div>
+
+    <div class="flow-row">
+      <div class="flow-box flow-ios">
+        iOS ユーザー<br><span class="flow-percent">構成比: 35%</span>
+      </div>
+      <div class="flow-arrow">&#x2192;</div>
+      <div class="flow-box flow-apple">
+        App Store IAP<br><span class="flow-percent">手数料: 15%</span>
+      </div>
+      <div class="flow-arrow">&#x2192;</div>
+      <div class="flow-box" style="background:rgba(234,179,8,0.1);border-color:rgba(234,179,8,0.3);color:var(--yellow);">
+        手取り ¥425<br><span class="flow-percent">Small Business適用</span>
+      </div>
+    </div>
+
+    <div class="flow-row">
+      <div class="flow-box flow-android">
+        Android ユーザー<br><span class="flow-percent">構成比: 25%</span>
+      </div>
+      <div class="flow-arrow">&#x2192;</div>
+      <div class="flow-box flow-google">
+        Google Play IAP<br><span class="flow-percent">手数料: 15%</span>
+      </div>
+      <div class="flow-arrow">&#x2192;</div>
+      <div class="flow-box" style="background:rgba(234,179,8,0.1);border-color:rgba(234,179,8,0.3);color:var(--yellow);">
+        手取り ¥425<br><span class="flow-percent">サブスク初年度</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile costs -->
+  <h3 style="margin-top:32px;margin-bottom:16px;font-size:1.1rem;">モバイルアプリ配信コスト</h3>
+  <div class="cards-grid-2">
+    <div class="card card-blue">
+      <h3>Apple Developer Program</h3>
+      <p>$99（約¥15,000）/ 年額<br>月割り: 約¥1,250/月</p>
+    </div>
+    <div class="card card-green">
+      <h3>Google Play デベロッパー登録</h3>
+      <p>$25（約¥3,750）/ 一回のみ</p>
+    </div>
+  </div>
+
+  <!-- Initial setup costs -->
+  <h3 style="margin-top:32px;margin-bottom:16px;font-size:1.1rem;">初期構築コスト（一回限り）</h3>
+  <div class="cost-table-wrap">
+    <table class="cost-table">
+      <thead><tr><th>項目</th><th>費用（円）</th><th>備考</th></tr></thead>
+      <tbody>
+        <tr><td>ドメイン取得</td><td class="yen">¥1,500〜3,000/年</td><td class="note">bandmatch.jp（.jpドメイン）</td></tr>
+        <tr><td>Route 53 ホストゾーン</td><td class="yen">¥75/月</td><td class="note">初月から発生</td></tr>
+        <tr><td>ACM 証明書</td><td class="free">¥0</td><td class="note">無料</td></tr>
+        <tr><td>CDK 初期セットアップ</td><td class="free">¥0</td><td class="note">ツール自体は無料</td></tr>
+        <tr class="total-row"><td><strong>合計</strong></td><td class="yen"><strong>約 ¥3,000（初回）</strong></td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ===== 11. NAT Gateway 注意 ===== -->
+<section>
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(248,113,113,0.15);color:var(--cost-red);">&#x26A0;</span> NAT Gateway コストに関する注意</h2>
+    <p>NAT Gatewayは固定費（約$32/月）＋データ処理費がかかり、小規模アプリでは大きな割合を占めます。</p>
+  </div>
+  <div class="cards-grid-3">
+    <div class="card">
+      <h3>VPCエンドポイント</h3>
+      <p>NAT経由のトラフィック削減。<br><span style="color:var(--cost-red);">全サービスには対応していない。</span></p>
+    </div>
+    <div class="card">
+      <h3>NAT Instance（t4g.nano）</h3>
+      <p>月額約$4で済む。<br><span style="color:var(--cost-red);">自前管理が必要、帯域制限。</span></p>
+    </div>
+    <div class="card">
+      <h3>パブリックサブネットにFargate</h3>
+      <p>NAT不要。<br><span style="color:var(--cost-red);">セキュリティリスクが増加。</span></p>
+    </div>
+  </div>
+  <div class="note-box warning" style="margin-top:16px;">
+    <strong>推奨:</strong> まずはNAT Gateway 1台 + 主要サービスのVPCエンドポイントで運用開始。<br>拡大期にAZ冗長化。
+  </div>
+</section>
+
+<!-- ===== 12. 運用レビュー ===== -->
+<section id="review">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(6,182,212,0.15);color:var(--secondary);">&#x1F50E;</span> 月次コストレビューの仕組み</h2>
+    <p>コスト管理を継続的に行うための体制。</p>
+  </div>
+  <div class="cost-table-wrap">
+    <table class="review-table">
+      <thead><tr><th>施策</th><th>ツール</th><th>頻度</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--secondary);font-weight:600;">AWS Cost Explorer</td><td>AWS標準</td><td>月次</td></tr>
+        <tr><td style="color:var(--secondary);font-weight:600;">予算アラート</td><td>AWS Budgets</td><td>月額の80%/100%で通知</td></tr>
+        <tr><td style="color:var(--secondary);font-weight:600;">コスト異常検出</td><td>AWS Cost Anomaly Detection</td><td>日次（自動）</td></tr>
+        <tr><td style="color:var(--secondary);font-weight:600;">リソース最適化提案</td><td>AWS Compute Optimizer</td><td>月次</td></tr>
+        <tr><td style="color:var(--secondary);font-weight:600;">未使用リソース検出</td><td>AWS Trusted Advisor</td><td>月次</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note-box warning" style="margin-top:16px;">
+    <strong>推奨:</strong> AWS Budgets で月額 $300（初期）のアラートを設定し、想定外のコスト増を早期に検出。
+  </div>
+</section>
+
+</div><!-- /container -->
+
+<!-- ===== FOOTER ===== -->
+<footer style="text-align:center;padding:40px 20px;color:var(--text-muted);font-size:0.85rem;border-top:1px solid var(--border);">
+  BandMatch AWSコスト概算書 &mdash; 1USD = 150円換算 &mdash; ap-northeast-1（東京リージョン）
+</footer>
+
+<script>
+function switchPhase(id, el) {
+  document.querySelectorAll('.phase-content').forEach(function(c) { c.classList.remove('active'); });
+  document.querySelectorAll('.phase-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1823 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BandMatch - AWS要件定義書</title>
+<style>
+:root {
+  --bg: #0a0a1a;
+  --surface: #1a1a2e;
+  --surface-light: #25253d;
+  --surface-hover: #2f2f4a;
+  --primary: #7c3aed;
+  --primary-light: #8b5cf6;
+  --secondary: #06b6d4;
+  --accent: #f97066;
+  --green: #22c55e;
+  --yellow: #eab308;
+  --orange: #f59e0b;
+  --pink: #ec4899;
+  --blue: #3b82f6;
+  --indigo: #6366f1;
+  --text: #e2e8f0;
+  --text-dim: #94a3b8;
+  --text-muted: #64748b;
+  --border: #334155;
+  --aws-orange: #ff9900;
+  --aws-dark: #232f3e;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* HERO */
+.hero {
+  background: linear-gradient(135deg, var(--aws-dark) 0%, #0a0a1a 50%, var(--aws-dark) 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 60px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle at 30% 50%, rgba(255,153,0,0.1) 0%, transparent 50%),
+              radial-gradient(circle at 70% 50%, rgba(124,58,237,0.07) 0%, transparent 50%);
+  animation: heroFloat 20s ease-in-out infinite;
+}
+@keyframes heroFloat {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-2%, 2%); }
+}
+.hero h1 {
+  font-size: 2.8rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--aws-orange), var(--primary-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  margin-bottom: 12px;
+}
+.hero .subtitle {
+  font-size: 1.15rem;
+  color: var(--text-dim);
+  position: relative;
+}
+.hero .badge-row {
+  margin-top: 20px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  position: relative;
+}
+.hero .badge {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid;
+}
+.badge-aws { background: rgba(255,153,0,0.12); border-color: rgba(255,153,0,0.3) !important; color: var(--aws-orange); }
+.badge-region { background: rgba(59,130,246,0.12); border-color: rgba(59,130,246,0.3) !important; color: var(--blue); }
+.badge-ha { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.3) !important; color: var(--green); }
+.badge-ecs { background: rgba(124,58,237,0.12); border-color: rgba(124,58,237,0.3) !important; color: var(--primary-light); }
+
+/* NAV */
+.nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 40px;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.nav a {
+  color: var(--text-dim);
+  text-decoration: none;
+  padding: 14px 18px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+.nav a:hover {
+  color: var(--text);
+  background: var(--surface-light);
+  border-bottom-color: var(--aws-orange);
+}
+
+/* CONTAINER & SECTIONS */
+.container { max-width: 1400px; margin: 0 auto; padding: 0 40px; }
+section { padding: 60px 0; border-bottom: 1px solid var(--border); }
+section:last-child { border-bottom: none; }
+.section-header { margin-bottom: 40px; }
+.section-header h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-header h2 .icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.section-header p {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  margin-left: 52px;
+}
+
+/* CARDS */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.card:hover {
+  transform: translateY(-2px);
+  border-color: var(--aws-orange);
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--aws-orange), var(--primary));
+}
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+.card-grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+.card-grid-2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px; }
+
+/* Overview card */
+.overview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+.overview-item { display: flex; gap: 14px; align-items: flex-start; }
+.overview-item .oi-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.overview-item .oi-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+.overview-item .oi-value { font-size: 1rem; font-weight: 600; color: var(--text); }
+
+/* Feature items */
+.feat-category { margin-bottom: 40px; }
+.feat-category:last-child { margin-bottom: 0; }
+.feat-cat-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--aws-orange);
+}
+.feat-cat-title .cat-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.95rem;
+}
+.feat-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+  transition: border-color 0.2s;
+}
+.feat-item:hover { border-color: rgba(255,153,0,0.4); }
+.feat-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.feat-id { font-size: 0.7rem; font-weight: 700; color: var(--aws-orange); background: rgba(255,153,0,0.1); padding: 2px 8px; border-radius: 4px; }
+.priority-required { font-size: 0.7rem; font-weight: 600; color: var(--accent); background: rgba(249,112,102,0.1); padding: 2px 8px; border-radius: 4px; }
+.priority-medium { font-size: 0.7rem; font-weight: 600; color: var(--yellow); background: rgba(234,179,8,0.1); padding: 2px 8px; border-radius: 4px; }
+.feat-item h4 { font-size: 0.95rem; margin-bottom: 6px; }
+.feat-item .feat-desc { font-size: 0.82rem; color: var(--text-dim); line-height: 1.6; }
+
+/* Metric cards */
+.metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+.metric-card .metric-value { font-size: 1.6rem; font-weight: 800; color: var(--aws-orange); margin: 8px 0; }
+.metric-card .metric-label { font-size: 0.8rem; color: var(--text-dim); }
+
+/* Architecture Diagram */
+.arch-diagram {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 40px;
+  position: relative;
+  overflow: hidden;
+}
+.arch-diagram::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--aws-orange), var(--primary), var(--secondary));
+}
+.arch-layer { margin-bottom: 20px; position: relative; }
+.arch-layer:last-child { margin-bottom: 0; }
+.layer-label {
+  font-size: 0.7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 2px;
+  color: var(--text-muted); margin-bottom: 10px;
+}
+.layer-content { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+.arch-box {
+  background: var(--surface-light);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 24px;
+  text-align: center;
+  min-width: 140px;
+  position: relative;
+}
+.arch-box .ab-icon { font-size: 1.4rem; margin-bottom: 6px; }
+.arch-box .ab-name { font-size: 0.85rem; font-weight: 700; }
+.arch-box .ab-detail { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+.arch-box.aws-orange { border-color: rgba(255,153,0,0.4); }
+.arch-box.aws-blue { border-color: rgba(59,130,246,0.4); }
+.arch-box.aws-green { border-color: rgba(34,197,94,0.4); }
+.arch-box.aws-purple { border-color: rgba(124,58,237,0.4); }
+.arch-arrow {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  margin: 8px 0;
+}
+.arch-arrow span { font-size: 0.7rem; margin-left: 8px; }
+
+/* Service cards */
+.svc-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  transition: border-color 0.2s;
+}
+.svc-card:hover { border-color: rgba(255,153,0,0.4); }
+.svc-icon {
+  width: 40px; height: 40px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.svc-card h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 2px; }
+.svc-card .svc-desc { font-size: 0.78rem; color: var(--text-dim); }
+.svc-card .svc-config { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+
+/* VPC Diagram */
+.vpc-diagram {
+  background: var(--surface);
+  border: 2px solid var(--aws-orange);
+  border-radius: 16px;
+  padding: 30px;
+  position: relative;
+}
+.vpc-title {
+  position: absolute;
+  top: -12px; left: 24px;
+  background: var(--aws-orange);
+  color: #000;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 2px 14px;
+  border-radius: 6px;
+}
+.subnet-row { display: flex; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
+.subnet-row:last-child { margin-bottom: 0; }
+.subnet {
+  flex: 1;
+  min-width: 200px;
+  border-radius: 10px;
+  padding: 14px;
+  border: 1px solid;
+}
+.subnet-public { background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.3); }
+.subnet-private { background: rgba(124,58,237,0.08); border-color: rgba(124,58,237,0.3); }
+.subnet-db { background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.3); }
+.subnet-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+.subnet-cidr { font-size: 0.8rem; font-weight: 600; font-family: monospace; }
+.subnet-content { font-size: 0.75rem; color: var(--text-dim); margin-top: 4px; }
+
+/* ER Diagram */
+.er-table {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.er-table-header {
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+}
+.er-table-body { padding: 10px 14px; }
+.er-table-body .er-desc { font-size: 0.78rem; color: var(--text-dim); }
+.er-table-body .er-rel { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+.er-color-user { background: linear-gradient(135deg, #7c3aed, #6d28d9); }
+.er-color-band { background: linear-gradient(135deg, var(--aws-orange), #e68a00); }
+.er-color-event { background: linear-gradient(135deg, var(--blue), #2563eb); }
+.er-color-community { background: linear-gradient(135deg, var(--green), #16a34a); }
+.er-color-payment { background: linear-gradient(135deg, var(--pink), #db2777); }
+.er-color-practice { background: linear-gradient(135deg, var(--secondary), #0891b2); }
+
+/* Pipeline */
+.pipeline { display: flex; align-items: center; flex-wrap: wrap; gap: 0; justify-content: center; }
+.pipeline-step {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  text-align: center;
+  min-width: 140px;
+  position: relative;
+}
+.pipeline-step .ps-num {
+  font-size: 0.7rem; font-weight: 800; color: var(--aws-orange);
+  background: rgba(255,153,0,0.1);
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 8px;
+}
+.pipeline-step h4 { font-size: 0.85rem; }
+.pipeline-step .ps-tool { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+.pipeline-arrow { color: var(--aws-orange); font-size: 1.4rem; padding: 0 4px; }
+
+/* Monitoring Dashboard */
+.monitor-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+.monitor-card .mc-target { font-size: 0.72rem; font-weight: 700; color: var(--aws-orange); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.monitor-card .mc-metric { font-size: 0.9rem; font-weight: 600; margin-bottom: 4px; }
+.monitor-card .mc-threshold { font-size: 0.78rem; color: var(--accent); }
+.monitor-card .mc-notify { font-size: 0.72rem; color: var(--text-muted); margin-top: 6px; }
+
+/* Cost chart */
+.cost-bar-container { margin-bottom: 10px; }
+.cost-bar-label { display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 4px; }
+.cost-bar-label span:last-child { color: var(--aws-orange); font-weight: 700; }
+.cost-bar {
+  height: 24px;
+  background: var(--surface-light);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.cost-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--aws-orange), var(--primary));
+  transition: width 0.6s ease;
+}
+
+/* Gantt Timeline */
+.gantt { margin-top: 20px; }
+.gantt-row { display: flex; align-items: center; margin-bottom: 10px; gap: 12px; }
+.gantt-label { width: 200px; font-size: 0.82rem; flex-shrink: 0; font-weight: 600; }
+.gantt-track { flex: 1; height: 32px; background: var(--surface-light); border-radius: 6px; position: relative; }
+.gantt-bar {
+  position: absolute;
+  top: 2px; height: 28px;
+  border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 700; color: #fff;
+}
+.gantt-week-markers { display: flex; margin-left: 212px; margin-bottom: 6px; }
+.gantt-week-markers span { flex: 1; text-align: center; font-size: 0.65rem; color: var(--text-muted); }
+
+/* NF Req Table */
+.nf-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.nf-table th {
+  background: var(--surface-light);
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--aws-orange);
+  border-bottom: 2px solid var(--aws-orange);
+}
+.nf-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-dim);
+}
+.nf-table tr:hover td { background: var(--surface); }
+
+/* Environment table */
+.env-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+.env-card h4 { color: var(--aws-orange); margin-bottom: 4px; }
+.env-card .env-url { font-size: 0.8rem; color: var(--secondary); font-family: monospace; margin-bottom: 8px; }
+.env-card .env-desc { font-size: 0.82rem; color: var(--text-dim); }
+
+/* Future plans */
+.future-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+}
+.future-item h4 { font-size: 0.95rem; margin-bottom: 4px; }
+.future-item .fi-desc { font-size: 0.82rem; color: var(--text-dim); }
+.future-item .fi-when { font-size: 0.72rem; color: var(--aws-orange); margin-top: 6px; font-weight: 600; }
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  border-top: 1px solid var(--border);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero { padding: 40px 20px; }
+  .hero h1 { font-size: 1.8rem; }
+  .container { padding: 0 20px; }
+  .nav { padding: 0 16px; }
+  .nav a { padding: 12px 14px; font-size: 0.75rem; }
+  .card-grid, .card-grid-2, .card-grid-3 { grid-template-columns: 1fr; }
+  .overview-grid { grid-template-columns: 1fr; }
+  .pipeline { flex-direction: column; }
+  .pipeline-arrow { transform: rotate(90deg); }
+  .gantt-label { width: 120px; font-size: 0.72rem; }
+  .subnet-row { flex-direction: column; }
+  .arch-diagram { padding: 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>BandMatch - AWS要件定義書</h1>
+  <div class="subtitle">初心者コピバン向けコミュニティアプリ - AWS インフラ要件の全体像</div>
+  <div class="badge-row">
+    <span class="badge badge-aws">AWS Cloud</span>
+    <span class="badge badge-ha">Multi-AZ</span>
+    <span class="badge badge-ecs">ECS Fargate</span>
+    <span class="badge badge-region">ap-northeast-1</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="#overview">概要</a>
+  <a href="#functional">機能要件</a>
+  <a href="#nonfunctional">非機能要件</a>
+  <a href="#architecture">インフラ構成</a>
+  <a href="#services">AWSサービス</a>
+  <a href="#network">ネットワーク</a>
+  <a href="#environment">環境構成</a>
+  <a href="#database">データベース</a>
+  <a href="#cicd">CI/CD</a>
+  <a href="#monitoring">監視</a>
+  <a href="#cost">コスト</a>
+  <a href="#schedule">スケジュール</a>
+  <a href="#future">拡張計画</a>
+</nav>
+
+<div class="container">
+
+<!-- 1. PROJECT OVERVIEW -->
+<section id="overview">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(255,153,0,0.15);color:var(--aws-orange);">&#9733;</span> プロジェクト概要</h2>
+    <p>BandMatchプロジェクトの基本情報</p>
+  </div>
+  <div class="card" style="margin-bottom:24px;">
+    <div class="overview-grid">
+      <div class="overview-item">
+        <div class="oi-icon" style="background:rgba(255,153,0,0.12);color:var(--aws-orange);">&#127928;</div>
+        <div><div class="oi-label">プロジェクト名</div><div class="oi-value">BandMatch</div></div>
+      </div>
+      <div class="overview-item">
+        <div class="oi-icon" style="background:rgba(124,58,237,0.12);color:var(--primary-light);">&#127760;</div>
+        <div><div class="oi-label">ドメイン</div><div class="oi-value">bandmatch.jp</div></div>
+      </div>
+      <div class="overview-item">
+        <div class="oi-icon" style="background:rgba(6,182,212,0.12);color:var(--secondary);">&#128101;</div>
+        <div><div class="oi-label">ターゲット</div><div class="oi-value">コピバンをやりたい楽器初心者〜中級者（18〜35歳中心）</div></div>
+      </div>
+      <div class="overview-item">
+        <div class="oi-icon" style="background:rgba(34,197,94,0.12);color:var(--green);">&#128176;</div>
+        <div><div class="oi-label">収益モデル</div><div class="oi-value">サブスクリプション<br>Free ¥0 / Pro ¥500（初回2週間無料トライアル）</div></div>
+      </div>
+      <div class="overview-item" style="grid-column: span 2;">
+        <div class="oi-icon" style="background:rgba(236,72,153,0.12);color:var(--pink);">&#128241;</div>
+        <div><div class="oi-label">概要</div><div class="oi-value">初心者コピバン向けコミュニティアプリ（Web + iOS + Android 対応）。<br>やりたい曲・アーティストで仲間を見つけてコピバンを結成。<br>iOS/Android はストア手数料15%が発生。</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2. FUNCTIONAL REQUIREMENTS -->
+<section id="functional">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(255,153,0,0.15);color:var(--aws-orange);">&#9881;</span> 機能要件</h2>
+    <p>9カテゴリ・全機能の一覧</p>
+  </div>
+
+  <!-- 2.1 User Management -->
+  <div class="feat-category">
+    <div class="feat-cat-title">
+      <span class="cat-icon" style="background:rgba(124,58,237,0.15);color:var(--primary-light);">&#128100;</span>
+      2.1 ユーザー管理
+    </div>
+    <div class="card-grid">
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-001</span><span class="priority-required">必須</span></div>
+        <h4>ユーザー登録</h4>
+        <div class="feat-desc">メールアドレス＋パスワード認証。<br>マルチステップフォーム（基本情報→音楽プロフィール→地域・スケジュール）</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-002</span><span class="priority-required">必須</span></div>
+        <h4>ログイン/ログアウト</h4>
+        <div class="feat-desc">メール＋パスワード認証。<br>JWT トークンベースのセッション管理</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-003</span><span class="priority-required">必須</span></div>
+        <h4>パスワードリセット</h4>
+        <div class="feat-desc">メールによるリセットリンク送信</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-004</span><span class="priority-required">必須</span></div>
+        <h4>プロフィール管理</h4>
+        <div class="feat-desc">基本情報・楽器（複数）・ジャンル（複数）・地域・練習スケジュール・コピーしたいアーティスト/曲・影響アーティストの編集</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-005</span><span class="priority-required">必須</span></div>
+        <h4>アバターアップロード</h4>
+        <div class="feat-desc">画像アップロード（最大5MB、jpg/png/webp）</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-006</span><span class="priority-medium">中</span></div>
+        <h4>ソーシャルログイン</h4>
+        <div class="feat-desc">Google / Apple ID によるログイン</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2.2 Matching -->
+  <div class="feat-category">
+    <div class="feat-cat-title">
+      <span class="cat-icon" style="background:rgba(255,153,0,0.15);color:var(--aws-orange);">&#128279;</span>
+      2.2 コピバンマッチング
+    </div>
+    <div class="card-grid">
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-010</span><span class="priority-required">必須</span></div>
+        <h4>マッチングスコア算出</h4>
+        <div class="feat-desc">地域(40pt)＋楽器(20pt)＋ジャンル(20pt)＋スキル(15pt)＋スケジュール(30pt)＋曲マッチング(35pt)→100点正規化</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-010a</span><span class="priority-required">必須</span></div>
+        <h4>曲ベースマッチング</h4>
+        <div class="feat-desc">やりたい曲の一致数・好きなアーティストの一致でスコア算出</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-011</span><span class="priority-required">必須</span></div>
+        <h4>マッチング検索</h4>
+        <div class="feat-desc">やりたい曲・アーティスト・ジャンル・楽器・地域・スキルレベルでのフィルタリング</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-012</span><span class="priority-required">必須</span></div>
+        <h4>マッチングリクエスト</h4>
+        <div class="feat-desc">相手にマッチングリクエストを送信・承認/拒否</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-013</span><span class="priority-required">必須</span></div>
+        <h4>Freeプラン制限</h4>
+        <div class="feat-desc">1日3回の検索制限</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-014</span><span class="priority-medium">中</span></div>
+        <h4>Proプラン優先表示</h4>
+        <div class="feat-desc">Pro会員の優先マッチング表示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2.3 Band Management -->
+  <div class="feat-category">
+    <div class="feat-cat-title">
+      <span class="cat-icon" style="background:rgba(236,72,153,0.15);color:var(--pink);">&#127928;</span>
+      2.3 コピバン管理
+    </div>
+    <div class="card-grid">
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-020</span><span class="priority-required">必須</span></div>
+        <h4>コピバン作成</h4>
+        <div class="feat-desc">名前・説明・コピー対象アーティスト/曲・ジャンル・地域・楽器スロット設定</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-020a</span><span class="priority-required">必須</span></div>
+        <h4>セットリスト管理</h4>
+        <div class="feat-desc">コピーする曲の一覧・順序管理。<br>曲の追加/削除/並べ替え</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-021</span><span class="priority-required">必須</span></div>
+        <h4>メンバー管理</h4>
+        <div class="feat-desc">リーダー/メンバー権限。<br>招待・脱退</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-022</span><span class="priority-required">必須</span></div>
+        <h4>楽器スロット制</h4>
+        <div class="feat-desc">空きポジション表示・募集中フラグ</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-023</span><span class="priority-required">必須</span></div>
+        <h4>バンド検索</h4>
+        <div class="feat-desc">ジャンル・地域・募集中フィルターでの検索</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-024</span><span class="priority-required">必須</span></div>
+        <h4>Freeプラン制限</h4>
+        <div class="feat-desc">バンド作成上限1つ（Proは無制限）</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2.4 Events -->
+  <div class="feat-category">
+    <div class="feat-cat-title">
+      <span class="cat-icon" style="background:rgba(59,130,246,0.15);color:var(--blue);">&#127911;</span>
+      2.4 ライブイベント
+    </div>
+    <div class="card-grid">
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-030</span><span class="priority-required">必須</span></div>
+        <h4>イベント一覧</h4>
+        <div class="feat-desc">地域・日付・ジャンル・初心者歓迎フィルター</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-031</span><span class="priority-required">必須</span></div>
+        <h4>イベント作成</h4>
+        <div class="feat-desc">会場、日時、料金、容量、タグ設定（Pro以上）</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-032</span><span class="priority-required">必須</span></div>
+        <h4>バンド登録</h4>
+        <div class="feat-desc">イベントへのバンド参加登録</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-033</span><span class="priority-medium">中</span></div>
+        <h4>イベントリマインダー</h4>
+        <div class="feat-desc">イベント前日・当日のプッシュ通知</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2.5 Community -->
+  <div class="feat-category">
+    <div class="feat-cat-title">
+      <span class="cat-icon" style="background:rgba(34,197,94,0.15);color:var(--green);">&#128172;</span>
+      2.5 コミュニティ
+    </div>
+    <div class="card-grid">
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-040</span><span class="priority-required">必須</span></div>
+        <h4>タイムライン</h4>
+        <div class="feat-desc">投稿一覧（一般・練習ログ・マイルストーン・質問）</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-041</span><span class="priority-required">必須</span></div>
+        <h4>いいね/コメント</h4>
+        <div class="feat-desc">投稿へのリアクション</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-042</span><span class="priority-required">必須</span></div>
+        <h4>練習ログ</h4>
+        <div class="feat-desc">練習時間の記録・集計</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-043</span><span class="priority-required">必須</span></div>
+        <h4>マイルストーン</h4>
+        <div class="feat-desc">初セッション・初ライブ・バンド結成等の達成表示</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-044</span><span class="priority-medium">中</span></div>
+        <h4>ダイレクトメッセージ</h4>
+        <div class="feat-desc">ユーザー間1対1メッセージ</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-045</span><span class="priority-medium">中</span></div>
+        <h4>画像投稿</h4>
+        <div class="feat-desc">投稿への画像添付（最大10MB）</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2.6 Subscription -->
+  <div class="feat-category">
+    <div class="feat-cat-title">
+      <span class="cat-icon" style="background:rgba(234,179,8,0.15);color:var(--yellow);">&#128179;</span>
+      2.6 サブスクリプション・決済
+    </div>
+    <div class="card-grid">
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-050</span><span class="priority-required">必須</span></div>
+        <h4>プラン選択</h4>
+        <div class="feat-desc">Free / Pro の切り替え（Proは初回2週間無料トライアル）</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-051</span><span class="priority-required">必須</span></div>
+        <h4>マルチプラットフォーム決済</h4>
+        <div class="feat-desc">Web: Stripe Checkout<br>iOS: App Store課金(StoreKit 2)<br>Android: Google Play Billing</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-052</span><span class="priority-required">必須</span></div>
+        <h4>請求履歴</h4>
+        <div class="feat-desc">過去の決済履歴一覧</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-053</span><span class="priority-required">必須</span></div>
+        <h4>自動更新・解約</h4>
+        <div class="feat-desc">月次自動更新。<br>いつでも解約可能</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2.7 Admin -->
+  <div class="feat-category">
+    <div class="feat-cat-title">
+      <span class="cat-icon" style="background:rgba(249,112,102,0.15);color:var(--accent);">&#128736;</span>
+      2.7 管理機能
+    </div>
+    <div class="card-grid">
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-060</span><span class="priority-required">必須</span></div>
+        <h4>統計ダッシュボード</h4>
+        <div class="feat-desc">総ユーザー数、アクティブ数、バンド数、イベント数、月間売上</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-061</span><span class="priority-required">必須</span></div>
+        <h4>ユーザー管理</h4>
+        <div class="feat-desc">ユーザー検索、プラン変更、アカウント停止</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-062</span><span class="priority-required">必須</span></div>
+        <h4>売上管理</h4>
+        <div class="feat-desc">月別売上チャート、プラン別内訳</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-063</span><span class="priority-medium">中</span></div>
+        <h4>コンテンツ管理</h4>
+        <div class="feat-desc">不適切投稿の削除・ユーザー警告</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2.8 Mobile -->
+  <div class="feat-category">
+    <div class="feat-cat-title">
+      <span class="cat-icon" style="background:rgba(6,182,212,0.15);color:var(--secondary);">&#128241;</span>
+      2.8 モバイルアプリ
+    </div>
+    <div class="card-grid">
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-070</span><span class="priority-required">必須</span></div>
+        <h4>プッシュ通知</h4>
+        <div class="feat-desc">Amazon SNS → APNs / FCM によるプッシュ通知配信</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-071</span><span class="priority-medium">中</span></div>
+        <h4>アプリ内課金連携</h4>
+        <div class="feat-desc">App Store / Google Play → サーバー検証。<br>App Store 15% / Google Play 15% の手数料を考慮。<br>レシート検証API連携必須。</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-072</span><span class="priority-medium">中</span></div>
+        <h4>ディープリンク対応</h4>
+        <div class="feat-desc">Universal Links (iOS) / App Links (Android)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2.9 Practice Tracking -->
+  <div class="feat-category">
+    <div class="feat-cat-title">
+      <span class="cat-icon" style="background:rgba(99,102,241,0.15);color:var(--indigo);">&#127919;</span>
+      2.9 練習トラッキング・ゲーミフィケーション
+    </div>
+    <div class="card-grid">
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-080</span><span class="priority-required">必須</span></div>
+        <h4>練習記録</h4>
+        <div class="feat-desc">曲・時間・メモの記録。<br>ストリーク（連続練習日数）自動計算。<br>週間目標設定</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-081</span><span class="priority-required">必須</span></div>
+        <h4>フレンド管理</h4>
+        <div class="feat-desc">フレンド追加・削除・練習状況閲覧。<br>Free: 5人まで / Pro: 無制限</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-082</span><span class="priority-required">必須</span></div>
+        <h4>ランキング</h4>
+        <div class="feat-desc">フレンド内 / 全体 / 楽器別の週間ランキング。<br>Free: フレンドランキングのみ / Pro: 全体ランキング</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-083</span><span class="priority-required">必須</span></div>
+        <h4>バッジ・マイルストーン</h4>
+        <div class="feat-desc">12種類のバッジ（ストリーク、累計時間、初ライブ等）。<br>条件達成時に自動付与。<br>プロフィール表示</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-084</span><span class="priority-required">必須</span></div>
+        <h4>通知システム</h4>
+        <div class="feat-desc">プッシュ通知・アプリ内通知・LINE通知連携。<br>練習リマインド・ストリーク危機・フレンド活動・ランキング変動</div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-item-header"><span class="feat-id">F-085</span><span class="priority-medium">中</span></div>
+        <h4>SNS連携</h4>
+        <div class="feat-desc">OAuth認証による X / Instagram / LINE / YouTube アカウント連携。<br>Free: 1つ / Pro: 無制限</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3. NON-FUNCTIONAL REQUIREMENTS -->
+<section id="nonfunctional">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(6,182,212,0.15);color:var(--secondary);">&#9889;</span> 非機能要件</h2>
+    <p>性能・可用性・セキュリティ・拡張性</p>
+  </div>
+
+  <!-- Performance metrics -->
+  <h3 style="color:var(--aws-orange);margin-bottom:16px;font-size:1.1rem;">3.1 性能要件</h3>
+  <div class="card-grid" style="margin-bottom:36px;">
+    <div class="metric-card">
+      <div class="metric-label">レスポンス時間（P95）</div>
+      <div class="metric-value">2秒以内</div>
+      <div class="metric-label">ページ表示</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">API応答時間（P95）</div>
+      <div class="metric-value">500ms以内</div>
+      <div class="metric-label">APIレスポンス</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">同時接続数</div>
+      <div class="metric-value">1,000 → 10,000</div>
+      <div class="metric-label">初期 → 1年後</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">スループット（初期）</div>
+      <div class="metric-value">100 req/s</div>
+      <div class="metric-label">リクエスト/秒</div>
+    </div>
+  </div>
+
+  <!-- Availability -->
+  <h3 style="color:var(--green);margin-bottom:16px;font-size:1.1rem;">3.2 可用性要件</h3>
+  <div class="card-grid-3" style="margin-bottom:36px;">
+    <div class="metric-card">
+      <div class="metric-label">稼働率</div>
+      <div class="metric-value">99.9%</div>
+      <div class="metric-label">月間ダウンタイム約43分以内</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">計画停止</div>
+      <div class="metric-value">月1回</div>
+      <div class="metric-label">深夜帯 2:00-5:00</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">災害対策</div>
+      <div class="metric-value">Multi-AZ</div>
+      <div class="metric-label">東京リージョン内</div>
+    </div>
+  </div>
+
+  <!-- Security -->
+  <h3 style="color:var(--accent);margin-bottom:16px;font-size:1.1rem;">3.3 セキュリティ要件</h3>
+  <div style="overflow-x:auto;margin-bottom:36px;">
+    <table class="nf-table">
+      <thead><tr><th>項目</th><th>要件</th></tr></thead>
+      <tbody>
+        <tr><td>通信暗号化</td><td>TLS 1.2以上（HTTPS必須）</td></tr>
+        <tr><td>パスワード保存</td><td>bcrypt（ストレッチング回数10以上）</td></tr>
+        <tr><td>認証トークン</td><td>JWT（有効期限24時間、リフレッシュトークン30日）</td></tr>
+        <tr><td>入力バリデーション</td><td>サーバーサイドで全入力検証</td></tr>
+        <tr><td>XSS対策</td><td>HTMLエスケープ、CSPヘッダー設定</td></tr>
+        <tr><td>CSRF対策</td><td>CSRFトークン検証</td></tr>
+        <tr><td>SQLインジェクション対策</td><td>パラメータバインディング（ORMのみ使用）</td></tr>
+        <tr><td>API認可</td><td>管理APIは管理者ロールのみアクセス可</td></tr>
+        <tr><td>個人情報保護</td><td>メールアドレスの暗号化保存、アクセスログの保持（90日）</td></tr>
+        <tr><td>WAF</td><td>AWS WAF によるボット対策・レートリミット</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Mobile Requirements -->
+  <h3 style="color:var(--secondary);margin-bottom:16px;font-size:1.1rem;">3.4 モバイルアプリ要件</h3>
+  <div class="card-grid-3" style="margin-bottom:36px;">
+    <div class="metric-card">
+      <div class="metric-label">ストアガイドライン</div>
+      <div class="metric-value" style="font-size:1rem;">準拠</div>
+      <div class="metric-label">App Store / Google Play</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">オフライン対応</div>
+      <div class="metric-value" style="font-size:1rem;">キャッシュ閲覧</div>
+      <div class="metric-label">オフライン時の基本機能</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">アプリ起動時間</div>
+      <div class="metric-value">2秒以内</div>
+      <div class="metric-label">コールドスタート</div>
+    </div>
+  </div>
+
+  <!-- Scalability -->
+  <h3 style="color:var(--primary-light);margin-bottom:16px;font-size:1.1rem;">3.5 拡張性要件</h3>
+  <div class="card-grid-3">
+    <div class="metric-card">
+      <div class="metric-label">水平スケーリング</div>
+      <div class="metric-value" style="font-size:1rem;">Auto Scaling</div>
+      <div class="metric-label">ECSタスク数の自動調整</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">DB接続</div>
+      <div class="metric-value" style="font-size:1rem;">RDS Proxy</div>
+      <div class="metric-label">コネクションプーリング</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">CDN</div>
+      <div class="metric-value" style="font-size:1rem;">CloudFront</div>
+      <div class="metric-label">静的アセット配信</div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. AWS INFRASTRUCTURE -->
+<section id="architecture">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(255,153,0,0.15);color:var(--aws-orange);">&#9729;</span> AWSインフラ構成図</h2>
+    <p>BandMatchのAWSアーキテクチャ全体像</p>
+  </div>
+
+  <div class="arch-diagram">
+    <!-- DNS Layer -->
+    <div class="arch-layer">
+      <div class="layer-label">DNS / エッジ層</div>
+      <div class="layer-content">
+        <div class="arch-box aws-orange">
+          <div class="ab-icon">&#127760;</div>
+          <div class="ab-name">Route 53</div>
+          <div class="ab-detail">bandmatch.jp</div>
+        </div>
+      </div>
+    </div>
+    <div class="arch-arrow">&#9660;<span>DNS解決</span></div>
+
+    <!-- CDN Layer -->
+    <div class="arch-layer">
+      <div class="layer-label">CDN / SSL終端</div>
+      <div class="layer-content">
+        <div class="arch-box aws-orange">
+          <div class="ab-icon">&#9889;</div>
+          <div class="ab-name">CloudFront</div>
+          <div class="ab-detail">CDN + SSL + WAF</div>
+        </div>
+      </div>
+    </div>
+    <div class="arch-arrow" style="display:flex;justify-content:center;gap:80px;">
+      <span>&#9660; 静的アセット</span>
+      <span>&#9660; API リクエスト</span>
+    </div>
+
+    <!-- Static + LB Layer -->
+    <div class="arch-layer">
+      <div class="layer-label">ストレージ / ロードバランサー</div>
+      <div class="layer-content">
+        <div class="arch-box aws-green">
+          <div class="ab-icon">&#128230;</div>
+          <div class="ab-name">S3</div>
+          <div class="ab-detail">静的アセット</div>
+        </div>
+        <div class="arch-box aws-blue">
+          <div class="ab-icon">&#9878;</div>
+          <div class="ab-name">ALB</div>
+          <div class="ab-detail">ロードバランサー</div>
+        </div>
+      </div>
+    </div>
+    <div class="arch-arrow">&#9660;<span>トラフィック分散</span></div>
+
+    <!-- Compute Layer -->
+    <div class="arch-layer">
+      <div class="layer-label">コンピュート層</div>
+      <div class="layer-content">
+        <div class="arch-box aws-purple">
+          <div class="ab-icon">&#128259;</div>
+          <div class="ab-name">ECS Fargate</div>
+          <div class="ab-detail">Next.js (Task 1)</div>
+        </div>
+        <div class="arch-box aws-purple">
+          <div class="ab-icon">&#128259;</div>
+          <div class="ab-name">ECS Fargate</div>
+          <div class="ab-detail">Next.js (Task 2)</div>
+        </div>
+        <div class="arch-box" style="border-color:rgba(6,182,212,0.4);">
+          <div class="ab-icon">&#128293;</div>
+          <div class="ab-name">ElastiCache</div>
+          <div class="ab-detail">Redis (キャッシュ)</div>
+        </div>
+      </div>
+    </div>
+    <div class="arch-arrow">&#9660;<span>DB接続</span></div>
+
+    <!-- DB Proxy Layer -->
+    <div class="arch-layer">
+      <div class="layer-label">DB接続管理</div>
+      <div class="layer-content">
+        <div class="arch-box aws-orange">
+          <div class="ab-icon">&#128268;</div>
+          <div class="ab-name">RDS Proxy</div>
+          <div class="ab-detail">コネクションプーリング</div>
+        </div>
+      </div>
+    </div>
+    <div class="arch-arrow">&#9660;<span>SQL</span></div>
+
+    <!-- Database Layer -->
+    <div class="arch-layer">
+      <div class="layer-label">データベース層</div>
+      <div class="layer-content">
+        <div class="arch-box aws-green" style="min-width:300px;">
+          <div class="ab-icon">&#128451;</div>
+          <div class="ab-name">Aurora PostgreSQL</div>
+          <div class="ab-detail">Writer + Reader | Multi-AZ</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4.2 AWS SERVICES -->
+<section id="services">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(255,153,0,0.15);color:var(--aws-orange);">&#128295;</span> AWSサービス一覧</h2>
+    <p>使用するAWSサービスと用途の全一覧</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(255,153,0,0.12);color:var(--aws-orange);">&#127760;</div>
+      <div>
+        <h4>Route 53</h4>
+        <div class="svc-desc">ドメイン管理・ルーティング</div>
+        <div class="svc-config">bandmatch.jp ホストゾーン</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(255,153,0,0.12);color:var(--aws-orange);">&#9889;</div>
+      <div>
+        <h4>CloudFront</h4>
+        <div class="svc-desc">静的アセット配信・SSL終端</div>
+        <div class="svc-config">カスタムドメイン + ACM証明書</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(34,197,94,0.12);color:var(--green);">&#128230;</div>
+      <div>
+        <h4>S3</h4>
+        <div class="svc-desc">静的アセット・画像アップロード</div>
+        <div class="svc-config">2バケット（static / uploads）</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(59,130,246,0.12);color:var(--blue);">&#9878;</div>
+      <div>
+        <h4>ALB</h4>
+        <div class="svc-desc">HTTPSリクエスト振り分け</div>
+        <div class="svc-config">パブリックサブネット、ヘルスチェック</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(124,58,237,0.12);color:var(--primary-light);">&#128259;</div>
+      <div>
+        <h4>ECS Fargate</h4>
+        <div class="svc-desc">Next.jsアプリ実行</div>
+        <div class="svc-config">最小2タスク、オートスケーリング</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(124,58,237,0.12);color:var(--primary-light);">&#128230;</div>
+      <div>
+        <h4>ECR</h4>
+        <div class="svc-desc">Dockerイメージ管理</div>
+        <div class="svc-config">ライフサイクルポリシー（最新10イメージ保持）</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(34,197,94,0.12);color:var(--green);">&#128451;</div>
+      <div>
+        <h4>Aurora PostgreSQL</h4>
+        <div class="svc-desc">メインDB</div>
+        <div class="svc-config">db.t4g.medium、Multi-AZ、自動バックアップ7日</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(255,153,0,0.12);color:var(--aws-orange);">&#128268;</div>
+      <div>
+        <h4>RDS Proxy</h4>
+        <div class="svc-desc">コネクションプーリング</div>
+        <div class="svc-config">Fargateからの接続最適化</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(6,182,212,0.12);color:var(--secondary);">&#128293;</div>
+      <div>
+        <h4>ElastiCache (Redis)</h4>
+        <div class="svc-desc">セッション・マッチング結果キャッシュ</div>
+        <div class="svc-config">cache.t4g.micro、Single-AZ（初期）</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(236,72,153,0.12);color:var(--pink);">&#9993;</div>
+      <div>
+        <h4>SES</h4>
+        <div class="svc-desc">パスワードリセット・通知メール</div>
+        <div class="svc-config">東京リージョン</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(234,179,8,0.12);color:var(--yellow);">&#128274;</div>
+      <div>
+        <h4>Cognito</h4>
+        <div class="svc-desc">ユーザー認証・ソーシャルログイン</div>
+        <div class="svc-config">ユーザープール + Google/Apple連携</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(249,112,102,0.12);color:var(--accent);">&#128273;</div>
+      <div>
+        <h4>Secrets Manager</h4>
+        <div class="svc-desc">DB接続情報・APIキー管理</div>
+        <div class="svc-config">自動ローテーション有効</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(99,102,241,0.12);color:var(--indigo);">&#128202;</div>
+      <div>
+        <h4>CloudWatch</h4>
+        <div class="svc-desc">ログ・メトリクス・アラーム</div>
+        <div class="svc-config">ECS/RDS/ALBのメトリクス監視</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(249,112,102,0.12);color:var(--accent);">&#128737;</div>
+      <div>
+        <h4>WAF</h4>
+        <div class="svc-desc">不正リクエスト防止</div>
+        <div class="svc-config">CloudFrontに適用、レートリミット</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(59,130,246,0.12);color:var(--blue);">&#128736;</div>
+      <div>
+        <h4>CloudFormation / CDK</h4>
+        <div class="svc-desc">インフラのコード管理</div>
+        <div class="svc-config">環境別スタック（dev/staging/prod）</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(255,153,0,0.12);color:var(--aws-orange);">&#128276;</div>
+      <div>
+        <h4>SNS</h4>
+        <div class="svc-desc">プッシュ通知配信（APNs / FCM）</div>
+        <div class="svc-config">モバイルアプリ向け通知</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(34,197,94,0.12);color:var(--green);">&#128230;</div>
+      <div>
+        <h4>S3（モバイル）</h4>
+        <div class="svc-desc">アプリバイナリ配信用（OTAアップデート）</div>
+        <div class="svc-config">Capacitor Live Update</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4.3 NETWORK -->
+<section id="network">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(59,130,246,0.15);color:var(--blue);">&#128421;</span> ネットワーク構成</h2>
+    <p>VPC・サブネット・セキュリティグループの構成</p>
+  </div>
+
+  <div class="vpc-diagram">
+    <div class="vpc-title">VPC: 10.0.0.0/16 (ap-northeast-1)</div>
+    <div style="margin-top:12px;">
+
+      <div style="font-size:0.8rem;font-weight:700;color:var(--blue);margin-bottom:8px;">Public Subnets</div>
+      <div class="subnet-row">
+        <div class="subnet subnet-public">
+          <div class="subnet-label" style="color:var(--blue);">Public Subnet AZ-a</div>
+          <div class="subnet-cidr">10.0.1.0/24</div>
+          <div class="subnet-content">ALB, NAT Gateway</div>
+        </div>
+        <div class="subnet subnet-public">
+          <div class="subnet-label" style="color:var(--blue);">Public Subnet AZ-c</div>
+          <div class="subnet-cidr">10.0.2.0/24</div>
+          <div class="subnet-content">ALB</div>
+        </div>
+      </div>
+
+      <div style="font-size:0.8rem;font-weight:700;color:var(--primary-light);margin:16px 0 8px;">Private Subnets（アプリケーション）</div>
+      <div class="subnet-row">
+        <div class="subnet subnet-private">
+          <div class="subnet-label" style="color:var(--primary-light);">Private Subnet AZ-a</div>
+          <div class="subnet-cidr">10.0.10.0/24</div>
+          <div class="subnet-content">ECS Fargate, ElastiCache</div>
+        </div>
+        <div class="subnet subnet-private">
+          <div class="subnet-label" style="color:var(--primary-light);">Private Subnet AZ-c</div>
+          <div class="subnet-cidr">10.0.20.0/24</div>
+          <div class="subnet-content">ECS Fargate</div>
+        </div>
+      </div>
+
+      <div style="font-size:0.8rem;font-weight:700;color:var(--green);margin:16px 0 8px;">Private Subnets（データベース）</div>
+      <div class="subnet-row">
+        <div class="subnet subnet-db">
+          <div class="subnet-label" style="color:var(--green);">Private Subnet AZ-a</div>
+          <div class="subnet-cidr">10.0.30.0/24</div>
+          <div class="subnet-content">Aurora (Writer)</div>
+        </div>
+        <div class="subnet subnet-db">
+          <div class="subnet-label" style="color:var(--green);">Private Subnet AZ-c</div>
+          <div class="subnet-cidr">10.0.40.0/24</div>
+          <div class="subnet-content">Aurora (Reader)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-grid" style="margin-top:24px;">
+    <div class="metric-card">
+      <div class="metric-label">リージョン</div>
+      <div class="metric-value" style="font-size:1rem;">ap-northeast-1（東京）</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">AZ</div>
+      <div class="metric-value" style="font-size:1rem;">1a / 1c</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">NAT Gateway</div>
+      <div class="metric-value" style="font-size:1rem;">AZ-a 1台（初期）</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">セキュリティグループ</div>
+      <div class="metric-value" style="font-size:1rem;">ALB / ECS / RDS / Redis 分離</div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. ENVIRONMENT -->
+<section id="environment">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(34,197,94,0.15);color:var(--green);">&#127968;</span> 環境構成</h2>
+    <p>開発・ステージング・本番の3環境</p>
+  </div>
+  <div class="card-grid-3">
+    <div class="env-card" style="border-left:3px solid var(--secondary);">
+      <h4>dev</h4>
+      <div class="env-url">dev.bandmatch.jp</div>
+      <div class="env-desc">開発・検証環境。<br>ECS 1タスク、Aurora 最小構成</div>
+    </div>
+    <div class="env-card" style="border-left:3px solid var(--yellow);">
+      <h4>staging</h4>
+      <div class="env-url">staging.bandmatch.jp</div>
+      <div class="env-desc">ステージング環境。<br>本番と同構成（縮小版）</div>
+    </div>
+    <div class="env-card" style="border-left:3px solid var(--aws-orange);">
+      <h4>prod</h4>
+      <div class="env-url">bandmatch.jp</div>
+      <div class="env-desc">本番環境。<br>フル構成</div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. DATABASE -->
+<section id="database">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(34,197,94,0.15);color:var(--green);">&#128451;</span> データベース設計</h2>
+    <p>Aurora PostgreSQL 15 + Prisma ORM</p>
+  </div>
+
+  <!-- DB policy -->
+  <div class="card" style="margin-bottom:30px;">
+    <div class="overview-grid">
+      <div class="overview-item">
+        <div class="oi-icon" style="background:rgba(34,197,94,0.12);color:var(--green);">&#128451;</div>
+        <div><div class="oi-label">RDBMS</div><div class="oi-value">Aurora PostgreSQL 15</div></div>
+      </div>
+      <div class="overview-item">
+        <div class="oi-icon" style="background:rgba(124,58,237,0.12);color:var(--primary-light);">&#9997;</div>
+        <div><div class="oi-label">ORM / Migration</div><div class="oi-value">Prisma / Prisma Migrate</div></div>
+      </div>
+      <div class="overview-item">
+        <div class="oi-icon" style="background:rgba(255,153,0,0.12);color:var(--aws-orange);">&#128190;</div>
+        <div><div class="oi-label">バックアップ</div><div class="oi-value">自動7日間 + 手動スナップショット</div></div>
+      </div>
+      <div class="overview-item">
+        <div class="oi-icon" style="background:rgba(6,182,212,0.12);color:var(--secondary);">&#128209;</div>
+        <div><div class="oi-label">リードレプリカ</div><div class="oi-value">1台（読み取り負荷分散）</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ER Diagram -->
+  <h3 style="color:var(--aws-orange);margin-bottom:16px;font-size:1.1rem;">主要テーブル（ER図）</h3>
+  <div class="card-grid">
+    <!-- User tables -->
+    <div class="er-table">
+      <div class="er-table-header er-color-user">users</div>
+      <div class="er-table-body"><div class="er-desc">ユーザー情報</div></div>
+    </div>
+    <div class="er-table">
+      <div class="er-table-header er-color-user">user_instruments</div>
+      <div class="er-table-body"><div class="er-desc">ユーザーの楽器情報</div><div class="er-rel">→ users</div></div>
+    </div>
+    <div class="er-table">
+      <div class="er-table-header er-color-user">user_genres</div>
+      <div class="er-table-body"><div class="er-desc">ユーザーのジャンル</div><div class="er-rel">→ users</div></div>
+    </div>
+    <div class="er-table">
+      <div class="er-table-header er-color-user">user_schedules</div>
+      <div class="er-table-body"><div class="er-desc">練習スケジュール</div><div class="er-rel">→ users</div></div>
+    </div>
+    <div class="er-table">
+      <div class="er-table-header er-color-user">copy_songs</div>
+      <div class="er-table-body"><div class="er-desc">コピーしたい曲</div><div class="er-rel">→ users</div></div>
+    </div>
+
+    <!-- Band tables -->
+    <div class="er-table">
+      <div class="er-table-header er-color-band">bands</div>
+      <div class="er-table-body"><div class="er-desc">バンド情報</div></div>
+    </div>
+    <div class="er-table">
+      <div class="er-table-header er-color-band">band_members</div>
+      <div class="er-table-body"><div class="er-desc">バンドメンバー</div><div class="er-rel">→ bands, users</div></div>
+    </div>
+    <div class="er-table">
+      <div class="er-table-header er-color-band">instrument_slots</div>
+      <div class="er-table-body"><div class="er-desc">楽器スロット</div><div class="er-rel">→ bands</div></div>
+    </div>
+    <div class="er-table">
+      <div class="er-table-header er-color-band">setlist_items</div>
+      <div class="er-table-body"><div class="er-desc">セットリスト曲</div><div class="er-rel">→ bands</div></div>
+    </div>
+
+    <!-- Event tables -->
+    <div class="er-table">
+      <div class="er-table-header er-color-event">events</div>
+      <div class="er-table-body"><div class="er-desc">ライブイベント</div><div class="er-rel">→ users</div></div>
+    </div>
+    <div class="er-table">
+      <div class="er-table-header er-color-event">event_bands</div>
+      <div class="er-table-body"><div class="er-desc">イベント参加バンド</div><div class="er-rel">→ events, bands</div></div>
+    </div>
+
+    <!-- Community tables -->
+    <div class="er-table">
+      <div class="er-table-header er-color-community">posts</div>
+      <div class="er-table-body"><div class="er-desc">コミュニティ投稿</div><div class="er-rel">→ users</div></div>
+    </div>
+    <div class="er-table">
+      <div class="er-table-header er-color-community">comments</div>
+      <div class="er-table-body"><div class="er-desc">投稿コメント</div><div class="er-rel">→ posts, users</div></div>
+    </div>
+    <div class="er-table">
+      <div class="er-table-header er-color-community">likes</div>
+      <div class="er-table-body"><div class="er-desc">いいね</div><div class="er-rel">→ posts, users</div></div>
+    </div>
+
+    <!-- Payment tables -->
+    <div class="er-table">
+      <div class="er-table-header er-color-payment">subscriptions</div>
+      <div class="er-table-body"><div class="er-desc">サブスクリプション情報</div><div class="er-rel">→ users</div></div>
+    </div>
+    <div class="er-table">
+      <div class="er-table-header er-color-payment">payments</div>
+      <div class="er-table-body"><div class="er-desc">決済履歴</div><div class="er-rel">→ users, subscriptions</div></div>
+    </div>
+
+    <!-- Practice tables -->
+    <div class="er-table">
+      <div class="er-table-header er-color-practice">practice_logs</div>
+      <div class="er-table-body"><div class="er-desc">練習記録（曲・時間・メモ・日付）</div><div class="er-rel">→ users, copy_songs</div></div>
+    </div>
+    <div class="er-table">
+      <div class="er-table-header er-color-practice">practice_streaks</div>
+      <div class="er-table-body"><div class="er-desc">ストリーク情報（連続日数・週間目標）</div><div class="er-rel">→ users</div></div>
+    </div>
+    <div class="er-table">
+      <div class="er-table-header er-color-practice">badges</div>
+      <div class="er-table-body"><div class="er-desc">バッジマスタ（名前・条件・カテゴリ）</div></div>
+    </div>
+    <div class="er-table">
+      <div class="er-table-header er-color-practice">badges_earned</div>
+      <div class="er-table-body"><div class="er-desc">獲得バッジ</div><div class="er-rel">→ users, badges</div></div>
+    </div>
+    <div class="er-table">
+      <div class="er-table-header er-color-user">friend_relations</div>
+      <div class="er-table-body"><div class="er-desc">フレンド関係</div><div class="er-rel">→ users</div></div>
+    </div>
+    <div class="er-table">
+      <div class="er-table-header er-color-user">social_accounts</div>
+      <div class="er-table-body"><div class="er-desc">SNS連携</div><div class="er-rel">→ users</div></div>
+    </div>
+    <div class="er-table">
+      <div class="er-table-header er-color-community">notifications</div>
+      <div class="er-table-body"><div class="er-desc">通知（type, title, message, read）</div><div class="er-rel">→ users</div></div>
+    </div>
+  </div>
+
+  <!-- ER Legend -->
+  <div style="margin-top:20px;display:flex;gap:16px;flex-wrap:wrap;font-size:0.78rem;">
+    <span style="display:flex;align-items:center;gap:6px;"><span style="width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,#7c3aed,#6d28d9);display:inline-block;"></span> ユーザー系</span>
+    <span style="display:flex;align-items:center;gap:6px;"><span style="width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,var(--aws-orange),#e68a00);display:inline-block;"></span> バンド系</span>
+    <span style="display:flex;align-items:center;gap:6px;"><span style="width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,var(--blue),#2563eb);display:inline-block;"></span> イベント系</span>
+    <span style="display:flex;align-items:center;gap:6px;"><span style="width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,var(--green),#16a34a);display:inline-block;"></span> コミュニティ系</span>
+    <span style="display:flex;align-items:center;gap:6px;"><span style="width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,var(--pink),#db2777);display:inline-block;"></span> 決済系</span>
+    <span style="display:flex;align-items:center;gap:6px;"><span style="width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,var(--secondary),#0891b2);display:inline-block;"></span> 練習/ゲーミフィケーション系</span>
+  </div>
+</section>
+
+<!-- 6. CI/CD -->
+<section id="cicd">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(255,153,0,0.15);color:var(--aws-orange);">&#128640;</span> CI/CD パイプライン</h2>
+    <p>GitHub Actions ベースの自動化パイプライン</p>
+  </div>
+
+  <div class="pipeline" style="margin-bottom:30px;">
+    <div class="pipeline-step">
+      <div class="ps-num">1</div>
+      <h4>Lint + 型チェック + テスト</h4>
+      <div class="ps-tool">ESLint / TypeScript / Jest</div>
+    </div>
+    <div class="pipeline-arrow">&#10145;</div>
+    <div class="pipeline-step">
+      <div class="ps-num">2</div>
+      <h4>Docker ビルド → ECR</h4>
+      <div class="ps-tool">マルチステージビルド</div>
+    </div>
+    <div class="pipeline-arrow">&#10145;</div>
+    <div class="pipeline-step">
+      <div class="ps-num">3</div>
+      <h4>Staging デプロイ</h4>
+      <div class="ps-tool">ECS サービス更新</div>
+    </div>
+    <div class="pipeline-arrow">&#10145;</div>
+    <div class="pipeline-step">
+      <div class="ps-num">4</div>
+      <h4>E2E テスト</h4>
+      <div class="ps-tool">Playwright</div>
+    </div>
+    <div class="pipeline-arrow">&#10145;</div>
+    <div class="pipeline-step" style="border-color:rgba(255,153,0,0.4);">
+      <div class="ps-num">5</div>
+      <h4>本番デプロイ</h4>
+      <div class="ps-tool">手動承認後 Rolling Update</div>
+    </div>
+    <div class="pipeline-arrow">&#10145;</div>
+    <div class="pipeline-step">
+      <div class="ps-num">6</div>
+      <h4>モバイルビルド</h4>
+      <div class="ps-tool">Xcode Cloud / Fastlane</div>
+    </div>
+  </div>
+
+  <div style="overflow-x:auto;">
+    <table class="nf-table">
+      <thead><tr><th>ステップ</th><th>ツール</th><th>詳細</th></tr></thead>
+      <tbody>
+        <tr><td>コード品質</td><td>ESLint + TypeScript</td><td>PR時に自動実行</td></tr>
+        <tr><td>テスト</td><td>Jest + React Testing Library</td><td>ユニットテスト・コンポーネントテスト</td></tr>
+        <tr><td>E2Eテスト</td><td>Playwright</td><td>主要フロー（登録→マッチング→バンド作成）の自動テスト</td></tr>
+        <tr><td>ビルド</td><td>Docker</td><td>マルチステージビルド（ビルド層 + 実行層）</td></tr>
+        <tr><td>デプロイ</td><td>ECS Rolling Update</td><td>ダウンタイムゼロ</td></tr>
+        <tr><td>本番デプロイ</td><td>手動承認</td><td>GitHub Actions の手動トリガー</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 8. MONITORING -->
+<section id="monitoring">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(99,102,241,0.15);color:var(--indigo);">&#128202;</span> 監視・アラート</h2>
+    <p>CloudWatch ベースの監視ダッシュボード</p>
+  </div>
+  <div class="card-grid">
+    <div class="monitor-card">
+      <div class="mc-target">ECS</div>
+      <div class="mc-metric">CPU使用率</div>
+      <div class="mc-threshold">&gt; 80% が5分継続</div>
+      <div class="mc-notify">Slack + メール</div>
+    </div>
+    <div class="monitor-card">
+      <div class="mc-target">ECS</div>
+      <div class="mc-metric">メモリ使用率</div>
+      <div class="mc-threshold">&gt; 80% が5分継続</div>
+      <div class="mc-notify">Slack + メール</div>
+    </div>
+    <div class="monitor-card">
+      <div class="mc-target">ALB</div>
+      <div class="mc-metric">5xxエラー率</div>
+      <div class="mc-threshold">&gt; 1% が3分継続</div>
+      <div class="mc-notify">Slack + メール</div>
+    </div>
+    <div class="monitor-card">
+      <div class="mc-target">ALB</div>
+      <div class="mc-metric">レスポンスタイム</div>
+      <div class="mc-threshold">P95 &gt; 2秒 が5分継続</div>
+      <div class="mc-notify">Slack</div>
+    </div>
+    <div class="monitor-card">
+      <div class="mc-target">Aurora</div>
+      <div class="mc-metric">CPU使用率</div>
+      <div class="mc-threshold">&gt; 70% が10分継続</div>
+      <div class="mc-notify">Slack + メール</div>
+    </div>
+    <div class="monitor-card">
+      <div class="mc-target">Aurora</div>
+      <div class="mc-metric">空きストレージ</div>
+      <div class="mc-threshold">&lt; 10GB</div>
+      <div class="mc-notify">メール</div>
+    </div>
+    <div class="monitor-card">
+      <div class="mc-target">Aurora</div>
+      <div class="mc-metric">コネクション数</div>
+      <div class="mc-threshold">&gt; 80%</div>
+      <div class="mc-notify">Slack</div>
+    </div>
+    <div class="monitor-card">
+      <div class="mc-target">CloudFront</div>
+      <div class="mc-metric">エラー率</div>
+      <div class="mc-threshold">&gt; 5% が5分継続</div>
+      <div class="mc-notify">Slack + メール</div>
+    </div>
+  </div>
+</section>
+
+<!-- 9. COST -->
+<section id="cost">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(234,179,8,0.15);color:var(--yellow);">&#128176;</span> コスト見積もり（月額・初期構成）</h2>
+    <p>合計: 約 $305/月（約46,000円）</p>
+  </div>
+
+  <div class="card" style="margin-bottom:24px;">
+    <div class="cost-bar-container">
+      <div class="cost-bar-label"><span>Aurora PostgreSQL (db.t4g.medium x2 Multi-AZ)</span><span>$130</span></div>
+      <div class="cost-bar"><div class="cost-bar-fill" style="width:42.6%;"></div></div>
+    </div>
+    <div class="cost-bar-container">
+      <div class="cost-bar-label"><span>NAT Gateway (1台 + データ処理)</span><span>$40</span></div>
+      <div class="cost-bar"><div class="cost-bar-fill" style="width:13.1%;"></div></div>
+    </div>
+    <div class="cost-bar-container">
+      <div class="cost-bar-label"><span>ECS Fargate (0.5 vCPU / 1GB x2)</span><span>$30</span></div>
+      <div class="cost-bar"><div class="cost-bar-fill" style="width:9.8%;"></div></div>
+    </div>
+    <div class="cost-bar-container">
+      <div class="cost-bar-label"><span>ALB (1台)</span><span>$25</span></div>
+      <div class="cost-bar"><div class="cost-bar-fill" style="width:8.2%;"></div></div>
+    </div>
+    <div class="cost-bar-container">
+      <div class="cost-bar-label"><span>RDS Proxy (1エンドポイント)</span><span>$20</span></div>
+      <div class="cost-bar"><div class="cost-bar-fill" style="width:6.6%;"></div></div>
+    </div>
+    <div class="cost-bar-container">
+      <div class="cost-bar-label"><span>ElastiCache (cache.t4g.micro x1)</span><span>$15</span></div>
+      <div class="cost-bar"><div class="cost-bar-fill" style="width:4.9%;"></div></div>
+    </div>
+    <div class="cost-bar-container">
+      <div class="cost-bar-label"><span>CloudWatch (ログ・メトリクス)</span><span>$15</span></div>
+      <div class="cost-bar"><div class="cost-bar-fill" style="width:4.9%;"></div></div>
+    </div>
+    <div class="cost-bar-container">
+      <div class="cost-bar-label"><span>CloudFront (100GB転送/月)</span><span>$10</span></div>
+      <div class="cost-bar"><div class="cost-bar-fill" style="width:3.3%;"></div></div>
+    </div>
+    <div class="cost-bar-container">
+      <div class="cost-bar-label"><span>WAF (1 Web ACL + ルール)</span><span>$10</span></div>
+      <div class="cost-bar"><div class="cost-bar-fill" style="width:3.3%;"></div></div>
+    </div>
+    <div class="cost-bar-container">
+      <div class="cost-bar-label"><span>S3 (50GB + リクエスト)</span><span>$3</span></div>
+      <div class="cost-bar"><div class="cost-bar-fill" style="width:1%;"></div></div>
+    </div>
+    <div class="cost-bar-container">
+      <div class="cost-bar-label"><span>Secrets Manager (5シークレット)</span><span>$3</span></div>
+      <div class="cost-bar"><div class="cost-bar-fill" style="width:1%;"></div></div>
+    </div>
+    <div class="cost-bar-container">
+      <div class="cost-bar-label"><span>ECR (イメージ保存)</span><span>$2</span></div>
+      <div class="cost-bar"><div class="cost-bar-fill" style="width:0.7%;"></div></div>
+    </div>
+    <div class="cost-bar-container">
+      <div class="cost-bar-label"><span>Route 53 (1ホストゾーン)</span><span>$1</span></div>
+      <div class="cost-bar"><div class="cost-bar-fill" style="width:0.3%;"></div></div>
+    </div>
+    <div class="cost-bar-container">
+      <div class="cost-bar-label"><span>SES (10,000通/月)</span><span>$1</span></div>
+      <div class="cost-bar"><div class="cost-bar-fill" style="width:0.3%;"></div></div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:20px;flex-wrap:wrap;">
+    <div class="metric-card" style="flex:1;min-width:200px;border:2px solid var(--aws-orange);">
+      <div class="metric-label">月額合計</div>
+      <div class="metric-value">$305/月</div>
+      <div class="metric-label">約46,000円</div>
+    </div>
+    <div class="metric-card" style="flex:1;min-width:200px;">
+      <div class="metric-label">備考</div>
+      <div class="metric-value" style="font-size:0.9rem;">Cognito無料枠</div>
+      <div class="metric-label">5万MAUまで無料。<br>トラフィック増加に伴いスケールアップが必要。</div>
+    </div>
+  </div>
+</section>
+
+<!-- 10. SCHEDULE -->
+<section id="schedule">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(236,72,153,0.15);color:var(--pink);">&#128197;</span> 開発スケジュール（案）</h2>
+    <p>合計: 約14週間（3.5ヶ月）</p>
+  </div>
+
+  <!-- Gantt chart -->
+  <div class="gantt">
+    <div class="gantt-week-markers">
+      <span>W1</span><span>W2</span><span>W3</span><span>W4</span><span>W5</span><span>W6</span><span>W7</span><span>W8</span><span>W9</span><span>W10</span><span>W11</span><span>W12</span><span>W13</span><span>W14</span>
+    </div>
+
+    <div class="gantt-row">
+      <div class="gantt-label">Phase 1: 基盤構築</div>
+      <div class="gantt-track">
+        <div class="gantt-bar" style="left:0%;width:14.3%;background:linear-gradient(90deg,var(--aws-orange),#e68a00);">2W</div>
+      </div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label">Phase 2: コア機能</div>
+      <div class="gantt-track">
+        <div class="gantt-bar" style="left:14.3%;width:28.6%;background:linear-gradient(90deg,var(--primary),var(--primary-light));">4W</div>
+      </div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label">Phase 3: 拡張機能</div>
+      <div class="gantt-track">
+        <div class="gantt-bar" style="left:42.9%;width:21.4%;background:linear-gradient(90deg,var(--secondary),#22d3ee);">3W</div>
+      </div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label">Phase 4: 管理機能</div>
+      <div class="gantt-track">
+        <div class="gantt-bar" style="left:64.3%;width:14.3%;background:linear-gradient(90deg,var(--green),#4ade80);">2W</div>
+      </div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label">Phase 5: テスト・改善</div>
+      <div class="gantt-track">
+        <div class="gantt-bar" style="left:78.6%;width:14.3%;background:linear-gradient(90deg,var(--pink),#f472b6);">2W</div>
+      </div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label">Phase 6: リリース</div>
+      <div class="gantt-track">
+        <div class="gantt-bar" style="left:92.9%;width:7.1%;background:linear-gradient(90deg,var(--accent),#fca5a1);">1W</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase details -->
+  <div class="card-grid" style="margin-top:30px;">
+    <div class="feat-item" style="border-left:3px solid var(--aws-orange);">
+      <h4 style="color:var(--aws-orange);">Phase 1: 基盤構築（2週間）</h4>
+      <div class="feat-desc">AWS環境構築、CI/CD、DB設計、認証実装</div>
+    </div>
+    <div class="feat-item" style="border-left:3px solid var(--primary-light);">
+      <h4 style="color:var(--primary-light);">Phase 2: コア機能（4週間）</h4>
+      <div class="feat-desc">ユーザー管理、マッチング、バンド管理のAPI＋フロント接続</div>
+    </div>
+    <div class="feat-item" style="border-left:3px solid var(--secondary);">
+      <h4 style="color:var(--secondary);">Phase 3: 拡張機能（3週間）</h4>
+      <div class="feat-desc">イベント、コミュニティ、サブスクリプション（Stripe連携）</div>
+    </div>
+    <div class="feat-item" style="border-left:3px solid var(--green);">
+      <h4 style="color:var(--green);">Phase 4: 管理機能（2週間）</h4>
+      <div class="feat-desc">管理ダッシュボード、コンテンツ管理</div>
+    </div>
+    <div class="feat-item" style="border-left:3px solid var(--pink);">
+      <h4 style="color:var(--pink);">Phase 5: テスト・改善（2週間）</h4>
+      <div class="feat-desc">E2Eテスト、パフォーマンス改善、セキュリティ監査</div>
+    </div>
+    <div class="feat-item" style="border-left:3px solid var(--accent);">
+      <h4 style="color:var(--accent);">Phase 6: リリース（1週間）</h4>
+      <div class="feat-desc">本番デプロイ、モニタリング確認、ソフトローンチ</div>
+    </div>
+  </div>
+</section>
+
+<!-- 11. FUTURE -->
+<section id="future">
+  <div class="section-header">
+    <h2><span class="icon" style="background:rgba(99,102,241,0.15);color:var(--indigo);">&#128302;</span> 今後の拡張計画</h2>
+    <p>ローンチ後の機能拡張ロードマップ</p>
+  </div>
+  <div class="card-grid">
+    <div class="future-item">
+      <h4>プッシュ通知</h4>
+      <div class="fi-desc">Amazon SNS + FCM</div>
+      <div class="fi-when">Phase 3以降</div>
+    </div>
+    <div class="future-item">
+      <h4>リアルタイムチャット</h4>
+      <div class="fi-desc">API Gateway WebSocket + Lambda</div>
+      <div class="fi-when">ローンチ後1ヶ月</div>
+    </div>
+    <div class="future-item">
+      <h4>画像最適化</h4>
+      <div class="fi-desc">Lambda@Edge + Sharp</div>
+      <div class="fi-when">ローンチ後</div>
+    </div>
+    <div class="future-item">
+      <h4>モバイルアプリ</h4>
+      <div class="fi-desc">Capacitor で対応済み</div>
+      <div class="fi-when">対応完了</div>
+    </div>
+    <div class="future-item">
+      <h4>AI推薦</h4>
+      <div class="fi-desc">Amazon Personalize でマッチング精度向上</div>
+      <div class="fi-when">ユーザー数10,000到達後</div>
+    </div>
+    <div class="future-item">
+      <h4>多言語対応</h4>
+      <div class="fi-desc">next-intl + 翻訳API</div>
+      <div class="fi-when">海外展開検討時</div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /container -->
+
+<footer>
+  BandMatch AWS要件定義書 &mdash; 初心者コピバン向けコミュニティアプリ
+</footer>
+
+</body>
+</html>

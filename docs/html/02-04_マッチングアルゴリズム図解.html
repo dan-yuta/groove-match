@@ -771,7 +771,7 @@
   <div class="badge-row">
     <span class="badge badge-purple">6要素スコアリング</span>
     <span class="badge badge-cyan">160pt 満点</span>
-    <span class="badge badge-green">100pt 正規化</span>
+    <span class="badge badge-green">100pt上限クランプ</span>
     <span class="badge badge-pink">曲マッチング重視</span>
     <span class="badge badge-orange">コピバン特化</span>
   </div>
@@ -796,7 +796,7 @@
 <!-- ===== OVERVIEW ===== -->
 <div class="section" id="overview">
   <h2 class="section-title">スコアリング要素の概要</h2>
-  <p class="section-desc">総合スコアは6つの要素を合算し、最大160ptを100ptに正規化して算出します。<br>コピバン特化のマッチングとして、<strong>やりたい曲の一致</strong>を最重要スコア要素として導入しています。<br></p>
+  <p class="section-desc">総合スコアは6つの要素を合算し、100pt上限でクランプ（Math.min(100, total)）して算出します。<br>コピバン特化のマッチングとして、<strong>やりたい曲・演奏できる曲の一致</strong>を最重要スコア要素として導入しています。<br></p>
 
   <div class="overview-grid">
     <div class="overview-card card-region">
@@ -1129,7 +1129,7 @@
 <!-- ===== 6. SONG MATCHING (HIGHLIGHT) ===== -->
 <div class="section" id="song">
   <h2 class="section-title">6. 曲マッチングスコア ★</h2>
-  <p class="section-desc">コピバンの核心である「同じ曲をやりたい」マッチングを最重要スコアとして算出します。<br>曲の一致、アーティストの一致、同アーティスト別曲の3要素で構成されます。<br></p>
+  <p class="section-desc">コピバンの核心である「同じ曲をやりたい・演奏できる」マッチングを最重要スコアとして算出します。<br>曲の一致（wantToPlaySongs + canPlaySongs）とアーティストの一致の2要素で構成されます。<br></p>
 
   <div class="detail-card song-highlight">
     <div class="detail-header">
@@ -1142,7 +1142,10 @@
 
     <!-- 6.1 Song Match -->
     <div class="song-sub-section">
-      <h4>6.1 やりたい曲の一致（最大35pt）</h4>
+      <h4>6.1 曲の一致（最大35pt）</h4>
+      <p style="font-size: 0.88rem; color: var(--text-dim); margin-bottom: 12px;">
+        wantToPlaySongs（やりたい曲）と canPlaySongs（演奏できる曲）の両方を合わせた曲リストで比較します。<br>
+      </p>
       <div class="formula-box">
         基本スコア = 一致曲数 × 7（最大5曲 = 35pt）
       </div>
@@ -1166,22 +1169,11 @@
         やりたい曲が完全一致しなくても、好きなアーティストが同じなら親和性が高いと判断します。<br>
       </p>
       <div class="formula-box">
-        アーティストボーナス = 一致アーティスト数 × 3（最大15pt）<br>
+        アーティストボーナス = 一致アーティスト数 × 5（最大15pt）<br>
         ※ 曲スコアとの合計で35ptが上限
       </div>
     </div>
 
-    <!-- 6.3 Same Artist Different Song -->
-    <div class="song-sub-section">
-      <h4>6.3 同アーティスト別曲ボーナス</h4>
-      <p style="font-size: 0.88rem; color: var(--text-dim); margin-bottom: 12px;">
-        同じアーティストの違う曲をやりたい場合も、コピバンとしての親和性が高いと評価します。<br>
-      </p>
-      <div class="formula-box">
-        同アーティスト別曲ボーナス = 該当数 × 2（最大10pt）<br>
-        ※ 曲スコア合計35ptの内数
-      </div>
-    </div>
 
     <!-- Visual Overlap Example -->
     <div class="song-sub-section" style="border-color: var(--primary); background: rgba(124,58,237,0.03);">
@@ -1191,7 +1183,7 @@
         <div class="overlap-set">
           <h5>👤 ユーザーA</h5>
           <div style="margin-bottom: 10px;">
-            <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:6px;">やりたい曲:</div>
+            <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:6px;">やりたい曲 / 演奏できる曲:</div>
             <span class="song-tag song-match">天体観測 (BUMP)</span>
             <span class="song-tag song-no-match">花の名 (BUMP)</span>
             <span class="song-tag song-match">完全感覚Dreamer (ONE OK ROCK)</span>
@@ -1211,7 +1203,7 @@
         <div class="overlap-set">
           <h5>👤 ユーザーB</h5>
           <div style="margin-bottom: 10px;">
-            <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:6px;">やりたい曲:</div>
+            <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:6px;">やりたい曲 / 演奏できる曲:</div>
             <span class="song-tag song-match">天体観測 (BUMP)</span>
             <span class="song-tag song-no-match">ロストワンの号哭 (Neru)</span>
             <span class="song-tag song-match">完全感覚Dreamer (ONE OK ROCK)</span>
@@ -1237,17 +1229,11 @@
             アーティスト一致: BUMP OF CHICKEN = 1
           </div>
           <div style="padding: 8px 14px; background: rgba(6,182,212,0.15); border-radius: 8px; font-size: 0.88rem; font-weight: 700; color: var(--secondary); border: 1px solid rgba(6,182,212,0.3);">
-            +3pt
-          </div>
-          <div style="padding: 8px 14px; background: var(--surface); border-radius: 8px; font-size: 0.88rem; border: 1px solid var(--border); color: var(--text-dim);">
-            同アーティスト別曲（既に曲一致でカウント済み）
-          </div>
-          <div style="padding: 8px 14px; background: rgba(100,116,139,0.1); border-radius: 8px; font-size: 0.88rem; font-weight: 700; color: var(--text-muted); border: 1px solid rgba(100,116,139,0.3);">
-            +0pt
+            +5pt
           </div>
         </div>
         <div class="calc-total" style="max-width: 500px; margin-top: 16px;">
-          曲マッチング合計: 17pt / 35pt
+          曲マッチング合計: 19pt / 35pt
         </div>
       </div>
     </div>
@@ -1258,12 +1244,12 @@
 
 <!-- ===== NORMALIZATION ===== -->
 <div class="section" id="normalize">
-  <h2 class="section-title">スコア正規化</h2>
-  <p class="section-desc">6要素の合計（最大160pt）を100ptスケールに正規化します。<br></p>
+  <h2 class="section-title">スコア正規化（クランプ）</h2>
+  <p class="section-desc">6要素の合計（最大160pt）を100pt上限でクランプ（Math.min(100, total)）します。<br></p>
 
   <div class="detail-card">
     <div class="formula-box" style="text-align: center; font-size: 1.1rem;">
-      正規化スコア = (素点合計 / 160) × 100
+      正規化スコア = Math.min(100, 素点合計)
     </div>
 
     <div class="pipeline">
@@ -1274,15 +1260,9 @@
       </div>
       <span class="pipe-connector">→</span>
       <div class="pipe-step">
-        <div class="pipe-label">除算</div>
-        <div class="pipe-value" style="color: var(--secondary);">÷ 160</div>
-        <div class="pipe-sub">最大値で割る</div>
-      </div>
-      <span class="pipe-connector">→</span>
-      <div class="pipe-step">
-        <div class="pipe-label">乗算</div>
-        <div class="pipe-value" style="color: var(--orange);">× 100</div>
-        <div class="pipe-sub">100点満点に変換</div>
+        <div class="pipe-label">クランプ</div>
+        <div class="pipe-value" style="color: var(--secondary);">Math.min(100, total)</div>
+        <div class="pipe-sub">100ptを超えたら100ptに切り詰め</div>
       </div>
       <span class="pipe-connector">→</span>
       <div class="pipe-step" style="border-color: var(--primary); box-shadow: 0 0 20px rgba(124,58,237,0.15);">
@@ -1297,16 +1277,16 @@
       <div class="scenario-row">
         <span>素点合計: 120pt</span>
         <span class="scenario-arrow">→</span>
-        <span>(120 / 160) × 100</span>
+        <span>Math.min(100, 120)</span>
         <span class="scenario-arrow">=</span>
-        <span class="scenario-result" style="background: rgba(124,58,237,0.2); color: var(--primary-light);">75.0pt</span>
+        <span class="scenario-result" style="background: rgba(124,58,237,0.2); color: var(--primary-light);">100pt</span>
       </div>
       <div class="scenario-row">
         <span>素点合計: 88pt</span>
         <span class="scenario-arrow">→</span>
-        <span>(88 / 160) × 100</span>
+        <span>Math.min(100, 88)</span>
         <span class="scenario-arrow">=</span>
-        <span class="scenario-result" style="background: rgba(234,179,8,0.2); color: var(--yellow);">55.0pt</span>
+        <span class="scenario-result" style="background: rgba(234,179,8,0.2); color: var(--yellow);">88pt</span>
       </div>
     </div>
   </div>
@@ -1327,7 +1307,7 @@
       <div class="profile-field"><span class="field-label">ジャンル</span><span class="field-value">ロック, パンク, ポップ</span></div>
       <div class="profile-field"><span class="field-label">スキル</span><span class="field-value">intermediate (2)</span></div>
       <div class="profile-field"><span class="field-label">スケジュール</span><span class="field-value">月, 水, 金（夜）</span></div>
-      <div class="profile-field"><span class="field-label">やりたい曲</span><span class="field-value">天体観測, 花の名, 完全感覚Dreamer</span></div>
+      <div class="profile-field"><span class="field-label">やりたい曲 / 演奏できる曲</span><span class="field-value">天体観測, 花の名, 完全感覚Dreamer</span></div>
       <div class="profile-field"><span class="field-label">好きなアーティスト</span><span class="field-value">BUMP, ONE OK ROCK</span></div>
     </div>
 
@@ -1342,7 +1322,7 @@
       <div class="profile-field"><span class="field-label">ジャンル</span><span class="field-value">ロック, パンク, メタル</span></div>
       <div class="profile-field"><span class="field-label">スキル</span><span class="field-value">advanced (3)</span></div>
       <div class="profile-field"><span class="field-label">スケジュール</span><span class="field-value">水, 金（夜）, 土</span></div>
-      <div class="profile-field"><span class="field-label">やりたい曲</span><span class="field-value">天体観測, ロストワンの号哭, 完全感覚Dreamer</span></div>
+      <div class="profile-field"><span class="field-label">やりたい曲 / 演奏できる曲</span><span class="field-value">天体観測, ロストワンの号哭, 完全感覚Dreamer</span></div>
       <div class="profile-field"><span class="field-label">好きなアーティスト</span><span class="field-value">BUMP, Neru</span></div>
     </div>
   </div>
@@ -1398,10 +1378,10 @@
     <div class="breakdown-item" style="border-color: rgba(124,58,237,0.3);">
       <div class="bi-top">
         <span class="bi-name">🎤 曲マッチングスコア</span>
-        <span class="bi-score" style="color: var(--primary-light);">17 / 35pt</span>
+        <span class="bi-score" style="color: var(--primary-light);">19 / 35pt</span>
       </div>
-      <div class="bi-bar-bg"><div class="bi-bar" style="width: 48.6%; background: linear-gradient(90deg, #7c3aed, #8b5cf6);"></div></div>
-      <div class="bi-detail">曲一致2曲=14pt + アーティスト一致1=+3pt</div>
+      <div class="bi-bar-bg"><div class="bi-bar" style="width: 54.3%; background: linear-gradient(90deg, #7c3aed, #8b5cf6);"></div></div>
+      <div class="bi-detail">曲一致2曲=14pt + アーティスト一致1=+5pt</div>
     </div>
   </div>
 
@@ -1409,19 +1389,19 @@
   <div class="pipeline" style="margin-top: 30px;">
     <div class="pipe-step">
       <div class="pipe-label">素点合計</div>
-      <div class="pipe-value" style="color: var(--text);">110.3pt</div>
-      <div class="pipe-sub">25+20+13.3+10+25+17</div>
+      <div class="pipe-value" style="color: var(--text);">112.3pt</div>
+      <div class="pipe-sub">25+20+13.3+10+25+19</div>
     </div>
     <span class="pipe-connector">→</span>
     <div class="pipe-step">
-      <div class="pipe-label">正規化</div>
-      <div class="pipe-value" style="color: var(--secondary);">÷ 160 × 100</div>
+      <div class="pipe-label">クランプ</div>
+      <div class="pipe-value" style="color: var(--secondary);">Math.min(100, total)</div>
     </div>
     <span class="pipe-connector">→</span>
     <div class="pipe-step" style="border-color: var(--green); box-shadow: 0 0 20px rgba(34,197,94,0.15);">
       <div class="pipe-label">最終スコア</div>
-      <div class="pipe-value" style="color: var(--green);">68.9pt</div>
-      <div class="pipe-sub">マッチ度: 高い</div>
+      <div class="pipe-value" style="color: var(--green);">100pt</div>
+      <div class="pipe-sub">マッチ度: 最高</div>
     </div>
   </div>
 </div>
@@ -1431,7 +1411,7 @@
 <!-- ===== TIERS ===== -->
 <div class="section" id="tiers">
   <h2 class="section-title">スコア評価ティア</h2>
-  <p class="section-desc">正規化後のスコアに基づく評価レベルです。<br></p>
+  <p class="section-desc">クランプ後のスコア（0〜100pt）に基づく評価レベルです。<br></p>
 
   <div class="tier-grid">
     <div class="tier-card tier-excellent">
@@ -1484,7 +1464,7 @@
 </div>
 
 <div style="text-align: center; padding: 40px; color: var(--text-muted); font-size: 0.8rem; border-top: 1px solid var(--border);">
-  BandMatch マッチングアルゴリズム図解 &mdash; 全6要素 / 160pt満点 / 100pt正規化
+  BandMatch マッチングアルゴリズム図解 &mdash; 全6要素 / 最大160pt / 100pt上限クランプ
 </div>
 
 </body>

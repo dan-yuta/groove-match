@@ -211,36 +211,70 @@ export default function LoginPage() {
                 </svg>
               </div>
               <div className="flex-1">
-                <p className="text-text-secondary font-medium mb-1">デモアカウント</p>
-                <div className="space-y-1">
-                  <p className="text-text-muted flex items-center gap-1.5">
-                    <span className="text-primary-light">admin@bandmatch.jp</span>
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard('admin@bandmatch.jp', 'demo-email')}
-                      className={`px-1.5 py-0.5 rounded text-[10px] border transition-all ${
-                        copiedField === 'demo-email'
-                          ? 'border-green-500/40 text-green-400 bg-green-500/10'
-                          : 'border-border-light text-text-muted hover:border-primary/40 hover:text-primary-light'
-                      }`}
-                    >
-                      {copiedField === 'demo-email' ? 'Copied' : 'Copy'}
-                    </button>
-                  </p>
-                  <p className="text-text-muted flex items-center gap-1.5">
-                    <span className="text-primary-light">admin1234</span>
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard('admin1234', 'demo-pw')}
-                      className={`px-1.5 py-0.5 rounded text-[10px] border transition-all ${
-                        copiedField === 'demo-pw'
-                          ? 'border-green-500/40 text-green-400 bg-green-500/10'
-                          : 'border-border-light text-text-muted hover:border-primary/40 hover:text-primary-light'
-                      }`}
-                    >
-                      {copiedField === 'demo-pw' ? 'Copied' : 'Copy'}
-                    </button>
-                  </p>
+                <p className="text-text-secondary font-medium mb-2">デモアカウント</p>
+                <div className="space-y-2">
+                  <div>
+                    <p className="text-text-muted text-[10px] font-medium mb-0.5">一般ユーザー</p>
+                    <p className="text-text-muted flex items-center gap-1.5">
+                      <span className="text-primary-light">tanaka@example.com</span>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard('tanaka@example.com', 'user-email')}
+                        className={`px-1.5 py-0.5 rounded text-[10px] border transition-all ${
+                          copiedField === 'user-email'
+                            ? 'border-green-500/40 text-green-400 bg-green-500/10'
+                            : 'border-border-light text-text-muted hover:border-primary/40 hover:text-primary-light'
+                        }`}
+                      >
+                        {copiedField === 'user-email' ? 'Copied' : 'Copy'}
+                      </button>
+                    </p>
+                    <p className="text-text-muted flex items-center gap-1.5">
+                      <span className="text-primary-light">pass1234</span>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard('pass1234', 'user-pw')}
+                        className={`px-1.5 py-0.5 rounded text-[10px] border transition-all ${
+                          copiedField === 'user-pw'
+                            ? 'border-green-500/40 text-green-400 bg-green-500/10'
+                            : 'border-border-light text-text-muted hover:border-primary/40 hover:text-primary-light'
+                        }`}
+                      >
+                        {copiedField === 'user-pw' ? 'Copied' : 'Copy'}
+                      </button>
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-text-muted text-[10px] font-medium mb-0.5">管理者</p>
+                    <p className="text-text-muted flex items-center gap-1.5">
+                      <span className="text-primary-light">admin@bandmatch.jp</span>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard('admin@bandmatch.jp', 'demo-email')}
+                        className={`px-1.5 py-0.5 rounded text-[10px] border transition-all ${
+                          copiedField === 'demo-email'
+                            ? 'border-green-500/40 text-green-400 bg-green-500/10'
+                            : 'border-border-light text-text-muted hover:border-primary/40 hover:text-primary-light'
+                        }`}
+                      >
+                        {copiedField === 'demo-email' ? 'Copied' : 'Copy'}
+                      </button>
+                    </p>
+                    <p className="text-text-muted flex items-center gap-1.5">
+                      <span className="text-primary-light">admin1234</span>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard('admin1234', 'demo-pw')}
+                        className={`px-1.5 py-0.5 rounded text-[10px] border transition-all ${
+                          copiedField === 'demo-pw'
+                            ? 'border-green-500/40 text-green-400 bg-green-500/10'
+                            : 'border-border-light text-text-muted hover:border-primary/40 hover:text-primary-light'
+                        }`}
+                      >
+                        {copiedField === 'demo-pw' ? 'Copied' : 'Copy'}
+                      </button>
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

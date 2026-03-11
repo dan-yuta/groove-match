@@ -1052,7 +1052,7 @@
       <div class="f-icon">🔍</div>
       <div class="f-title" style="color: var(--primary-light);">3. コピバンマッチング</div>
       <ul class="f-list">
-        <li>6要素のスコアリングアルゴリズム（最大160pt→100pt正規化）</li>
+        <li>6要素のスコアリングアルゴリズム（合計を100ptでクランプ）</li>
         <li>地域・楽器・ジャンル・スキル・スケジュール・曲</li>
         <li>やりたい曲の一致で高スコア</li>
         <li>フィルター: 曲、アーティスト、ジャンル、楽器、地域、スキルレベル</li>
@@ -1087,7 +1087,7 @@
       <div class="f-title">6. コミュニティ</div>
       <ul class="f-list">
         <li>タイムライン（投稿一覧）</li>
-        <li>投稿タイプ: 一般、練習ログ、マイルストーン、質問</li>
+        <li>投稿タイプ: 一般、練習ログ、マイルストーン、質問、カバー動画</li>
         <li>いいね・コメント機能</li>
         <li>練習ログ（練習時間記録）</li>
         <li>マイルストーン（初セッション、初ライブ、バンド結成等）</li>
@@ -1166,49 +1166,49 @@
 <!-- ==================== マッチングスコアリング ==================== -->
 <section id="matching">
   <div class="section-title"><span class="icon">📊</span> マッチングスコアリング</div>
-  <div class="section-subtitle">6要素スコアリングアルゴリズム（最大160pt → 100ptに正規化）</div>
+  <div class="section-subtitle">6要素スコアリングアルゴリズム（合計を Math.min で100ptにクランプ）</div>
 
   <div class="match-bars">
     <div class="match-bar-row">
       <div class="match-bar-label" style="color: var(--accent);">🗺️ 地域</div>
       <div class="match-bar-track">
-        <div class="match-bar-fill" style="width: 25%; background: linear-gradient(90deg, var(--accent), #fb923c);">40pt</div>
-        <div class="match-bar-max">/ 160</div>
+        <div class="match-bar-fill" style="width: 40%; background: linear-gradient(90deg, var(--accent), #fb923c);">40pt</div>
+        <div class="match-bar-max">/ 100</div>
       </div>
     </div>
     <div class="match-bar-row">
       <div class="match-bar-label" style="color: var(--secondary);">🎸 楽器</div>
       <div class="match-bar-track">
-        <div class="match-bar-fill" style="width: 12.5%; background: linear-gradient(90deg, var(--secondary), var(--blue));">20pt</div>
-        <div class="match-bar-max">/ 160</div>
+        <div class="match-bar-fill" style="width: 20%; background: linear-gradient(90deg, var(--secondary), var(--blue));">20pt</div>
+        <div class="match-bar-max">/ 100</div>
       </div>
     </div>
     <div class="match-bar-row">
       <div class="match-bar-label" style="color: var(--pink);">🎶 ジャンル</div>
       <div class="match-bar-track">
-        <div class="match-bar-fill" style="width: 12.5%; background: linear-gradient(90deg, var(--pink), #a855f7);">20pt</div>
-        <div class="match-bar-max">/ 160</div>
+        <div class="match-bar-fill" style="width: 20%; background: linear-gradient(90deg, var(--pink), #a855f7);">20pt</div>
+        <div class="match-bar-max">/ 100</div>
       </div>
     </div>
     <div class="match-bar-row">
       <div class="match-bar-label" style="color: var(--yellow);">⭐ スキル</div>
       <div class="match-bar-track">
-        <div class="match-bar-fill" style="width: 9.375%; background: linear-gradient(90deg, var(--yellow), var(--orange));">15pt</div>
-        <div class="match-bar-max">/ 160</div>
+        <div class="match-bar-fill" style="width: 15%; background: linear-gradient(90deg, var(--yellow), var(--orange));">15pt</div>
+        <div class="match-bar-max">/ 100</div>
       </div>
     </div>
     <div class="match-bar-row">
       <div class="match-bar-label" style="color: var(--green);">📅 スケジュール</div>
       <div class="match-bar-track">
-        <div class="match-bar-fill" style="width: 18.75%; background: linear-gradient(90deg, var(--green), #2dd4bf);">30pt</div>
-        <div class="match-bar-max">/ 160</div>
+        <div class="match-bar-fill" style="width: 30%; background: linear-gradient(90deg, var(--green), #2dd4bf);">30pt</div>
+        <div class="match-bar-max">/ 100</div>
       </div>
     </div>
     <div class="match-bar-row">
       <div class="match-bar-label" style="color: var(--primary-light);">🎵 曲マッチング</div>
       <div class="match-bar-track">
-        <div class="match-bar-fill" style="width: 21.875%; background: linear-gradient(90deg, var(--primary), var(--primary-light));">35pt</div>
-        <div class="match-bar-max">/ 160</div>
+        <div class="match-bar-fill" style="width: 35%; background: linear-gradient(90deg, var(--primary), var(--primary-light));">35pt</div>
+        <div class="match-bar-max">/ 100</div>
       </div>
     </div>
   </div>
@@ -1230,7 +1230,7 @@
         <tr><td style="font-weight:600; color: var(--pink);">🎶 ジャンル</td><td>20pt</td><td>共通ジャンル比率 × 20</td></tr>
         <tr><td style="font-weight:600; color: var(--yellow);">⭐ スキル</td><td>15pt</td><td>レベル差が小さいほど高スコア</td></tr>
         <tr><td style="font-weight:600; color: var(--green);">📅 スケジュール</td><td>30pt</td><td>共通曜日比率 × 30 + 時間帯重複ボーナス</td></tr>
-        <tr><td style="font-weight:600; color: var(--primary-light);">🎵 曲マッチング</td><td>35pt</td><td>やりたい曲の一致数 × 7（最大5曲分）+ アーティスト一致ボーナス</td></tr>
+        <tr><td style="font-weight:600; color: var(--primary-light);">🎵 曲マッチング</td><td>35pt</td><td>(wantToPlaySongs + canPlaySongs) 共通曲数 × 7 + アーティスト一致 × 5（35pt内数）</td></tr>
       </tbody>
     </table>
   </div>
@@ -1239,9 +1239,10 @@
   <div style="margin-top: 28px;">
     <div class="callout">
       <strong>🎵 曲マッチング詳細:</strong><br>
-      やりたい曲（wantToPlaySongs）が1曲一致するごとに <strong>7pt</strong>（最大35pt）<br>
-      好きなアーティストが一致する場合、アーティストごとに <strong>+3pt</strong> のボーナス（曲マッチング35ptの内数）<br>
-      同じアーティストの別の曲をやりたい場合も親和性が高いため <strong>+2pt</strong><br>
+      曲マッチングは wantToPlaySongs と canPlaySongs を結合して比較します。<br>
+      共通曲が1曲一致するごとに <strong>7pt</strong>（最大35pt）<br>
+      好きなアーティスト（favoriteArtists）が一致する場合、アーティストごとに <strong>+5pt</strong> のボーナス（曲マッチング35ptの内数）<br>
+      スコア合計は <strong>Math.min(100, total)</strong> で100ptにクランプされます。<br>
     </div>
   </div>
 
@@ -1388,10 +1389,12 @@
         <div class="er-field"><span class="er-field-name">instruments[]</span><span class="er-field-type">Instrument[]</span></div>
         <div class="er-field"><span class="er-field-name">genres[]</span><span class="er-field-type">string[]</span></div>
         <div class="er-field"><span class="er-field-name">schedule[]</span><span class="er-field-type">Schedule[]</span></div>
-        <div class="er-field"><span class="er-field-name">wantToPlaySongs[]</span><span class="er-field-type">Song[]</span></div>
+        <div class="er-field"><span class="er-field-name">wantToPlaySongs[]</span><span class="er-field-type">string[] (CopySong ID)</span></div>
+        <div class="er-field"><span class="er-field-name">canPlaySongs[]</span><span class="er-field-type">string[] (CopySong ID)</span></div>
         <div class="er-field"><span class="er-field-name">favoriteArtists[]</span><span class="er-field-type">string[]</span></div>
         <div class="er-field"><span class="er-field-name">subscription</span><span class="er-field-type">'free' | 'pro'</span></div>
-        <div class="er-field"><span class="er-field-name">practiceStreak</span><span class="er-field-type">number</span></div>
+        <div class="er-field"><span class="er-field-name">practiceStreak</span><span class="er-field-type">PracticeStreak</span></div>
+        <div class="er-field"><span class="er-field-name">authProvider</span><span class="er-field-type">AuthProvider</span></div>
         <div class="er-field"><span class="er-field-name">socialAccounts[]</span><span class="er-fk">→ SocialAccount</span></div>
         <div class="er-field"><span class="er-field-name">friends[]</span><span class="er-fk">→ User.id</span></div>
         <div class="er-field"><span class="er-field-name">badges[]</span><span class="er-fk">→ Badge.id</span></div>
@@ -1407,7 +1410,7 @@
         <div class="er-field"><span class="er-field-name">name</span><span class="er-field-type">string</span></div>
         <div class="er-field"><span class="er-field-name">description</span><span class="er-field-type">string</span></div>
         <div class="er-field"><span class="er-field-name">genre[]</span><span class="er-field-type">string[]</span></div>
-        <div class="er-field"><span class="er-field-name">copyArtists[]</span><span class="er-field-type">string[]</span></div>
+        <div class="er-field"><span class="er-field-name">targetArtists[]</span><span class="er-field-type">string[]</span></div>
         <div class="er-field"><span class="er-field-name">prefecture / city</span><span class="er-field-type">string</span></div>
         <div class="er-field"><span class="er-field-name">members[]</span><span class="er-fk">→ User.id + role</span></div>
         <div class="er-field"><span class="er-field-name">instrumentSlots[]</span><span class="er-field-type">Slot[]</span></div>
@@ -1440,7 +1443,7 @@
       <div class="er-entity-body">
         <div class="er-field"><span class="er-field-name">id</span><span class="er-field-type">string (PK)</span></div>
         <div class="er-field"><span class="er-field-name">userId</span><span class="er-fk">→ User.id</span></div>
-        <div class="er-field"><span class="er-field-name">type</span><span class="er-field-type">'general' | 'practice_log' | ...</span></div>
+        <div class="er-field"><span class="er-field-name">type</span><span class="er-field-type">'general' | 'practice_log' | 'milestone' | 'question' | 'cover_video'</span></div>
         <div class="er-field"><span class="er-field-name">content</span><span class="er-field-type">string</span></div>
         <div class="er-field"><span class="er-field-name">likes[]</span><span class="er-fk">→ User.id</span></div>
         <div class="er-field"><span class="er-field-name">comments[]</span><span class="er-field-type">Comment[]</span></div>
@@ -1455,7 +1458,7 @@
       <div class="er-entity-body">
         <div class="er-field"><span class="er-field-name">id</span><span class="er-field-type">string (PK)</span></div>
         <div class="er-field"><span class="er-field-name">userId</span><span class="er-fk">→ User.id</span></div>
-        <div class="er-field"><span class="er-field-name">songTitle / artistName</span><span class="er-field-type">string</span></div>
+        <div class="er-field"><span class="er-field-name">songId</span><span class="er-field-type">string</span></div>
         <div class="er-field"><span class="er-field-name">minutes</span><span class="er-field-type">number</span></div>
         <div class="er-field"><span class="er-field-name">note</span><span class="er-field-type">string</span></div>
         <div class="er-field"><span class="er-field-name">date</span><span class="er-field-type">string</span></div>
@@ -1469,9 +1472,10 @@
         <div class="er-field"><span class="er-field-name">userId</span><span class="er-fk">→ User.id (PK)</span></div>
         <div class="er-field"><span class="er-field-name">currentStreak</span><span class="er-field-type">number</span></div>
         <div class="er-field"><span class="er-field-name">longestStreak</span><span class="er-field-type">number</span></div>
-        <div class="er-field"><span class="er-field-name">weeklyGoalMinutes</span><span class="er-field-type">number</span></div>
-        <div class="er-field"><span class="er-field-name">weeklyActualMinutes</span><span class="er-field-type">number</span></div>
         <div class="er-field"><span class="er-field-name">lastPracticeDate</span><span class="er-field-type">string</span></div>
+        <div class="er-field"><span class="er-field-name">totalMinutes</span><span class="er-field-type">number</span></div>
+        <div class="er-field"><span class="er-field-name">weeklyGoalDays</span><span class="er-field-type">number</span></div>
+        <div class="er-field"><span class="er-field-name">weeklyGoalMinutes</span><span class="er-field-type">number</span></div>
       </div>
     </div>
 
@@ -1482,8 +1486,7 @@
         <div class="er-field"><span class="er-field-name">id</span><span class="er-field-type">string (PK)</span></div>
         <div class="er-field"><span class="er-field-name">name / description</span><span class="er-field-type">string</span></div>
         <div class="er-field"><span class="er-field-name">icon</span><span class="er-field-type">string</span></div>
-        <div class="er-field"><span class="er-field-name">category</span><span class="er-field-type">'streak' | 'time' | 'social' | ...</span></div>
-        <div class="er-field"><span class="er-field-name">condition</span><span class="er-field-type">string</span></div>
+        <div class="er-field"><span class="er-field-name">earnedAt?</span><span class="er-field-type">string</span></div>
       </div>
     </div>
 
@@ -1494,7 +1497,7 @@
         <div class="er-field"><span class="er-field-name">userId</span><span class="er-fk">→ User.id</span></div>
         <div class="er-field"><span class="er-field-name">provider</span><span class="er-field-type">'x' | 'instagram' | 'line' | 'youtube'</span></div>
         <div class="er-field"><span class="er-field-name">username</span><span class="er-field-type">string</span></div>
-        <div class="er-field"><span class="er-field-name">profileUrl</span><span class="er-field-type">string</span></div>
+        <div class="er-field"><span class="er-field-name">url</span><span class="er-field-type">string</span></div>
       </div>
     </div>
 
@@ -1504,7 +1507,6 @@
       <div class="er-entity-body">
         <div class="er-field"><span class="er-field-name">userId</span><span class="er-fk">→ User.id</span></div>
         <div class="er-field"><span class="er-field-name">friendId</span><span class="er-fk">→ User.id</span></div>
-        <div class="er-field"><span class="er-field-name">status</span><span class="er-field-type">'pending' | 'accepted'</span></div>
         <div class="er-field"><span class="er-field-name">since</span><span class="er-field-type">string</span></div>
       </div>
     </div>
@@ -1515,7 +1517,7 @@
       <div class="er-entity-body">
         <div class="er-field"><span class="er-field-name">id</span><span class="er-field-type">string (PK)</span></div>
         <div class="er-field"><span class="er-field-name">userId</span><span class="er-fk">→ User.id</span></div>
-        <div class="er-field"><span class="er-field-name">type</span><span class="er-field-type">'practice_reminder' | ...</span></div>
+        <div class="er-field"><span class="er-field-name">type</span><span class="er-field-type">'practice_reminder' | 'friend_practiced' | 'streak_warning' | 'rank_change' | 'milestone' | 'slacking' | 'band_reminder'</span></div>
         <div class="er-field"><span class="er-field-name">title / message</span><span class="er-field-type">string</span></div>
         <div class="er-field"><span class="er-field-name">read</span><span class="er-field-type">boolean</span></div>
       </div>
@@ -1565,6 +1567,8 @@
 │   │   │   ├── <span class="dir">events/</span>
 │   │   │   │   ├── <span class="file">page.tsx</span> / <span class="dir">[id]/</span><span class="file">page.tsx</span>
 │   │   │   ├── <span class="dir">community/</span><span class="file">page.tsx</span>
+│   │   │   ├── <span class="dir">practice/</span><span class="file">page.tsx</span>
+│   │   │   ├── <span class="dir">ranking/</span><span class="file">page.tsx</span>
 │   │   │   ├── <span class="dir">profile/</span><span class="file">page.tsx</span>
 │   │   │   └── <span class="dir">subscription/</span><span class="file">page.tsx</span>
 │   │   └── <span class="dir">(admin)/admin/</span>
@@ -1587,7 +1591,8 @@
 │   │   ├── <span class="file">mockUsers.ts</span>          <span class="comment"># モックユーザー（18名）</span>
 │   │   ├── <span class="file">mockBands.ts</span>          <span class="comment"># モックバンド（7組）</span>
 │   │   ├── <span class="file">mockEvents.ts</span>         <span class="comment"># モックイベント（9件）</span>
-│   │   └── <span class="file">mockPosts.ts</span>          <span class="comment"># モック投稿（18件）</span>
+│   │   ├── <span class="file">mockPosts.ts</span>          <span class="comment"># モック投稿（18件）</span>
+│   │   └── <span class="file">mockPractice.ts</span>       <span class="comment"># モック練習データ</span>
 │   └── <span class="dir">hooks/</span>
 │       └── <span class="file">useLocalStorage.ts</span>
 ├── <span class="dir">public/</span>

@@ -1492,13 +1492,13 @@
         </tr>
         <tr>
           <td>XSS防止</td>
-          <td><code>security.ts</code> + React</td>
+          <td>React JSX（自動エスケープ）</td>
           <td><span class="sec-badge green">防御</span></td>
-          <td>HTMLエスケープ + JSXの自動エスケープ</td>
+          <td>Reactの自動エスケープによるHTMLエスケープ</td>
         </tr>
         <tr>
           <td>CSRFトークン</td>
-          <td><code>security.ts</code></td>
+          <td><code>next.config.ts</code>（セキュリティヘッダー）</td>
           <td><span class="sec-badge blue">認証</span></td>
           <td>sessionStorage ベースのトークン生成・検証</td>
         </tr>

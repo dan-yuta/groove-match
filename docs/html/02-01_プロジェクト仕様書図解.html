@@ -1576,18 +1576,15 @@
 │   │       ├── <span class="file">page.tsx</span> / <span class="file">layout.tsx</span>
 │   │       ├── <span class="dir">users/</span><span class="file">page.tsx</span> / <span class="dir">revenue/</span><span class="file">page.tsx</span> / <span class="dir">subscriptions/</span><span class="file">page.tsx</span>
 │   ├── <span class="dir">components/</span>
-│   │   ├── <span class="dir">ui/</span>                   <span class="comment"># Button, Input, Card, GlassCard, Badge, Avatar, Modal, Toast, Skeleton</span>
-│   │   ├── <span class="dir">layout/</span>               <span class="comment"># Header, Footer, MobileNav, ProtectedRoute</span>
-│   │   └── <span class="dir">features/</span>             <span class="comment"># 機能別コンポーネント</span>
+│   │   ├── <span class="dir">ui/</span>                   <span class="comment"># Button, Input, Card, GlassCard, Badge, Avatar, Modal, Toast</span>
+│   │   └── <span class="dir">layout/</span>               <span class="comment"># Header, Footer, MobileNav, ProtectedRoute</span>
 │   ├── <span class="dir">lib/</span>
 │   │   ├── <span class="file">types.ts</span>              <span class="comment"># 型定義</span>
 │   │   ├── <span class="file">constants.ts</span>          <span class="comment"># 定数</span>
 │   │   ├── <span class="file">auth.tsx</span>              <span class="comment"># 認証コンテキスト</span>
 │   │   ├── <span class="file">storage.ts</span>            <span class="comment"># localStorage ラッパー</span>
 │   │   ├── <span class="file">matching.ts</span>           <span class="comment"># マッチングアルゴリズム</span>
-│   │   ├── <span class="file">validators.ts</span>         <span class="comment"># バリデーション</span>
-│   │   ├── <span class="file">security.ts</span>           <span class="comment"># セキュリティユーティリティ</span>
-│   │   └── <span class="file">platform.ts</span>           <span class="comment"># プラットフォーム検出</span>
+│   │   └── <span class="file">validators.ts</span>         <span class="comment"># バリデーション</span>
 │   ├── <span class="dir">data/</span>
 │   │   ├── <span class="file">mockUsers.ts</span>          <span class="comment"># モックユーザー（18名）</span>
 │   │   ├── <span class="file">mockBands.ts</span>          <span class="comment"># モックバンド（7組）</span>
@@ -1675,7 +1672,7 @@
       <div>
         <div class="security-title">XSS防止</div>
         <div class="security-desc">HTMLエスケープ + Reactの自動エスケープ</div>
-        <div class="security-file">security.ts + React JSX</div>
+        <div class="security-file">React JSX（自動エスケープ）</div>
       </div>
     </div>
     <div class="security-card">
@@ -1683,7 +1680,7 @@
       <div>
         <div class="security-title">CSRFトークン</div>
         <div class="security-desc">sessionStorageベースのトークン管理</div>
-        <div class="security-file">security.ts</div>
+        <div class="security-file">next.config.ts（セキュリティヘッダー）</div>
       </div>
     </div>
     <div class="security-card">

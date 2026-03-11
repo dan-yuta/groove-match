@@ -66,6 +66,22 @@
     font-weight: 600;
     border: 1px solid;
   }
+  .hero .hero-cta {
+    margin-top: 24px;
+    position: relative;
+  }
+  .hero .hero-cta a {
+    display: inline-block;
+    padding: 14px 36px;
+    background: var(--primary);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    transition: all 0.2s;
+  }
+  .hero .hero-cta a:hover { background: var(--primary-light); transform: translateY(-2px); }
 
   .container { max-width: 1100px; margin: 0 auto; padding: 0 40px; }
 
@@ -303,6 +319,91 @@
   }
   .app-link a:hover { background: var(--primary-light); transform: translateY(-2px); }
 
+  .demo-card {
+    background: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(6,182,212,0.08));
+    border: 2px solid rgba(124,58,237,0.35);
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+    transition: all 0.3s;
+  }
+  .demo-card:hover {
+    border-color: var(--primary-light);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(124,58,237,0.2);
+  }
+  .demo-card h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+  .demo-card p {
+    font-size: 0.88rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+    margin-bottom: 8px;
+  }
+  .demo-card .demo-btn {
+    display: inline-block;
+    padding: 12px 32px;
+    background: var(--primary);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: all 0.2s;
+    margin-top: 16px;
+  }
+  .demo-card .demo-btn:hover { background: var(--primary-light); transform: translateY(-2px); }
+  .demo-accounts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 18px;
+    text-align: left;
+  }
+  .demo-account-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .demo-account-box p {
+    font-size: 0.78rem;
+    margin-bottom: 4px;
+  }
+  .demo-account-box code {
+    font-size: 0.78rem;
+    color: var(--secondary);
+    background: rgba(6,182,212,0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .copy-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.68rem;
+    padding: 2px 6px;
+    margin-left: 4px;
+    transition: all 0.2s;
+    vertical-align: middle;
+  }
+  .copy-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary-light);
+    background: rgba(124,58,237,0.1);
+  }
+  .copy-btn.copied {
+    border-color: var(--green);
+    color: var(--green);
+    background: rgba(34,197,94,0.1);
+  }
+
   footer {
     border-top: 1px solid var(--border);
     padding: 24px 40px;
@@ -316,6 +417,7 @@
     .hero h1 { font-size: 1.8rem; }
     .container { padding: 0 20px; }
     .doc-grid { grid-template-columns: 1fr; }
+    .demo-accounts { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -333,11 +435,14 @@
     <span class="badge" style="background:rgba(236,72,153,0.12); border-color:rgba(236,72,153,0.3); color:#ec4899;">Duolingo型ゲーミフィケーション</span>
     <span class="badge" style="background:rgba(99,102,241,0.12); border-color:rgba(99,102,241,0.3); color:#6366f1;">SNS連携</span>
   </div>
+  <div class="hero-cta">
+    <a href="https://band-match.netlify.app" target="_blank">&#127928; アプリを見る &#8594;</a>
+  </div>
 </header>
 
 <main class="container">
 
-  <!-- 概要 -->
+  <!-- このポータルについて -->
   <div style="margin-top: 40px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 28px 32px;">
     <h2 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; color: var(--text);">このポータルについて</h2>
     <p style="font-size: 0.88rem; color: var(--text-dim); line-height: 1.8; margin-bottom: 6px;">
@@ -365,6 +470,7 @@
           <li>Duolingo型練習トラッカー（ストリーク・バッジ）</li>
           <li>フレンド機能・ランキング</li>
           <li>SNS連携（X / Instagram / LINE / YouTube）</li>
+          <li>ソーシャルログイン（Google / X / Instagram）での簡単登録</li>
         </ul>
       </div>
     </div>
@@ -380,102 +486,35 @@
       HTML図解はブラウザでそのまま閲覧、Markdownは GitHub 上で読めます。
     </p>
     <p style="font-size: 0.82rem; color: var(--text-dim); line-height: 1.7;">
-      初めての方は、下の「おすすめの読み順」に沿って進めてください。
+      まずはデモアプリに触れてみて、そのあと各ドキュメントで詳細を確認してください。
     </p>
   </div>
 
-  <!-- 読み順ガイド -->
-  <div class="reading-order" style="margin-top: 40px;">
-    <h3>&#128218; おすすめの読み順</h3>
-    <div class="order-group">
-      <h4>まず全体像を把握する</h4>
-      <div class="order-steps">
-        <a href="html/01-01_%E8%B5%B7%E5%8B%95%E3%83%BB%E5%B0%8E%E5%85%A5%E3%82%AC%E3%82%A4%E3%83%89%E5%9B%B3%E8%A7%A3.html" target="_blank" class="order-step" style="border-color: rgba(249,112,102,0.3);">01-01 起動・導入ガイド図解</a>
-        <span class="order-arrow">&#8594;</span>
-        <a href="html/02-01_%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E4%BB%95%E6%A7%98%E6%9B%B8%E5%9B%B3%E8%A7%A3.html" target="_blank" class="order-step" style="border-color: rgba(59,130,246,0.3);">02-01 プロジェクト仕様書図解</a>
-        <span class="order-arrow">&#8594;</span>
-        <a href="html/04-02_%E6%96%99%E9%87%91%E3%83%BB%E6%A9%9F%E8%83%BD%E5%9B%B3%E8%A7%A3.html" target="_blank" class="order-step" style="border-color: rgba(34,197,94,0.3);">04-02 料金・機能図解</a>
-      </div>
-    </div>
-    <div class="order-group">
-      <h4>アプリの詳細・ビジネス</h4>
-      <div class="order-steps">
-        <a href="html/02-02_%E3%83%93%E3%82%B8%E3%83%A5%E3%82%A2%E3%83%AB%E4%BB%95%E6%A7%98%E5%9B%B3%E8%A7%A3.html" target="_blank" class="order-step" style="border-color: rgba(124,58,237,0.3);">02-02 ビジュアル仕様図解</a>
-        <span class="order-arrow">&#8594;</span>
-        <a href="html/02-04_%E3%83%9E%E3%83%83%E3%83%81%E3%83%B3%E3%82%B0%E3%82%A2%E3%83%AB%E3%82%B4%E3%83%AA%E3%82%BA%E3%83%A0%E5%9B%B3%E8%A7%A3.html" target="_blank" class="order-step" style="border-color: rgba(236,72,153,0.3);">02-04 マッチングアルゴリズム図解</a>
-        <span class="order-arrow">&#8594;</span>
-        <a href="html/04-01_%E7%AB%B6%E5%90%88%E5%88%86%E6%9E%90%E5%9B%B3%E8%A7%A3.html" target="_blank" class="order-step" style="border-color: rgba(236,72,153,0.3);">04-01 競合分析図解</a>
-      </div>
-    </div>
-    <div class="order-group">
-      <h4>インフラ・技術詳細</h4>
-      <div class="order-steps">
-        <a href="html/03-01_AWS%E3%82%A4%E3%83%B3%E3%83%95%E3%83%A9%E5%9B%B3%E8%A7%A3.html" target="_blank" class="order-step" style="border-color: rgba(6,182,212,0.3);">03-01 AWSインフラ図解</a>
-        <span class="order-arrow">&#8594;</span>
-        <a href="html/03-02_AWS%E8%A6%81%E4%BB%B6%E5%AE%9A%E7%BE%A9%E6%9B%B8%E5%9B%B3%E8%A7%A3.html" target="_blank" class="order-step" style="border-color: rgba(245,158,11,0.3);">03-02 AWS要件定義書図解</a>
-        <span class="order-arrow">&#8594;</span>
-        <a href="html/03-03_AWS%E3%82%B3%E3%82%B9%E3%83%88%E6%A6%82%E7%AE%97%E6%9B%B8%E5%9B%B3%E8%A7%A3.html" target="_blank" class="order-step" style="border-color: rgba(34,197,94,0.3);">03-03 コスト概算図解</a>
-      </div>
-    </div>
-    <div class="order-group">
-      <h4>開発に参加する場合</h4>
-      <div class="order-steps">
-        <a href="https://github.com/dan-yuta/band-match/blob/main/docs/md/01-02_%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E5%B0%8E%E5%85%A5%E3%82%AC%E3%82%A4%E3%83%89.md" target="_blank" class="order-step" style="border-color: rgba(234,179,8,0.3);">01-02 プロジェクト導入ガイド</a>
-        <span class="order-arrow">&#8594;</span>
-        <a href="https://github.com/dan-yuta/band-match/blob/main/docs/md/01-03_%E8%B5%B7%E5%8B%95%E6%89%8B%E9%A0%86%E6%9B%B8.md" target="_blank" class="order-step" style="border-color: rgba(234,179,8,0.3);">01-03 起動手順書</a>
-        <span class="order-arrow">&#8594;</span>
-        <a href="html/02-03_%E3%82%A2%E3%83%BC%E3%82%AD%E3%83%86%E3%82%AF%E3%83%81%E3%83%A3%E3%82%AC%E3%82%A4%E3%83%89%E5%9B%B3%E8%A7%A3.html" target="_blank" class="order-step" style="border-color: rgba(99,102,241,0.3);">02-03 アーキテクチャ図解</a>
+  <!-- Section 1: まずアプリに触れてみる -->
+  <div class="section">
+    <div class="section-title">&#127928; まずアプリに触れてみる</div>
+    <div class="demo-card">
+      <h3>BandMatch デモアプリ</h3>
+      <p>実際に動くアプリをすぐに体験できます。<br>テストアカウントですぐにログイン、またはソーシャルログイン（Google / X / Instagram）で簡単に新規登録も可能です。</p>
+      <a href="https://band-match.netlify.app" target="_blank" class="demo-btn">アプリを開く &#8594;</a>
+      <div class="demo-accounts">
+        <div class="demo-account-box">
+          <p style="font-weight: 700; color: var(--primary-light);">一般ユーザー</p>
+          <p>メール: <code id="email-user">tanaka@example.com</code> <button class="copy-btn" onclick="copyText('email-user')" title="コピー">&#128203;</button></p>
+          <p>パスワード: <code id="pw-user">pass1234</code> <button class="copy-btn" onclick="copyText('pw-user')" title="コピー">&#128203;</button></p>
+        </div>
+        <div class="demo-account-box">
+          <p style="font-weight: 700; color: var(--orange);">管理者</p>
+          <p>メール: <code id="email-admin">admin@bandmatch.jp</code> <button class="copy-btn" onclick="copyText('email-admin')" title="コピー">&#128203;</button></p>
+          <p>パスワード: <code id="pw-admin">admin1234</code> <button class="copy-btn" onclick="copyText('pw-admin')" title="コピー">&#128203;</button></p>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- 総合案内 -->
+  <!-- Section 2: 機能を知る -->
   <div class="section">
-    <div class="section-title">&#128214; 総合案内</div>
-    <div class="doc-grid">
-
-      <a href="https://github.com/dan-yuta/band-match/blob/main/docs/md/00-00_ドキュメント一覧.md" target="_blank" class="doc-card card-intro">
-        <div class="card-num">00-00</div>
-        <h3>ドキュメント一覧</h3>
-        <p>全ドキュメントの目次・おすすめの読み順ガイド。<br>迷ったらまずこれを確認。</p>
-        <span class="card-type type-md">&#128196; Markdown（GitHubで閲覧）</span>
-      </a>
-
-    </div>
-  </div>
-
-  <!-- 初めての方 -->
-  <div class="section">
-    <div class="section-title">&#128640; 初めての方はこちらから</div>
-    <div class="doc-grid">
-
-      <a href="html/01-01_%E8%B5%B7%E5%8B%95%E3%83%BB%E5%B0%8E%E5%85%A5%E3%82%AC%E3%82%A4%E3%83%89%E5%9B%B3%E8%A7%A3.html" target="_blank" class="doc-card card-onboard">
-        <div class="card-num">01-01</div>
-        <h3>起動・導入ガイド図解</h3>
-        <p>起動手順、画面マップ、技術スタック、オンボーディングをビジュアルで解説。<br>初めての方はまずこれ。</p>
-        <span class="card-type type-html">&#9658; HTML図解（ブラウザで閲覧）</span>
-      </a>
-
-      <a href="https://github.com/dan-yuta/band-match/blob/main/docs/md/01-02_%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E5%B0%8E%E5%85%A5%E3%82%AC%E3%82%A4%E3%83%89.md" target="_blank" class="doc-card card-setup">
-        <div class="card-num">01-02</div>
-        <h3>プロジェクト導入ガイド</h3>
-        <p>プロジェクトの背景、現在の開発状況、技術スタック、開発ルール、4日間オンボーディング計画。</p>
-        <span class="card-type type-md">&#128196; Markdown（GitHubで閲覧）</span>
-      </a>
-
-      <a href="https://github.com/dan-yuta/band-match/blob/main/docs/md/01-03_%E8%B5%B7%E5%8B%95%E6%89%8B%E9%A0%86%E6%9B%B8.md" target="_blank" class="doc-card card-setup">
-        <div class="card-num">01-03</div>
-        <h3>起動手順書</h3>
-        <p>Node.jsインストールからアプリ起動、テストアカウントでのログインまでの全手順。<br>トラブルシューティング付き。</p>
-        <span class="card-type type-md">&#128196; Markdown（GitHubで閲覧）</span>
-      </a>
-
-    </div>
-  </div>
-
-  <!-- アプリ仕様 -->
-  <div class="section">
-    <div class="section-title">&#127928; アプリ仕様・設計</div>
+    <div class="section-title">&#128214; 機能を知る</div>
     <div class="doc-grid">
 
       <div class="doc-card-dual card-spec">
@@ -495,16 +534,6 @@
         <span class="card-type type-html">&#9658; HTML図解（ブラウザで閲覧）</span>
       </a>
 
-      <div class="doc-card-dual card-arch">
-        <div class="card-num">02-03</div>
-        <h3>アーキテクチャガイド</h3>
-        <p>技術構成図、ルーティング構造、コンポーネント依存関係、データフロー。</p>
-        <div class="card-links">
-          <a href="html/02-03_%E3%82%A2%E3%83%BC%E3%82%AD%E3%83%86%E3%82%AF%E3%83%81%E3%83%A3%E3%82%AC%E3%82%A4%E3%83%89%E5%9B%B3%E8%A7%A3.html" target="_blank" class="card-link link-html">&#9658; HTML図解</a>
-          <a href="https://github.com/dan-yuta/band-match/blob/main/docs/md/02-03_%E3%82%A2%E3%83%BC%E3%82%AD%E3%83%86%E3%82%AF%E3%83%81%E3%83%A3%E3%82%AC%E3%82%A4%E3%83%89.md" target="_blank" class="card-link link-md">&#128196; Markdown</a>
-        </div>
-      </div>
-
       <div class="doc-card-dual card-algo">
         <div class="card-num">02-04</div>
         <h3>マッチングアルゴリズム詳細</h3>
@@ -515,12 +544,44 @@
         </div>
       </div>
 
+      <a href="html/04-02_%E6%96%99%E9%87%91%E3%83%BB%E6%A9%9F%E8%83%BD%E5%9B%B3%E8%A7%A3.html" target="_blank" class="doc-card card-cost">
+        <div class="card-num">04-02</div>
+        <h3>料金・機能図解</h3>
+        <p>Free/Proプラン比較、機能一覧、無料トライアルフロー、損益分岐点、収益モデルをビジュアル図解。</p>
+        <span class="card-type type-html">&#9658; HTML図解（ブラウザで閲覧）</span>
+      </a>
+
     </div>
   </div>
 
-  <!-- AWS・インフラ -->
+  <!-- Section 3: 実装を理解する -->
   <div class="section">
-    <div class="section-title">&#9729; AWS・インフラ設計</div>
+    <div class="section-title">&#128736; 実装を理解する</div>
+    <div class="doc-grid">
+
+      <div class="doc-card-dual card-arch">
+        <div class="card-num">02-03</div>
+        <h3>アーキテクチャガイド</h3>
+        <p>技術構成図、ルーティング構造、コンポーネント依存関係、データフロー。</p>
+        <div class="card-links">
+          <a href="html/02-03_%E3%82%A2%E3%83%BC%E3%82%AD%E3%83%86%E3%82%AF%E3%83%81%E3%83%A3%E3%82%AC%E3%82%A4%E3%83%89%E5%9B%B3%E8%A7%A3.html" target="_blank" class="card-link link-html">&#9658; HTML図解</a>
+          <a href="https://github.com/dan-yuta/band-match/blob/main/docs/md/02-03_%E3%82%A2%E3%83%BC%E3%82%AD%E3%83%86%E3%82%AF%E3%83%81%E3%83%A3%E3%82%AC%E3%82%A4%E3%83%89.md" target="_blank" class="card-link link-md">&#128196; Markdown</a>
+        </div>
+      </div>
+
+      <a href="https://github.com/dan-yuta/band-match/blob/main/docs/md/01-02_%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E5%B0%8E%E5%85%A5%E3%82%AC%E3%82%A4%E3%83%89.md" target="_blank" class="doc-card card-setup">
+        <div class="card-num">01-02</div>
+        <h3>プロジェクト導入ガイド</h3>
+        <p>プロジェクトの背景、現在の開発状況、技術スタック、開発ルール、4日間オンボーディング計画。</p>
+        <span class="card-type type-md">&#128196; Markdown（GitHubで閲覧）</span>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Section 4: インフラ・ビジネス戦略 -->
+  <div class="section">
+    <div class="section-title">&#9729; インフラ・ビジネス戦略</div>
     <div class="doc-grid">
 
       <a href="html/03-01_AWS%E3%82%A4%E3%83%B3%E3%83%95%E3%83%A9%E5%9B%B3%E8%A7%A3.html" target="_blank" class="doc-card card-infra">
@@ -550,14 +611,6 @@
         </div>
       </div>
 
-    </div>
-  </div>
-
-  <!-- ビジネス・戦略 -->
-  <div class="section">
-    <div class="section-title">&#128200; ビジネス・戦略</div>
-    <div class="doc-grid">
-
       <div class="doc-card-dual card-compete">
         <div class="card-num">04-01</div>
         <h3>競合分析・差別化戦略</h3>
@@ -568,21 +621,29 @@
         </div>
       </div>
 
-      <a href="html/04-02_%E6%96%99%E9%87%91%E3%83%BB%E6%A9%9F%E8%83%BD%E5%9B%B3%E8%A7%A3.html" target="_blank" class="doc-card card-cost">
-        <div class="card-num">04-02</div>
-        <h3>料金・機能図解</h3>
-        <p>Free/Proプラン比較、機能一覧、無料トライアルフロー、損益分岐点、収益モデルをビジュアル図解。</p>
-        <span class="card-type type-html">&#9658; HTML図解（ブラウザで閲覧）</span>
-      </a>
-
     </div>
   </div>
 
-  <!-- アプリリンク -->
-  <div class="app-link">
-    <h3>&#127928; アプリを見る</h3>
-    <p>BandMatch のデモアプリにアクセスできます</p>
-    <a href="https://band-match.netlify.app" target="_blank">アプリを開く &#8594;</a>
+  <!-- Section 5: ローカル開発 -->
+  <div class="section">
+    <div class="section-title">&#128187; ローカル開発</div>
+    <div class="doc-grid">
+
+      <a href="https://github.com/dan-yuta/band-match/blob/main/docs/md/01-03_%E8%B5%B7%E5%8B%95%E6%89%8B%E9%A0%86%E6%9B%B8.md" target="_blank" class="doc-card card-setup">
+        <div class="card-num">01-03</div>
+        <h3>起動手順書</h3>
+        <p>ローカルで起動したい場合はこちら。Node.jsインストールからアプリ起動、テストアカウントでのログインまでの全手順。<br>トラブルシューティング付き。</p>
+        <span class="card-type type-md">&#128196; Markdown（GitHubで閲覧）</span>
+      </a>
+
+      <a href="https://github.com/dan-yuta/band-match/blob/main/docs/md/00-00_ドキュメント一覧.md" target="_blank" class="doc-card card-intro">
+        <div class="card-num">00-00</div>
+        <h3>ドキュメント一覧</h3>
+        <p>全ドキュメントの目次・おすすめの読み順ガイド。<br>迷ったらまずこれを確認。</p>
+        <span class="card-type type-md">&#128196; Markdown（GitHubで閲覧）</span>
+      </a>
+
+    </div>
   </div>
 
 </main>
@@ -591,6 +652,25 @@
   <p>&#169; 2026 BandMatch. All documents are project-internal.</p>
   <p style="margin-top: 4px;">GitHub: <a href="https://github.com/dan-yuta/band-match" style="color: var(--secondary); text-decoration: none;">dan-yuta/band-match</a></p>
 </footer>
+
+<script>
+function copyText(elementId) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  const text = el.textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    const btn = el.nextElementSibling;
+    if (btn) {
+      btn.classList.add('copied');
+      btn.innerHTML = '&#10003;';
+      setTimeout(function() {
+        btn.classList.remove('copied');
+        btn.innerHTML = '&#128203;';
+      }, 1500);
+    }
+  });
+}
+</script>
 
 </body>
 </html>

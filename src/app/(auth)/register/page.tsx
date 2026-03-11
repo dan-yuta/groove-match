@@ -7,8 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button, Input, GlassCard } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { validateEmail, validatePassword, validateName, validateNickname } from '@/lib/validators';
-import { INSTRUMENTS, SKILL_LEVELS, GENRES, PREFECTURES, DAYS_OF_WEEK, POPULAR_ARTISTS, COPY_SONGS, SOCIAL_PROVIDERS } from '@/lib/constants';
-import type { UserInstrument, SkillLevel, DayOfWeek, Schedule, SocialAccount } from '@/lib/types';
+import { INSTRUMENTS, SKILL_LEVELS, GENRES, PREFECTURES, DAYS_OF_WEEK, POPULAR_ARTISTS, COPY_SONGS, SOCIAL_PROVIDERS, SOCIAL_LOGIN_PROVIDERS } from '@/lib/constants';
+import type { UserInstrument, SkillLevel, DayOfWeek, Schedule, SocialAccount, SocialLoginProvider } from '@/lib/types';
 
 const TOTAL_STEPS = 5;
 
@@ -33,7 +33,7 @@ interface FormData {
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register } = useAuth();
+  const { register, socialLogin } = useAuth();
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -55,6 +55,23 @@ export default function RegisterPage() {
     schedule: [],
     socialAccounts: [],
   });
+
+  const handleSocialLogin = async (provider: SocialLoginProvider) => {
+    setLoading(true);
+    setErrors({});
+    try {
+      const result = await socialLogin(provider);
+      if (result.success) {
+        router.push('/dashboard');
+      } else {
+        setErrors({ general: result.error || 'ソーシャルログインに失敗しました' });
+      }
+    } catch {
+      setErrors({ general: '予期しないエラーが発生しました' });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const updateField = <K extends keyof FormData>(key: K, value: FormData[K]) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
@@ -352,6 +369,37 @@ export default function RegisterPage() {
             BandMatchに参加して、同じ曲をやりたいコピバン仲間を見つけよう
           </p>
         </motion.div>
+
+        {/* Social login buttons */}
+        <GlassCard gradientBorder padding="lg" className="mb-6">
+          <p className="text-center text-sm text-text-secondary mb-4">
+            アカウント連携で簡単登録
+          </p>
+          <div className="space-y-3">
+            {SOCIAL_LOGIN_PROVIDERS.map((provider) => (
+              <button
+                key={provider.id}
+                type="button"
+                onClick={() => handleSocialLogin(provider.id)}
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-surface-light/50 border border-border-light text-foreground text-sm font-medium transition-all duration-200 hover:bg-surface-lighter/50 hover:border-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="text-lg" style={{ color: provider.color }}>{provider.icon}</span>
+                <span>{provider.name}で登録</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Divider */}
+          <div className="relative mt-5">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border-light" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="px-3 bg-surface text-text-muted">またはメールで登録</span>
+            </div>
+          </div>
+        </GlassCard>
 
         {/* Progress indicator */}
         <div className="mb-6">

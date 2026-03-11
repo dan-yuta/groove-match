@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { User } from './types';
+import { User, SocialLoginProvider } from './types';
 import { storage } from './storage';
 import { mockUsers } from '@/data/mockUsers';
 
@@ -9,6 +9,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  socialLogin: (provider: SocialLoginProvider) => Promise<{ success: boolean; error?: string }>;
   register: (userData: Partial<User>) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   updateUser: (updates: Partial<User>) => void;
@@ -18,6 +19,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   login: async () => ({ success: false }),
+  socialLogin: async () => ({ success: false }),
   register: async () => ({ success: false }),
   logout: () => {},
   updateUser: () => {},
@@ -62,6 +64,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { success: true };
   }, []);
 
+  const socialLogin = useCallback(async (provider: SocialLoginProvider) => {
+    const providerNames: Record<SocialLoginProvider, string> = {
+      google: 'Google',
+      x: 'X',
+      instagram: 'Instagram',
+    };
+    const mockEmail = `${provider}-user-${Date.now()}@mock.bandmatch.jp`;
+    const mockName = `${providerNames[provider]}ユーザー`;
+    const newUser: User = {
+      id: `user-${Date.now()}`,
+      email: mockEmail,
+      password: '',
+      name: mockName,
+      nickname: mockName,
+      avatar: '',
+      bio: '',
+      prefecture: '',
+      city: '',
+      instruments: [],
+      genres: [],
+      schedule: [],
+      influences: [],
+      wantToPlaySongs: [],
+      canPlaySongs: [],
+      favoriteArtists: [],
+      practiceStreak: {
+        currentStreak: 0,
+        longestStreak: 0,
+        lastPracticeDate: '',
+        totalMinutes: 0,
+        weeklyGoalDays: 3,
+        weeklyGoalMinutes: 30,
+      },
+      socialAccounts: [],
+      friends: [],
+      badges: [],
+      isAdmin: false,
+      subscription: 'free',
+      authProvider: provider,
+      createdAt: new Date().toISOString(),
+      lastLoginAt: new Date().toISOString(),
+      isOnline: true,
+    };
+    const users = getUsers();
+    const updatedUsers = [...users, newUser];
+    storage.set('users', updatedUsers);
+    storage.set('currentUser', newUser);
+    setUser(newUser);
+    return { success: true };
+  }, []);
+
   const register = useCallback(async (userData: Partial<User>) => {
     const users = getUsers();
     if (users.find((u) => u.email === userData.email)) {
@@ -97,6 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       badges: [],
       isAdmin: false,
       subscription: 'free',
+      authProvider: 'email',
       createdAt: new Date().toISOString(),
       lastLoginAt: new Date().toISOString(),
       isOnline: true,
@@ -130,7 +184,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, loading, login, socialLogin, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

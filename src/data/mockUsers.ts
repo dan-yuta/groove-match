@@ -37,6 +37,7 @@ export const mockUsers: User[] = [
     subscription: 'pro',
     createdAt: '2025-01-01T00:00:00Z',
     lastLoginAt: '2026-03-09T10:00:00Z',
+    authProvider: 'email',
     isOnline: true,
   },
   {
@@ -77,6 +78,7 @@ export const mockUsers: User[] = [
     subscription: 'pro',
     createdAt: '2025-06-15T00:00:00Z',
     lastLoginAt: '2026-03-08T20:30:00Z',
+    authProvider: 'email',
     isOnline: true,
   },
   {
@@ -116,6 +118,7 @@ export const mockUsers: User[] = [
     subscription: 'free',
     createdAt: '2025-08-01T00:00:00Z',
     lastLoginAt: '2026-03-09T08:00:00Z',
+    authProvider: 'email',
     isOnline: true,
   },
   {
@@ -156,6 +159,7 @@ export const mockUsers: User[] = [
     subscription: 'pro',
     createdAt: '2025-04-10T00:00:00Z',
     lastLoginAt: '2026-03-07T21:00:00Z',
+    authProvider: 'email',
     isOnline: false,
   },
   {
@@ -196,6 +200,7 @@ export const mockUsers: User[] = [
     subscription: 'pro',
     createdAt: '2025-03-20T00:00:00Z',
     lastLoginAt: '2026-03-09T09:00:00Z',
+    authProvider: 'email',
     isOnline: true,
   },
   {
@@ -240,6 +245,7 @@ export const mockUsers: User[] = [
     subscription: 'pro',
     createdAt: '2025-05-05T00:00:00Z',
     lastLoginAt: '2026-03-08T18:00:00Z',
+    authProvider: 'email',
     isOnline: false,
   },
   {
@@ -280,6 +286,7 @@ export const mockUsers: User[] = [
     subscription: 'pro',
     createdAt: '2025-02-14T00:00:00Z',
     lastLoginAt: '2026-03-09T07:00:00Z',
+    authProvider: 'email',
     isOnline: true,
   },
   {
@@ -319,6 +326,7 @@ export const mockUsers: User[] = [
     subscription: 'free',
     createdAt: '2025-07-01T00:00:00Z',
     lastLoginAt: '2026-03-08T22:00:00Z',
+    authProvider: 'email',
     isOnline: false,
   },
   {
@@ -358,6 +366,7 @@ export const mockUsers: User[] = [
     subscription: 'pro',
     createdAt: '2025-09-15T00:00:00Z',
     lastLoginAt: '2026-03-09T11:00:00Z',
+    authProvider: 'email',
     isOnline: true,
   },
   {
@@ -398,6 +407,7 @@ export const mockUsers: User[] = [
     subscription: 'free',
     createdAt: '2025-01-20T00:00:00Z',
     lastLoginAt: '2026-03-06T19:00:00Z',
+    authProvider: 'email',
     isOnline: false,
   },
   {
@@ -441,6 +451,7 @@ export const mockUsers: User[] = [
     subscription: 'pro',
     createdAt: '2025-10-01T00:00:00Z',
     lastLoginAt: '2026-03-09T06:00:00Z',
+    authProvider: 'email',
     isOnline: true,
   },
   {
@@ -480,6 +491,7 @@ export const mockUsers: User[] = [
     subscription: 'free',
     createdAt: '2025-11-01T00:00:00Z',
     lastLoginAt: '2026-03-08T15:00:00Z',
+    authProvider: 'email',
     isOnline: false,
   },
   {
@@ -523,6 +535,7 @@ export const mockUsers: User[] = [
     subscription: 'pro',
     createdAt: '2025-08-20T00:00:00Z',
     lastLoginAt: '2026-03-09T12:00:00Z',
+    authProvider: 'email',
     isOnline: true,
   },
   {
@@ -564,6 +577,7 @@ export const mockUsers: User[] = [
     subscription: 'pro',
     createdAt: '2025-04-01T00:00:00Z',
     lastLoginAt: '2026-03-08T23:00:00Z',
+    authProvider: 'email',
     isOnline: false,
   },
   {
@@ -603,6 +617,7 @@ export const mockUsers: User[] = [
     subscription: 'free',
     createdAt: '2025-12-01T00:00:00Z',
     lastLoginAt: '2026-03-07T20:00:00Z',
+    authProvider: 'email',
     isOnline: false,
   },
   {
@@ -643,6 +658,7 @@ export const mockUsers: User[] = [
     subscription: 'free',
     createdAt: '2026-01-10T00:00:00Z',
     lastLoginAt: '2026-03-09T14:00:00Z',
+    authProvider: 'email',
     isOnline: true,
   },
   {
@@ -683,6 +699,7 @@ export const mockUsers: User[] = [
     subscription: 'pro',
     createdAt: '2025-06-01T00:00:00Z',
     lastLoginAt: '2026-03-08T17:00:00Z',
+    authProvider: 'email',
     isOnline: false,
   },
   {
@@ -726,6 +743,7 @@ export const mockUsers: User[] = [
     subscription: 'pro',
     createdAt: '2025-03-01T00:00:00Z',
     lastLoginAt: '2026-03-09T01:00:00Z',
+    authProvider: 'email',
     isOnline: false,
   },
 ];

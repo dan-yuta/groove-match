@@ -53,11 +53,15 @@ export interface Badge {
   earnedAt?: string;
 }
 
+export type SocialLoginProvider = 'google' | 'x' | 'instagram';
+
 export interface SocialAccount {
   provider: 'x' | 'instagram' | 'line' | 'youtube';
   username: string;
   url: string;
 }
+
+export type AuthProvider = 'email' | SocialLoginProvider;
 
 export interface FriendRelation {
   userId: string;
@@ -109,6 +113,7 @@ export interface User {
   subscription: SubscriptionPlan;
   createdAt: string;
   lastLoginAt: string;
+  authProvider: AuthProvider;
   isOnline: boolean;
 }
 

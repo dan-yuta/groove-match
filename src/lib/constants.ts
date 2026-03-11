@@ -117,6 +117,12 @@ export const SOCIAL_PROVIDERS = [
   { id: 'youtube', name: 'YouTube', icon: '▶️', urlPrefix: 'https://youtube.com/@' },
 ] as const;
 
+export const SOCIAL_LOGIN_PROVIDERS = [
+  { id: 'google' as const, name: 'Google', icon: 'G', color: '#4285F4' },
+  { id: 'x' as const, name: 'X (Twitter)', icon: '𝕏', color: '#000000' },
+  { id: 'instagram' as const, name: 'Instagram', icon: '📷', color: '#E4405F' },
+] as const;
+
 export const NOTIFICATION_TEMPLATES = {
   practice_reminder: { title: '練習の時間です！', message: '今日の練習まだだよ！ストリーク継続中🔥' },
   streak_warning: { title: 'ストリーク危機！', message: 'あと数時間でストリークが途切れます！' },

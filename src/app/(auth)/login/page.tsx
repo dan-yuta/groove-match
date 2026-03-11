@@ -7,13 +7,22 @@ import { motion } from 'framer-motion';
 import { Button, Input, GlassCard } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { validateEmail, validatePassword } from '@/lib/validators';
+import { SOCIAL_LOGIN_PROVIDERS } from '@/lib/constants';
+import type { SocialLoginProvider } from '@/lib/types';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, socialLogin } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const copyToClipboard = (text: string, field: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 1500);
+  };
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
   const [loading, setLoading] = useState(false);
 
@@ -25,6 +34,23 @@ export default function LoginPage() {
     if (passwordError) newErrors.password = passwordError;
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSocialLogin = async (provider: SocialLoginProvider) => {
+    setLoading(true);
+    setErrors({});
+    try {
+      const result = await socialLogin(provider);
+      if (result.success) {
+        router.push('/dashboard');
+      } else {
+        setErrors({ general: result.error || 'ソーシャルログインに失敗しました' });
+      }
+    } catch {
+      setErrors({ general: '予期しないエラーが発生しました' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -84,6 +110,32 @@ export default function LoginPage() {
         </motion.div>
 
         <GlassCard gradientBorder padding="lg">
+          {/* Social login buttons */}
+          <div className="space-y-3 mb-6">
+            {SOCIAL_LOGIN_PROVIDERS.map((provider) => (
+              <button
+                key={provider.id}
+                type="button"
+                onClick={() => handleSocialLogin(provider.id)}
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-surface-light/50 border border-border-light text-foreground text-sm font-medium transition-all duration-200 hover:bg-surface-lighter/50 hover:border-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="text-lg" style={{ color: provider.color }}>{provider.icon}</span>
+                <span>{provider.name}で続ける</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Divider */}
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border-light" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="px-3 bg-surface text-text-muted">または</span>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* General error */}
             {errors.general && (
@@ -158,13 +210,38 @@ export default function LoginPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <div>
+              <div className="flex-1">
                 <p className="text-text-secondary font-medium mb-1">デモアカウント</p>
-                <p className="text-text-muted">
-                  <span className="text-primary-light">admin@bandmatch.jp</span>
-                  {' / '}
-                  <span className="text-primary-light">admin1234</span>
-                </p>
+                <div className="space-y-1">
+                  <p className="text-text-muted flex items-center gap-1.5">
+                    <span className="text-primary-light">admin@bandmatch.jp</span>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard('admin@bandmatch.jp', 'demo-email')}
+                      className={`px-1.5 py-0.5 rounded text-[10px] border transition-all ${
+                        copiedField === 'demo-email'
+                          ? 'border-green-500/40 text-green-400 bg-green-500/10'
+                          : 'border-border-light text-text-muted hover:border-primary/40 hover:text-primary-light'
+                      }`}
+                    >
+                      {copiedField === 'demo-email' ? 'Copied' : 'Copy'}
+                    </button>
+                  </p>
+                  <p className="text-text-muted flex items-center gap-1.5">
+                    <span className="text-primary-light">admin1234</span>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard('admin1234', 'demo-pw')}
+                      className={`px-1.5 py-0.5 rounded text-[10px] border transition-all ${
+                        copiedField === 'demo-pw'
+                          ? 'border-green-500/40 text-green-400 bg-green-500/10'
+                          : 'border-border-light text-text-muted hover:border-primary/40 hover:text-primary-light'
+                      }`}
+                    >
+                      {copiedField === 'demo-pw' ? 'Copied' : 'Copy'}
+                    </button>
+                  </p>
+                </div>
               </div>
             </div>
           </GlassCard>

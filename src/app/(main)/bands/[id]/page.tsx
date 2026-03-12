@@ -124,12 +124,21 @@ export default function BandDetailPage() {
                 {band.prefecture} {band.city}
               </div>
             </div>
+            <div className="flex flex-wrap items-center gap-2">
             {!isCurrentUserMember && band.isRecruiting && (
               <Badge variant="accent" size="md">メンバー募集中</Badge>
             )}
             {isCurrentUserMember && (
               <Badge variant="secondary" size="md">参加中</Badge>
             )}
+            {isCurrentUserMember && (
+              <Link href={`/bands/${band.id}/calendar`}>
+                <Button variant="secondary" size="sm">
+                  <span className="mr-1">📅</span> 練習カレンダー
+                </Button>
+              </Link>
+            )}
+          </div>
           </div>
 
           <p className="text-text-secondary leading-relaxed">{band.description}</p>

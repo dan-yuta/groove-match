@@ -148,7 +148,7 @@ export const SUBSCRIPTION_PLANS = {
   pro: {
     name: 'Pro',
     price: 500,
-    features: ['マッチング無制限', 'バンド作成無制限', 'メッセージ無制限', 'イベント作成', 'アナリティクス', '優先サポート'],
+    features: ['マッチング無制限', 'バンド作成無制限', 'チャット無制限', 'イベント作成', 'アナリティクス', '優先サポート'],
     maxBands: -1,
     maxMessages: -1,
     canCreateEvents: true,

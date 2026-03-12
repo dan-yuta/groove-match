@@ -26,6 +26,9 @@ export default function Header() {
               <Link href="/bands" className="px-3 py-2 text-sm text-text-secondary hover:text-foreground rounded-lg hover:bg-surface-light transition-colors">
                 バンド
               </Link>
+              <Link href="/chat" className="px-3 py-2 text-sm text-text-secondary hover:text-foreground rounded-lg hover:bg-surface-light transition-colors">
+                チャット
+              </Link>
               <Link href="/events" className="px-3 py-2 text-sm text-text-secondary hover:text-foreground rounded-lg hover:bg-surface-light transition-colors">
                 イベント
               </Link>

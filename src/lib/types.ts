@@ -218,3 +218,51 @@ export interface AdminStats {
   monthlyRevenue: number;
   subscriptionBreakdown: Record<SubscriptionPlan, number>;
 }
+
+// Chat types
+export type ChatRoomType = 'dm' | 'band';
+
+export interface ChatRoom {
+  id: string;
+  type: ChatRoomType;
+  name?: string;           // band chat uses band name
+  bandId?: string;         // set for band group chats
+  members: string[];       // user IDs
+  lastMessage?: ChatMessage;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  roomId: string;
+  senderId: string;
+  content: string;
+  createdAt: string;
+}
+
+// Practice Schedule (Calendar) types
+export type ScheduleStatus = 'proposed' | 'confirmed' | 'cancelled' | 'completed';
+export type ScheduleResponse = 'ok' | 'ng' | 'pending';
+
+export interface PracticeSchedule {
+  id: string;
+  bandId: string;
+  proposedBy: string;      // user ID
+  title: string;
+  date: string;            // YYYY-MM-DD
+  startTime: string;       // HH:mm
+  endTime: string;         // HH:mm
+  studioName?: string;
+  studioAddress?: string;
+  note?: string;
+  status: ScheduleStatus;
+  responses: PracticeScheduleResponse[];
+  createdAt: string;
+}
+
+export interface PracticeScheduleResponse {
+  userId: string;
+  response: ScheduleResponse;
+  respondedAt?: string;
+}

@@ -1,0 +1,109 @@
+{
+  "sessionEnd": {
+    "description": "CCAGI session end hook - Auto-report and status update",
+    "enabled": true,
+    "command": "bash",
+    "args": [
+      "-c",
+      ".claude/hooks/session-end.sh"
+    ]
+  },
+  "sessionStart": {
+    "description": "CCAGI session start hook - Priority check and system status",
+    "enabled": true,
+    "command": "bash",
+    "args": [
+      "-c",
+      ".claude/hooks/session-start.sh"
+    ]
+  },
+  "PostToolCall": [
+    {
+      "description": "Feedback SSOT Sync - Auto-sync feedback files to SSOT Issue",
+      "enabled": true,
+      "matcher": {
+        "tool_name": "Write"
+      },
+      "command": "bash",
+      "args": [
+        "-c",
+        ".claude/hooks/feedback-ssot-sync.sh \"$TOOL_INPUT\" \"$TOOL_OUTPUT\""
+      ]
+    },
+    {
+      "description": "Agent Logger - Record detailed agent execution logs to ./logs",
+      "enabled": true,
+      "matcher": {
+        "tool_name": "Task"
+      },
+      "command": "bash",
+      "args": [
+        "-c",
+        ".claude/hooks/agent-logger.sh \"$TOOL_OUTPUT\" \"$TOOL_INPUT\""
+      ]
+    },
+    {
+      "description": "CodeGen → ReviewAgent trigger - Auto-launch ReviewAgent after CodeGenAgent",
+      "enabled": true,
+      "matcher": {
+        "tool_name": "Task"
+      },
+      "command": "bash",
+      "args": [
+        "-c",
+        ".claude/hooks/codegen-review-trigger.sh \"$TOOL_OUTPUT\""
+      ]
+    },
+    {
+      "description": "Agent Worktree Post-Hook - Cleanup worktree after Sub-Agent Task execution",
+      "enabled": true,
+      "matcher": {
+        "tool_name": "Task"
+      },
+      "command": "bash",
+      "args": [
+        "-c",
+        ".claude/hooks/agent-worktree-post.sh \"$TOOL_OUTPUT\""
+      ]
+    },
+    {
+      "description": "Auto-format validation - Check formatting after edits",
+      "enabled": true,
+      "matcher": {
+        "tool_name": "Edit"
+      },
+      "command": "bash",
+      "args": [
+        "-c",
+        ".claude/hooks/format-check.sh \"$TOOL_INPUT\""
+      ]
+    }
+  ],
+  "PreToolCall": [
+    {
+      "description": "Git operations validator - Validate git commands against CCAGI policy",
+      "enabled": true,
+      "matcher": {
+        "tool_name": "Bash",
+        "tool_input": "git"
+      },
+      "command": "bash",
+      "args": [
+        "-c",
+        ".claude/hooks/git-ops-validator.sh \"$TOOL_INPUT\""
+      ]
+    },
+    {
+      "description": "Agent Worktree Pre-Hook - Create worktree before Sub-Agent Task execution",
+      "enabled": true,
+      "matcher": {
+        "tool_name": "Task"
+      },
+      "command": "bash",
+      "args": [
+        "-c",
+        ".claude/hooks/agent-worktree-pre.sh \"$TOOL_INPUT\""
+      ]
+    }
+  ]
+}

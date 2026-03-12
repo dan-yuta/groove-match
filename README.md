@@ -1,4 +1,4 @@
-# BandMatch
+# Groove Match
 
 初心者コピバン向けコミュニティアプリ。
 好きなバンドの曲をコピーしたい仲間を見つけて、コピバンを結成し、コピバンライブに出るまでをサポートする**コピバンメンバーマッチング**＆**ライブ出演促進**プラットフォームです。
@@ -6,8 +6,8 @@
 
 | リンク | URL |
 |--------|-----|
-| デモアプリ | https://band-match.netlify.app/ |
-| ドキュメント | https://dan-yuta.github.io/band-match/ |
+| デモアプリ | https://groove-match.netlify.app/ |
+| ドキュメント | https://dan-yuta.github.io/groove-match/ |
 
 ## 技術スタック
 
@@ -69,7 +69,7 @@ npm run mobile:android # Android エミュレータで起動
 
 | 役割 | メール | パスワード |
 |------|--------|-----------|
-| 管理者 | admin@bandmatch.jp | admin1234 |
+| 管理者 | admin@groovematch.jp | admin1234 |
 | 一般ユーザー | tanaka@example.com | pass1234 |
 
 ## 主な機能
@@ -88,7 +88,7 @@ npm run mobile:android # Android エミュレータで起動
 - **SNS連携** - X / Instagram / LINE / YouTube アカウント連携・プロフィール表示
 
 ### その他
-- **サブスクリプション** - Free（¥0） / Pro（¥500/月、初回2週間無料）
+- **サブスクリプション** - Free（¥0） / Pro（¥500/月、初回Proトライアル。招待コードで1ヶ月に延長）
 - **管理ダッシュボード** - ユーザー管理・売上・サブスク統計
 
 ## プロジェクト構成

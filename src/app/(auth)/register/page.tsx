@@ -366,7 +366,7 @@ export default function RegisterPage() {
         >
           <h1 className="text-3xl font-bold gradient-text mb-2">新規登録</h1>
           <p className="text-text-secondary text-sm">
-            BandMatchに参加して、同じ曲をやりたいコピバン仲間を見つけよう
+            Groove Matchに参加して、同じ曲をやりたいコピバン仲間を見つけよう
           </p>
         </motion.div>
 

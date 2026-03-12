@@ -1,7 +1,7 @@
 {
-  "name": "BandMatch",
-  "short_name": "BandMatch",
-  "description": "初心者バンドマンのためのコミュニティアプリ",
+  "name": "Groove Match",
+  "short_name": "Groove Match",
+  "description": "初心者コピバン向けコミュニティアプリ",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

@@ -3,12 +3,12 @@ import { User } from '@/lib/types';
 export const mockUsers: User[] = [
   {
     id: 'admin-1',
-    email: 'admin@bandmatch.jp',
+    email: 'admin@groovematch.jp',
     password: 'admin1234',
     name: '管理者',
     nickname: 'Admin',
     avatar: '',
-    bio: 'BandMatchの管理者です。コピバン文化を盛り上げていきます！',
+    bio: 'Groove Matchの管理者です。コピバン文化を盛り上げていきます！',
     prefecture: '東京都',
     city: '渋谷区',
     instruments: [{ instrument: 'electric_guitar', skillLevel: 'expert', yearsPlaying: 15 }],
@@ -27,9 +27,9 @@ export const mockUsers: User[] = [
       weeklyGoalMinutes: 60,
     },
     socialAccounts: [
-      { provider: 'x', username: '@bandmatch_admin', url: 'https://x.com/bandmatch_admin' },
-      { provider: 'youtube', username: 'BandMatchOfficial', url: 'https://youtube.com/@BandMatchOfficial' },
-      { provider: 'instagram', username: 'bandmatch_official', url: 'https://instagram.com/bandmatch_official' },
+      { provider: 'x', username: '@groovematch_admin', url: 'https://x.com/groovematch_admin' },
+      { provider: 'youtube', username: 'GrooveMatchOfficial', url: 'https://youtube.com/@GrooveMatchOfficial' },
+      { provider: 'instagram', username: 'groovematch_official', url: 'https://instagram.com/groovematch_official' },
     ],
     friends: ['user-1', 'user-3', 'user-6', 'user-9', 'user-10'],
     badges: ['streak-30', 'streak-7', 'streak-3', 'first-song', 'first-band', 'setlist-complete', 'first-live', 'practice-100h', 'practice-10h', 'practice-500h', 'encourager', 'rank-1'],

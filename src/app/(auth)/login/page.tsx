@@ -103,7 +103,7 @@ export default function LoginPage() {
           transition={{ delay: 0.1, duration: 0.4 }}
           className="text-center mb-8"
         >
-          <h1 className="text-3xl font-bold gradient-text mb-2">BandMatch</h1>
+          <h1 className="text-3xl font-bold gradient-text mb-2">Groove Match</h1>
           <p className="text-text-secondary text-sm">
             アカウントにログインして、音楽仲間を見つけよう
           </p>
@@ -247,10 +247,10 @@ export default function LoginPage() {
                   <div>
                     <p className="text-text-muted text-[10px] font-medium mb-0.5">管理者</p>
                     <p className="text-text-muted flex items-center gap-1.5">
-                      <span className="text-primary-light">admin@bandmatch.jp</span>
+                      <span className="text-primary-light">admin@groovematch.jp</span>
                       <button
                         type="button"
-                        onClick={() => copyToClipboard('admin@bandmatch.jp', 'demo-email')}
+                        onClick={() => copyToClipboard('admin@groovematch.jp', 'demo-email')}
                         className={`px-1.5 py-0.5 rounded text-[10px] border transition-all ${
                           copiedField === 'demo-email'
                             ? 'border-green-500/40 text-green-400 bg-green-500/10'

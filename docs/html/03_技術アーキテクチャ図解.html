@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Groove Match - 技術アーキテクチャ図解</title>
+<style>
+  :root {
+    --bg: #0a0a1a; --surface: #1a1a2e; --surface-light: #25253d; --surface-hover: #2f2f4a;
+    --primary: #7c3aed; --primary-light: #8b5cf6; --secondary: #06b6d4;
+    --accent: #f97066; --green: #22c55e; --yellow: #eab308; --orange: #f59e0b;
+    --pink: #ec4899; --blue: #3b82f6; --indigo: #6366f1;
+    --text: #e2e8f0; --text-dim: #94a3b8; --text-muted: #64748b; --border: #334155;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.7; min-height: 100vh; }
+  .hero { background: linear-gradient(135deg, #1a1a2e 0%, #0a0a1a 50%, #1a1a2e 100%); border-bottom: 1px solid var(--border); padding: 70px 40px 50px; text-align: center; position: relative; overflow: hidden; }
+  .hero::before { content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%;
+    background: radial-gradient(circle at 30% 50%, rgba(124,58,237,0.08) 0%, transparent 50%), radial-gradient(circle at 70% 50%, rgba(6,182,212,0.06) 0%, transparent 50%);
+    animation: heroFloat 20s ease-in-out infinite; }
+  @keyframes heroFloat { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-2%,2%)} }
+  .hero h1 { font-size:2.8rem; font-weight:800; background:linear-gradient(135deg,var(--primary-light),var(--secondary)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; position:relative; margin-bottom:12px; }
+  .hero .subtitle { font-size:1.15rem; color:var(--text-dim); position:relative; }
+  .hero .badge-row { margin-top:20px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap; position:relative; }
+  .hero .badge { padding:6px 16px; border-radius:20px; font-size:0.8rem; font-weight:600; border:1px solid; }
+  .nav { background:var(--surface); border-bottom:1px solid var(--border); padding:0 40px; display:flex; gap:0; overflow-x:auto; position:sticky; top:0; z-index:100; }
+  .nav a { color:var(--text-dim); text-decoration:none; padding:14px 20px; font-size:0.85rem; font-weight:500; white-space:nowrap; border-bottom:2px solid transparent; transition:all 0.2s; }
+  .nav a:hover { color:var(--text); border-bottom-color:var(--primary); background:rgba(124,58,237,0.05); }
+  .section { padding:60px 40px; max-width:1200px; margin:0 auto; }
+  .section-title { font-size:1.8rem; font-weight:700; margin-bottom:8px; background:linear-gradient(135deg,var(--primary-light),var(--secondary)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .section-desc { color:var(--text-dim); font-size:0.95rem; margin-bottom:36px; }
+  .section-divider { border:none; border-top:1px solid var(--border); margin:0; }
+
+  .arch-diagram { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:32px; margin-bottom:40px; font-family:monospace; font-size:0.85rem; line-height:1.8; white-space:pre; overflow-x:auto; color:var(--text-dim); }
+  .arch-diagram .highlight { color:var(--primary-light); font-weight:700; }
+  .arch-diagram .cyan { color:var(--secondary); }
+  .arch-diagram .green { color:var(--green); }
+  .arch-diagram .orange { color:var(--orange); }
+
+  .tech-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:20px; margin-bottom:40px; }
+  .tech-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:24px; transition:transform 0.3s, box-shadow 0.3s; }
+  .tech-card:hover { transform:translateY(-4px); box-shadow:0 8px 30px rgba(0,0,0,0.3); }
+  .tech-card h3 { font-size:1rem; font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+  .tech-card p { font-size:0.85rem; color:var(--text-dim); margin-bottom:8px; }
+  .tech-card .version { font-size:0.75rem; color:var(--text-muted); background:var(--surface-light); padding:2px 8px; border-radius:4px; }
+  .tech-card table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+  .tech-card td { padding:4px 0; border-bottom:1px solid rgba(51,65,85,0.3); }
+  .tech-card td:first-child { color:var(--text-muted); width:100px; }
+
+  .routing-tree { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:32px; margin-bottom:40px; }
+  .routing-tree h3 { font-size:1.1rem; font-weight:700; margin-bottom:16px; }
+  .routing-tree pre { font-family:monospace; font-size:0.85rem; color:var(--text-dim); line-height:1.6; overflow-x:auto; }
+  .routing-tree .route-group { color:var(--primary-light); font-weight:600; }
+  .routing-tree .route-page { color:var(--secondary); }
+
+  .api-table { width:100%; border-collapse:collapse; font-size:0.85rem; margin-bottom:40px; }
+  .api-table th { text-align:left; padding:10px 14px; color:var(--text-muted); border-bottom:2px solid var(--border); font-weight:600; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; }
+  .api-table td { padding:10px 14px; border-bottom:1px solid rgba(51,65,85,0.5); }
+  .api-table tr:hover td { background:rgba(124,58,237,0.03); }
+  .method { padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:700; }
+  .method-get { background:rgba(34,197,94,0.15); color:var(--green); }
+  .method-post { background:rgba(59,130,246,0.15); color:var(--blue); }
+  .method-put { background:rgba(245,158,11,0.15); color:var(--orange); }
+
+  .db-schema { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:32px; margin-bottom:40px; }
+  .db-schema h3 { font-size:1.1rem; font-weight:700; margin-bottom:16px; }
+  .db-schema .schema-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px; }
+  .db-schema .schema-table { background:var(--surface-light); border-radius:10px; padding:16px; border-top:3px solid var(--primary); }
+  .db-schema .schema-table h4 { font-size:0.9rem; font-weight:700; margin-bottom:8px; color:var(--primary-light); }
+  .db-schema .schema-table ul { font-size:0.78rem; color:var(--text-dim); list-style:none; padding:0; }
+  .db-schema .schema-table ul li { padding:2px 0; border-bottom:1px solid rgba(51,65,85,0.3); }
+  .db-schema .schema-table ul li:last-child { border-bottom:none; }
+
+  .back-link { display:inline-block; margin:20px 40px; padding:8px 20px; border-radius:8px; background:var(--surface); border:1px solid var(--border); color:var(--text-dim); text-decoration:none; font-size:0.85rem; transition:all 0.2s; }
+  .back-link:hover { border-color:var(--primary); color:var(--text); }
+  footer { border-top:1px solid var(--border); padding:24px 40px; text-align:center; font-size:0.72rem; color:var(--text-muted); }
+
+  @media (max-width:768px) { .hero{padding:40px 20px;} .hero h1{font-size:2rem;} .section{padding:40px 20px;} .tech-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="back-link">&#8592; ドキュメント一覧に戻る</a>
+
+<header class="hero">
+  <h1>技術アーキテクチャ図解</h1>
+  <p class="subtitle">フロントエンド + バックエンドの技術構成をビジュアルで理解する</p>
+  <div class="badge-row">
+    <span class="badge" style="background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.2)!important; color:#fff;">Next.js 16</span>
+    <span class="badge" style="background:rgba(6,182,212,0.12); border-color:rgba(6,182,212,0.3)!important; color:var(--secondary);">React 19</span>
+    <span class="badge" style="background:rgba(59,130,246,0.12); border-color:rgba(59,130,246,0.3)!important; color:var(--blue);">Capacitor 6</span>
+    <span class="badge" style="background:rgba(99,102,241,0.12); border-color:rgba(99,102,241,0.3)!important; color:var(--indigo);">TypeScript 5</span>
+  </div>
+</header>
+
+<nav class="nav">
+  <a href="#overview">構成図</a>
+  <a href="#frontend">フロントエンド</a>
+  <a href="#routing">ルーティング</a>
+  <a href="#backend">バックエンド</a>
+  <a href="#db">データベース</a>
+  <a href="#api">API一覧</a>
+</nav>
+
+<main>
+
+<!-- 構成図 -->
+<section class="section" id="overview">
+  <h2 class="section-title">技術構成図</h2>
+  <p class="section-desc">クロスプラットフォーム（Web / iOS / Android）対応のアーキテクチャ。</p>
+
+  <div class="arch-diagram"><span class="highlight">[iOS App Store]</span>  <span class="highlight">[Google Play]</span>  <span class="highlight">[Web Browser]</span>
+       |              |              |
+   Capacitor      Capacitor      直接アクセス
+       |              |              |
+       +--------------+--------------+
+                      |
+            <span class="cyan">Next.js App Router</span>
+            (フロントエンド + API Routes)
+                      |
+        +-------------+-------------+
+        |             |             |
+  <span class="green">API Routes</span>    <span class="green">Server Actions</span>   <span class="orange">Spotify API</span>
+        |             |             <span class="orange">MusicBrainz</span>
+        +------+------+
+               |
+         <span class="cyan">Prisma ORM</span>
+               |
+    <span class="green">RDS PostgreSQL</span>     <span class="orange">ElastiCache (Redis)</span>
+    (メインDB)         (キャッシュ)
+               |
+       <span class="highlight">Amazon Cognito</span>
+       (認証・ソーシャルログイン)</div>
+</section>
+
+<hr class="section-divider">
+
+<!-- フロントエンド -->
+<section class="section" id="frontend">
+  <h2 class="section-title">フロントエンド技術スタック</h2>
+  <p class="section-desc">詳細は <a href="https://github.com/dan-yuta/groove-match/blob/main/docs/md/03-01_%E3%83%95%E3%83%AD%E3%83%B3%E3%83%88%E3%82%A8%E3%83%B3%E3%83%89.md" target="_blank" style="color:var(--primary-light);">03-01_フロントエンド.md</a> を参照。</p>
+
+  <div class="tech-grid">
+    <div class="tech-card">
+      <h3>&#9881; Next.js <span class="version">16.x</span></h3>
+      <p>Reactベースのフルスタックフレームワーク。App Routerでファイルベースルーティング。</p>
+      <table><tr><td>レンダリング</td><td>SSR + CSR</td></tr><tr><td>ルーティング</td><td>App Router</td></tr></table>
+    </div>
+    <div class="tech-card">
+      <h3>&#9883; React <span class="version">19.x</span></h3>
+      <p>UIコンポーネントライブラリ。Server Components対応。</p>
+    </div>
+    <div class="tech-card">
+      <h3>&#128295; TypeScript <span class="version">5.x</span></h3>
+      <p>型付きJavaScript。バグを事前に防止。</p>
+    </div>
+    <div class="tech-card">
+      <h3>&#127912; Tailwind CSS <span class="version">4.x</span></h3>
+      <p>ユーティリティファーストCSSフレームワーク。</p>
+    </div>
+    <div class="tech-card">
+      <h3>&#127916; Framer Motion <span class="version">12.x</span></h3>
+      <p>スムーズなアニメーションライブラリ。</p>
+    </div>
+    <div class="tech-card">
+      <h3>&#128241; Capacitor <span class="version">6.x</span></h3>
+      <p>WebアプリをiOS/Androidネイティブアプリ化。WebViewでWebアプリを表示し、カメラやプッシュ通知などのネイティブ機能にアクセス可能。</p>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ルーティング -->
+<section class="section" id="routing">
+  <h2 class="section-title">ルーティング構造</h2>
+  <p class="section-desc">src/app/ ディレクトリのフォルダ構成がURLパスに対応。括弧はルートグループ。</p>
+
+  <div class="routing-tree">
+    <h3>URL構成</h3>
+    <pre>
+<span class="route-page">/</span>                    &#8594; ランディングページ（公開）
+|
+|-- <span class="route-group">(auth)</span>             &#8594; 認証グループ（URLに含まれない）
+|   |-- <span class="route-page">/login</span>         &#8594; ログイン
+|   |-- <span class="route-page">/register</span>      &#8594; 新規登録（Pro + CC登録必須）
+|
+|-- <span class="route-group">(main)</span>             &#8594; メイングループ（要認証）
+|   |-- <span class="route-page">/dashboard</span>     &#8594; ダッシュボード
+|   |-- <span class="route-page">/matching</span>      &#8594; マッチング検索
+|   |-- <span class="route-page">/bands</span>         &#8594; コピバン一覧・詳細
+|   |-- <span class="route-page">/events</span>        &#8594; ライブイベントボード
+|   |-- <span class="route-page">/community</span>     &#8594; コミュニティ（タイムライン）
+|   |-- <span class="route-page">/profile</span>       &#8594; プロフィール
+|   |-- <span class="route-page">/subscription</span>  &#8594; サブスクリプション管理
+|
+|-- <span class="route-group">(admin)</span>            &#8594; 管理者グループ（admin権限必須）
+    |-- <span class="route-page">/admin</span>         &#8594; 管理ダッシュボード
+    |-- <span class="route-page">/admin/users</span>   &#8594; ユーザー管理
+    |-- <span class="route-page">/admin/sales</span>   &#8594; 売上管理
+    </pre>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- バックエンド -->
+<section class="section" id="backend">
+  <h2 class="section-title">バックエンド技術スタック</h2>
+  <p class="section-desc">詳細は <a href="https://github.com/dan-yuta/groove-match/blob/main/docs/md/03-02_%E3%83%90%E3%83%83%E3%82%AF%E3%82%A8%E3%83%B3%E3%83%89%E8%A8%AD%E8%A8%88.md" target="_blank" style="color:var(--primary-light);">03-02_バックエンド設計.md</a> を参照。現在はモックデータ+localStorageで動作中。</p>
+
+  <div class="tech-grid">
+    <div class="tech-card">
+      <h3>&#128268; API Routes / Server Actions</h3>
+      <p>Next.jsに組み込まれたサーバーサイド機能。別途バックエンドサーバー不要。</p>
+    </div>
+    <div class="tech-card">
+      <h3>&#128451; Prisma ORM</h3>
+      <p>データベースをTypeScriptコードで操作。SQLを直接書かなくてよい。</p>
+    </div>
+    <div class="tech-card">
+      <h3>&#128451; RDS PostgreSQL</h3>
+      <p>AWSマネージドDB。初期は db.t4g.micro。成長期にAurora移行を検討。</p>
+    </div>
+    <div class="tech-card">
+      <h3>&#128274; Amazon Cognito</h3>
+      <p>認証サービス。ソーシャルログイン（Google/X/Instagram）対応。5万MAUまで無料。</p>
+      <table><tr><td>パスワード</td><td>8文字以上、英字+数字</td></tr><tr><td>JWT有効期限</td><td>24h / リフレッシュ30日</td></tr></table>
+    </div>
+    <div class="tech-card">
+      <h3>&#128176; Stripe</h3>
+      <p>Web決済処理。手数料3.6%。iOS/Androidはアプリ内課金と併用。</p>
+    </div>
+    <div class="tech-card">
+      <h3>&#9889; ElastiCache (Redis)</h3>
+      <p>Spotify APIレスポンスキャッシュ + セッション管理。API呼び出し回数を削減。</p>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- データベース -->
+<section class="section" id="db">
+  <h2 class="section-title">データベース設計（主要テーブル）</h2>
+  <p class="section-desc">RDS PostgreSQL + Prisma。曲データはSpotify IDのみ保存し、表示時にAPIから取得。</p>
+
+  <div class="db-schema">
+    <h3>主要テーブル</h3>
+    <div class="schema-grid">
+      <div class="schema-table">
+        <h4>User</h4>
+        <ul><li>id, email, name</li><li>nickname, avatar</li><li>instruments[], genres[]</li><li>skillLevel, prefecture</li><li>wantToPlaySongs[]</li><li>canPlaySongs[]</li><li>role (user/admin)</li></ul>
+      </div>
+      <div class="schema-table">
+        <h4>Band</h4>
+        <ul><li>id, name, description</li><li>genre, prefecture</li><li>targetArtist</li><li>setlist[] (Spotify ID)</li><li>members[], leaderId</li><li>isRecruiting</li></ul>
+      </div>
+      <div class="schema-table">
+        <h4>Event</h4>
+        <ul><li>id, title, venue</li><li>date, fee</li><li>prefecture, genreTags[]</li><li>isBeginnerFriendly</li><li>registeredBands[]</li><li>createdBy, isOfficial</li></ul>
+      </div>
+      <div class="schema-table">
+        <h4>Subscription</h4>
+        <ul><li>id, userId</li><li>plan (free/pro)</li><li>stripeCustomerId</li><li>trialEndsAt</li><li>inviteCode</li></ul>
+      </div>
+      <div class="schema-table">
+        <h4>PracticeLog</h4>
+        <ul><li>id, userId, songId</li><li>duration, date</li><li>streak, totalMinutes</li></ul>
+      </div>
+      <div class="schema-table">
+        <h4>FriendRelation</h4>
+        <ul><li>id, requesterId</li><li>addresseeId</li><li>status (pending/accepted)</li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- API一覧 -->
+<section class="section" id="api">
+  <h2 class="section-title">主要API一覧</h2>
+  <p class="section-desc">Next.js API Routes で実装。</p>
+
+  <table class="api-table">
+    <thead><tr><th>ID</th><th>機能</th><th>メソッド</th><th>エンドポイント</th></tr></thead>
+    <tbody>
+      <tr><td>F-001</td><td>ユーザー登録</td><td><span class="method method-post">POST</span></td><td>/api/auth/register</td></tr>
+      <tr><td>F-002</td><td>ログイン</td><td><span class="method method-post">POST</span></td><td>/api/auth/login</td></tr>
+      <tr><td>F-004</td><td>プロフィール取得/更新</td><td><span class="method method-get">GET</span> <span class="method method-put">PUT</span></td><td>/api/users/me</td></tr>
+      <tr><td>F-010</td><td>マッチングスコア算出</td><td><span class="method method-get">GET</span></td><td>/api/matching</td></tr>
+      <tr><td>F-020</td><td>コピバン作成</td><td><span class="method method-post">POST</span></td><td>/api/bands</td></tr>
+      <tr><td>F-030</td><td>イベント一覧</td><td><span class="method method-get">GET</span></td><td>/api/events</td></tr>
+      <tr><td>F-050</td><td>サブスク管理</td><td><span class="method method-post">POST</span></td><td>/api/subscriptions</td></tr>
+      <tr><td>F-080</td><td>練習記録</td><td><span class="method method-post">POST</span></td><td>/api/practice</td></tr>
+      <tr><td>F-081</td><td>フレンド管理</td><td><span class="method method-post">POST</span></td><td>/api/friends</td></tr>
+    </tbody>
+  </table>
+
+  <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px; text-align:center; font-size:0.88rem; color:var(--text-dim);">
+    インフラ構成（AWS）の詳細は &#8594; <a href="04_%E3%82%A4%E3%83%B3%E3%83%95%E3%83%A9%E6%A7%8B%E6%88%90%E5%9B%B3%E8%A7%A3.html" style="color:var(--secondary);">04 インフラ構成図解</a>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>&#169; 2026 Groove Match - 技術アーキテクチャ図解</p>
+  <p style="margin-top:4px;"><a href="../index.html" style="color:var(--secondary); text-decoration:none;">&#8592; ドキュメント一覧に戻る</a></p>
+</footer>
+
+</body>
+</html>

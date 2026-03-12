@@ -170,4 +170,4 @@ export const MILESTONE_TYPES = [
   { id: 'new_instrument', label: '新楽器挑戦', icon: '🎹' },
 ];
 
-export const STORAGE_PREFIX = 'bandmatch-';
+export const STORAGE_PREFIX = 'groovematch-';

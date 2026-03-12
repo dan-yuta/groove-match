@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'jp.bandmatch.app',
-  appName: 'BandMatch',
+  appId: 'jp.groovematch.app',
+  appName: 'Groove Match',
   webDir: 'out',
   server: {
     androidScheme: 'https',
@@ -28,7 +28,7 @@ const config: CapacitorConfig = {
   ios: {
     contentInset: 'automatic',
     preferredContentMode: 'mobile',
-    scheme: 'BandMatch',
+    scheme: 'GrooveMatch',
   },
   android: {
     allowMixedContent: false,

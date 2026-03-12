@@ -8,9 +8,9 @@ export default function Footer() {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xs">
-                B
+                G
               </div>
-              <span className="font-bold gradient-text">BandMatch</span>
+              <span className="font-bold gradient-text">Groove Match</span>
             </div>
             <p className="text-sm text-text-muted">初心者コピバン向けコミュニティアプリ</p>
           </div>
@@ -38,7 +38,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="mt-8 pt-6 border-t border-border-light text-center text-xs text-text-muted">
-          &copy; 2026 BandMatch. All rights reserved.
+          &copy; 2026 Groove Match. All rights reserved.
         </div>
       </div>
     </footer>

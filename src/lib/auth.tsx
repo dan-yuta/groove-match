@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       x: 'X',
       instagram: 'Instagram',
     };
-    const mockEmail = `${provider}-user-${Date.now()}@mock.bandmatch.jp`;
+    const mockEmail = `${provider}-user-${Date.now()}@mock.groovematch.jp`;
     const mockName = `${providerNames[provider]}ユーザー`;
     const newUser: User = {
       id: `user-${Date.now()}`,

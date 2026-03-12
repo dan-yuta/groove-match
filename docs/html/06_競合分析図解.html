@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Groove Match - 競合分析図解</title>
+<style>
+  :root {
+    --bg: #0a0a1a; --surface: #1a1a2e; --surface-light: #25253d; --surface-hover: #2f2f4a;
+    --primary: #7c3aed; --primary-light: #8b5cf6; --secondary: #06b6d4;
+    --accent: #f97066; --green: #22c55e; --yellow: #eab308; --orange: #f59e0b;
+    --pink: #ec4899; --blue: #3b82f6; --indigo: #6366f1;
+    --text: #e2e8f0; --text-dim: #94a3b8; --text-muted: #64748b; --border: #334155;
+    --competitor-a: #64748b; --competitor-b: #78716c;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif; line-height:1.7; min-height:100vh; }
+  .hero { background:linear-gradient(135deg, #1a1a2e 0%, #0a0a1a 50%, #1a1a2e 100%); border-bottom:1px solid var(--border); padding:70px 40px 50px; text-align:center; position:relative; overflow:hidden; }
+  .hero::before { content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%;
+    background:radial-gradient(circle at 30% 50%, rgba(124,58,237,0.08) 0%, transparent 50%), radial-gradient(circle at 70% 50%, rgba(6,182,212,0.06) 0%, transparent 50%);
+    animation:heroFloat 20s ease-in-out infinite; }
+  @keyframes heroFloat { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-2%,2%)} }
+  .hero h1 { font-size:2.8rem; font-weight:800; background:linear-gradient(135deg,var(--primary-light),var(--secondary)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; position:relative; margin-bottom:12px; }
+  .hero .subtitle { font-size:1.15rem; color:var(--text-dim); position:relative; max-width:700px; margin:0 auto; }
+  .hero .badge-row { margin-top:20px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap; position:relative; }
+  .hero .badge { padding:6px 16px; border-radius:20px; font-size:0.85rem; font-weight:600; border:1px solid; }
+  .nav { background:var(--surface); border-bottom:1px solid var(--border); padding:0 40px; display:flex; gap:0; overflow-x:auto; position:sticky; top:0; z-index:100; }
+  .nav a { color:var(--text-dim); text-decoration:none; padding:14px 20px; font-size:0.85rem; font-weight:500; white-space:nowrap; border-bottom:2px solid transparent; transition:all 0.2s; }
+  .nav a:hover { color:var(--text); border-bottom-color:var(--primary); background:rgba(124,58,237,0.05); }
+  .section { padding:60px 40px; max-width:1200px; margin:0 auto; }
+  .section-title { font-size:1.8rem; font-weight:700; margin-bottom:8px; background:linear-gradient(135deg,var(--primary-light),var(--secondary)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .section-desc { color:var(--text-dim); font-size:0.95rem; margin-bottom:36px; }
+  .section-divider { border:none; border-top:1px solid var(--border); margin:0; }
+
+  .competitor-grid { display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-bottom:40px; }
+  .competitor-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:32px; transition:transform 0.3s, box-shadow 0.3s; }
+  .competitor-card:hover { transform:translateY(-4px); box-shadow:0 8px 30px rgba(0,0,0,0.3); }
+  .competitor-card .card-header { display:flex; align-items:center; gap:16px; margin-bottom:20px; }
+  .competitor-card .card-icon { width:56px; height:56px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:800; flex-shrink:0; }
+  .card-title { font-size:1.3rem; font-weight:700; }
+  .card-url { font-size:0.8rem; color:var(--text-muted); }
+  .info-table { width:100%; margin-bottom:20px; border-collapse:collapse; }
+  .info-table td { padding:6px 0; font-size:0.88rem; border-bottom:1px solid rgba(51,65,85,0.5); vertical-align:top; }
+  .info-table td:first-child { color:var(--text-muted); width:90px; font-weight:500; }
+  .strengths-weaknesses { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
+  .sw-column h4 { font-size:0.85rem; font-weight:600; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+  .sw-column.strengths h4 { color:var(--green); }
+  .sw-column.weaknesses h4 { color:var(--accent); }
+  .sw-column ul { list-style:none; font-size:0.82rem; color:var(--text-dim); }
+  .sw-column ul li { padding:4px 0; padding-left:16px; position:relative; }
+  .sw-column.strengths ul li::before { content:'+'; position:absolute; left:0; color:var(--green); font-weight:700; }
+  .sw-column.weaknesses ul li::before { content:'-'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+
+  .compare-table { width:100%; border-collapse:collapse; font-size:0.85rem; margin-bottom:40px; }
+  .compare-table th { padding:12px 14px; text-align:left; border-bottom:2px solid var(--border); font-weight:600; }
+  .compare-table th:first-child { color:var(--text-muted); }
+  .compare-table th:nth-child(2) { color:var(--competitor-a); }
+  .compare-table th:nth-child(3) { color:var(--competitor-b); }
+  .compare-table th:nth-child(4) { color:var(--primary-light); }
+  .compare-table td { padding:10px 14px; border-bottom:1px solid rgba(51,65,85,0.5); }
+  .compare-table tr:hover td { background:rgba(124,58,237,0.03); }
+  .gm-highlight { color:var(--primary-light); font-weight:600; }
+
+  .diff-pillars { display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; margin-bottom:40px; }
+  .diff-pillar { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:28px; text-align:center; transition:transform 0.3s; }
+  .diff-pillar:hover { transform:translateY(-4px); }
+  .diff-pillar .pillar-icon { font-size:2.5rem; margin-bottom:12px; display:block; }
+  .diff-pillar h3 { font-size:1.05rem; font-weight:700; margin-bottom:8px; }
+  .diff-pillar p { font-size:0.85rem; color:var(--text-dim); }
+
+  .positioning { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:32px; margin-bottom:40px; }
+  .positioning h3 { font-size:1.1rem; font-weight:700; margin-bottom:16px; }
+  .pos-map { position:relative; width:100%; height:300px; background:var(--surface-light); border-radius:12px; overflow:hidden; }
+  .pos-axis-x { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); font-size:0.75rem; color:var(--text-muted); }
+  .pos-axis-y { position:absolute; left:10px; top:50%; transform:translateY(-50%) rotate(-90deg); font-size:0.75rem; color:var(--text-muted); white-space:nowrap; }
+  .pos-label-left { position:absolute; bottom:10px; left:10px; font-size:0.7rem; color:var(--text-muted); }
+  .pos-label-right { position:absolute; bottom:10px; right:10px; font-size:0.7rem; color:var(--text-muted); }
+  .pos-label-top { position:absolute; top:10px; left:50%; transform:translateX(-50%); font-size:0.7rem; color:var(--text-muted); }
+  .pos-label-bottom { position:absolute; bottom:30px; left:50%; transform:translateX(-50%); font-size:0.7rem; color:var(--text-muted); }
+  .pos-dot { position:absolute; width:80px; height:80px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:700; text-align:center; line-height:1.2; }
+  .pos-line-h { position:absolute; left:0; right:0; top:50%; height:1px; background:rgba(255,255,255,0.08); }
+  .pos-line-v { position:absolute; top:0; bottom:0; left:50%; width:1px; background:rgba(255,255,255,0.08); }
+
+  .back-link { display:inline-block; margin:20px 40px; padding:8px 20px; border-radius:8px; background:var(--surface); border:1px solid var(--border); color:var(--text-dim); text-decoration:none; font-size:0.85rem; transition:all 0.2s; }
+  .back-link:hover { border-color:var(--primary); color:var(--text); }
+  footer { border-top:1px solid var(--border); padding:24px 40px; text-align:center; font-size:0.72rem; color:var(--text-muted); }
+
+  @media (max-width:768px) { .hero{padding:40px 20px;} .hero h1{font-size:2rem;} .section{padding:40px 20px;} .competitor-grid,.diff-pillars{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="back-link">&#8592; ドキュメント一覧に戻る</a>
+
+<header class="hero">
+  <h1>競合分析図解</h1>
+  <p class="subtitle">OURSOUNDS・ROCKJOINTとの比較分析、差別化ポイント</p>
+  <div class="badge-row">
+    <span class="badge" style="background:rgba(124,58,237,0.12); border-color:rgba(124,58,237,0.3)!important; color:var(--primary-light);">コピバン特化</span>
+    <span class="badge" style="background:rgba(6,182,212,0.12); border-color:rgba(6,182,212,0.3)!important; color:var(--secondary);">曲ベースマッチング</span>
+    <span class="badge" style="background:rgba(249,112,102,0.12); border-color:rgba(249,112,102,0.3)!important; color:var(--accent);">初心者特化</span>
+    <span class="badge" style="background:rgba(34,197,94,0.12); border-color:rgba(34,197,94,0.3)!important; color:var(--green);">挫折防止</span>
+  </div>
+</header>
+
+<nav class="nav">
+  <a href="#competitors">競合概要</a>
+  <a href="#compare">比較表</a>
+  <a href="#positioning">ポジショニング</a>
+  <a href="#differentiation">差別化の3本柱</a>
+</nav>
+
+<main>
+
+<!-- 競合概要 -->
+<section class="section" id="competitors">
+  <h2 class="section-title">競合サービス概要</h2>
+  <p class="section-desc">詳細は <a href="https://github.com/dan-yuta/groove-match/blob/main/docs/md/06-01_%E7%AB%B6%E5%90%88%E5%88%86%E6%9E%90.md" target="_blank" style="color:var(--primary-light);">06-01_競合分析.md</a> を参照。</p>
+
+  <div class="competitor-grid">
+    <div class="competitor-card">
+      <div class="card-header">
+        <div class="card-icon" style="background:linear-gradient(135deg,rgba(100,116,139,0.3),rgba(100,116,139,0.1)); color:var(--competitor-a);">OS</div>
+        <div><div class="card-title">OURSOUNDS</div><div class="card-url">oursounds.net</div></div>
+      </div>
+      <table class="info-table">
+        <tr><td>形態</td><td>Web掲示板</td></tr>
+        <tr><td>運営歴</td><td>2005年〜（20年以上）</td></tr>
+        <tr><td>料金</td><td>無料</td></tr>
+        <tr><td>ターゲット</td><td>全年代・全レベル</td></tr>
+      </table>
+      <div class="strengths-weaknesses">
+        <div class="sw-column strengths"><h4>&#9650; 強み</h4><ul><li>無料</li><li>20年の運営実績</li><li>不正ユーザー排除</li></ul></div>
+        <div class="sw-column weaknesses"><h4>&#9660; 弱み</h4><ul><li>UIが古い掲示板</li><li>マッチング機能なし</li><li>挫折防止の仕組みなし</li><li>バンド結成後のサポートなし</li></ul></div>
+      </div>
+    </div>
+    <div class="competitor-card">
+      <div class="card-header">
+        <div class="card-icon" style="background:linear-gradient(135deg,rgba(120,113,108,0.3),rgba(120,113,108,0.1)); color:var(--competitor-b);">RJ</div>
+        <div><div class="card-title">ROCKJOINT</div><div class="card-url">rockjoint.link</div></div>
+      </div>
+      <table class="info-table">
+        <tr><td>形態</td><td>オフラインイベント + マッチングアプリ</td></tr>
+        <tr><td>実績</td><td>累計4,601名参加</td></tr>
+        <tr><td>料金</td><td>イベント参加費</td></tr>
+        <tr><td>展開地域</td><td>東京・大阪・京都・神戸・横浜・福岡</td></tr>
+      </table>
+      <div class="strengths-weaknesses">
+        <div class="sw-column strengths"><h4>&#9650; 強み</h4><ul><li>対面交流（実際に会える）</li><li>ライブ出演機会を提供</li><li>プロとのコラボ実績</li></ul></div>
+        <div class="sw-column weaknesses"><h4>&#9660; 弱み</h4><ul><li>地方ユーザーに弱い</li><li>オンライン機能が弱い</li><li>継続的な関係構築が薄い</li><li>イベント日程に依存</li></ul></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- 比較表 -->
+<section class="section" id="compare">
+  <h2 class="section-title">競合比較表</h2>
+  <div style="overflow-x:auto;">
+  <table class="compare-table">
+    <thead><tr><th>項目</th><th>OURSOUNDS</th><th>ROCKJOINT</th><th>Groove Match</th></tr></thead>
+    <tbody>
+      <tr><td>形態</td><td>Web掲示板</td><td>オフラインイベント+アプリ</td><td class="gm-highlight">コピバン特化Webアプリ</td></tr>
+      <tr><td>対象バンド</td><td>オリジナル・コピー混在</td><td>オリジナル・コピー混在</td><td class="gm-highlight">コピバン専門</td></tr>
+      <tr><td>マッチング</td><td>自力検索</td><td>対面交流会</td><td class="gm-highlight">6要素自動スコアリング</td></tr>
+      <tr><td>曲ベース検索</td><td>なし</td><td>なし</td><td class="gm-highlight">Spotify API連携</td></tr>
+      <tr><td>セットリスト管理</td><td>なし</td><td>なし</td><td class="gm-highlight">コピバンのセットリスト管理</td></tr>
+      <tr><td>挫折防止</td><td>なし</td><td>なし</td><td class="gm-highlight">練習ログ・マイルストーン</td></tr>
+      <tr><td>ライブ支援</td><td>なし</td><td>イベント開催</td><td>イベントボード（公式バッジ付き）</td></tr>
+      <tr><td>料金</td><td>無料</td><td>イベント参加費</td><td>Free(&#165;0) / Pro(&#165;500)</td></tr>
+      <tr><td>UI/UX</td><td>掲示板（古い）</td><td>イベント紹介サイト</td><td class="gm-highlight">モダンUI</td></tr>
+      <tr><td>対象レベル</td><td>全レベル混在</td><td>全レベル混在</td><td class="gm-highlight">初心者特化</td></tr>
+      <tr><td>プラットフォーム</td><td>Web</td><td>Web + オフライン</td><td class="gm-highlight">Web + iOS + Android</td></tr>
+      <tr><td>練習トラッキング</td><td>なし</td><td>なし</td><td class="gm-highlight">ストリーク・ランキング・バッジ</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ポジショニング -->
+<section class="section" id="positioning">
+  <h2 class="section-title">ポジショニングマップ</h2>
+  <div class="positioning">
+    <h3>テクノロジー x コピバン特化度</h3>
+    <div class="pos-map">
+      <div class="pos-line-h"></div>
+      <div class="pos-line-v"></div>
+      <div class="pos-label-left">ローテク</div>
+      <div class="pos-label-right">ハイテク</div>
+      <div class="pos-label-top">コピバン特化</div>
+      <div class="pos-label-bottom" style="bottom:50px;">汎用</div>
+      <!-- OURSOUNDS: ローテク、汎用 -->
+      <div class="pos-dot" style="left:15%; top:60%; background:rgba(100,116,139,0.3); border:2px solid var(--competitor-a); color:var(--competitor-a);">OUR<br>SOUNDS</div>
+      <!-- ROCKJOINT: 中テク、やや汎用 -->
+      <div class="pos-dot" style="left:42%; top:50%; background:rgba(120,113,108,0.3); border:2px solid var(--competitor-b); color:var(--competitor-b);">ROCK<br>JOINT</div>
+      <!-- Groove Match: ハイテク、コピバン特化 -->
+      <div class="pos-dot" style="left:72%; top:15%; background:rgba(124,58,237,0.3); border:2px solid var(--primary-light); color:var(--primary-light); box-shadow:0 0 20px rgba(124,58,237,0.3);">Groove<br>Match</div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- 差別化 -->
+<section class="section" id="differentiation">
+  <h2 class="section-title">差別化の3本柱</h2>
+
+  <div class="diff-pillars">
+    <div class="diff-pillar" style="border-top:3px solid var(--primary);">
+      <span class="pillar-icon">&#127925;</span>
+      <h3 style="color:var(--primary-light);">曲ベースマッチング</h3>
+      <p>Spotify API連携で「やりたい曲」でマッチング。6要素自動スコアリングで最適な仲間を提案。掲示板の「自力検索」とは一線を画す。</p>
+    </div>
+    <div class="diff-pillar" style="border-top:3px solid var(--green);">
+      <span class="pillar-icon">&#127919;</span>
+      <h3 style="color:var(--green);">挫折防止サポート</h3>
+      <p>Duolingo型の練習トラッカー、ストリーク、バッジ、相互フレンド間ランキング。「バンドを組む」というゴールに到達するまでモチベーションを維持。</p>
+    </div>
+    <div class="diff-pillar" style="border-top:3px solid var(--accent);">
+      <span class="pillar-icon">&#127928;</span>
+      <h3 style="color:var(--accent);">コピバン一気通貫</h3>
+      <p>仲間探し &#8594; コピバン結成（セットリスト管理・楽器スロット制）&#8594; ライブ出演（イベントボード）まで。バンド結成後もサポートが続く。</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>&#169; 2026 Groove Match - 競合分析図解</p>
+  <p style="margin-top:4px;"><a href="../index.html" style="color:var(--secondary); text-decoration:none;">&#8592; ドキュメント一覧に戻る</a></p>
+</footer>
+
+</body>
+</html>

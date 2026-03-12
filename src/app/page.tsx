@@ -58,7 +58,7 @@ export default function LandingPage() {
               コピバンを組んで、ライブに出よう。
             </h1>
             <p className="text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto mb-10">
-              BandMatchは「コピバンを組んでライブに出る」を実現するアプリ。
+              Groove Matchは「コピバンを組んでライブに出る」を実現するアプリ。
               曲ベースマッチングで仲間を見つけて、ステージに立とう。
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -91,7 +91,7 @@ export default function LandingPage() {
       <section className="py-20 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">BandMatchの特徴</h2>
+            <h2 className="text-3xl font-bold mb-4">Groove Matchの特徴</h2>
             <p className="text-text-secondary max-w-xl mx-auto">
               コピバン活動に必要な機能を、すべて揃えました。
             </p>

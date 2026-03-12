@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Groove Match - アプリ概要・機能図解</title>
+<style>
+  :root {
+    --bg: #0a0a1a;
+    --surface: #1a1a2e;
+    --surface-light: #25253d;
+    --surface-hover: #2f2f4a;
+    --primary: #7c3aed;
+    --primary-light: #8b5cf6;
+    --secondary: #06b6d4;
+    --accent: #f97066;
+    --green: #22c55e;
+    --yellow: #eab308;
+    --orange: #f59e0b;
+    --pink: #ec4899;
+    --blue: #3b82f6;
+    --indigo: #6366f1;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #0a0a1a 50%, #1a1a2e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 70px 40px 50px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle at 30% 50%, rgba(124,58,237,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 70% 50%, rgba(6,182,212,0.06) 0%, transparent 50%);
+    animation: heroFloat 20s ease-in-out infinite;
+  }
+  @keyframes heroFloat { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-2%,2%)} }
+  .hero h1 {
+    font-size: 2.8rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--primary-light), var(--secondary));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    position: relative; margin-bottom: 12px;
+  }
+  .hero .subtitle { font-size: 1.15rem; color: var(--text-dim); position: relative; max-width: 700px; margin: 0 auto; }
+  .hero .badge-row { margin-top: 20px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; position: relative; }
+  .hero .badge { padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid; }
+  .badge-purple { background: rgba(124,58,237,0.12); border-color: rgba(124,58,237,0.3) !important; color: var(--primary-light); }
+  .badge-cyan { background: rgba(6,182,212,0.12); border-color: rgba(6,182,212,0.3) !important; color: var(--secondary); }
+  .badge-coral { background: rgba(249,112,102,0.12); border-color: rgba(249,112,102,0.3) !important; color: var(--accent); }
+  .badge-green { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.3) !important; color: var(--green); }
+
+  .nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    display: flex; gap: 0; overflow-x: auto;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .nav a {
+    color: var(--text-dim); text-decoration: none; padding: 14px 20px;
+    font-size: 0.85rem; font-weight: 500; white-space: nowrap;
+    border-bottom: 2px solid transparent; transition: all 0.2s;
+  }
+  .nav a:hover { color: var(--text); border-bottom-color: var(--primary); background: rgba(124,58,237,0.05); }
+
+  .section { padding: 60px 40px; max-width: 1200px; margin: 0 auto; }
+  .section-title {
+    font-size: 1.8rem; font-weight: 700; margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--primary-light), var(--secondary));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .section-desc { color: var(--text-dim); font-size: 0.95rem; margin-bottom: 36px; }
+  .section-divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+  .info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; margin-bottom: 40px; }
+  .info-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .info-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+  .info-card .card-icon { font-size: 2rem; margin-bottom: 12px; display: block; }
+  .info-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+  .info-card p { font-size: 0.85rem; color: var(--text-dim); }
+
+  .flow-container { display: flex; align-items: center; gap: 0; margin-bottom: 40px; flex-wrap: wrap; justify-content: center; }
+  .flow-step {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px 28px;
+    text-align: center; min-width: 180px; transition: transform 0.3s;
+  }
+  .flow-step:hover { transform: translateY(-4px); }
+  .flow-step .step-num { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .flow-step .step-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+  .flow-step h4 { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+  .flow-step p { font-size: 0.8rem; color: var(--text-dim); }
+  .flow-arrow { font-size: 1.5rem; color: var(--text-muted); padding: 0 12px; }
+
+  .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px; }
+  .feature-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 28px;
+    transition: transform 0.3s, box-shadow 0.3s; position: relative; overflow: hidden;
+  }
+  .feature-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+  .feature-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .feature-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+  .feature-card p { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 8px; }
+  .feature-card ul { font-size: 0.85rem; color: var(--text-dim); padding-left: 20px; }
+  .feature-card ul li { margin-bottom: 4px; }
+
+  .fc-match::before { background: var(--primary); }
+  .fc-band::before { background: var(--secondary); }
+  .fc-event::before { background: var(--accent); }
+  .fc-practice::before { background: var(--green); }
+  .fc-friend::before { background: var(--pink); }
+  .fc-community::before { background: var(--blue); }
+  .fc-sns::before { background: var(--indigo); }
+  .fc-admin::before { background: var(--orange); }
+
+  .persona-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
+  .persona-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 28px;
+    transition: transform 0.3s;
+  }
+  .persona-card:hover { transform: translateY(-4px); }
+  .persona-card .avatar { font-size: 2.5rem; margin-bottom: 12px; display: block; text-align: center; }
+  .persona-card h4 { font-size: 1rem; font-weight: 700; margin-bottom: 4px; text-align: center; }
+  .persona-card .age { font-size: 0.8rem; color: var(--text-muted); text-align: center; margin-bottom: 12px; }
+  .persona-card ul { font-size: 0.82rem; color: var(--text-dim); padding-left: 18px; }
+  .persona-card ul li { margin-bottom: 4px; }
+  .persona-card .solution { font-size: 0.82rem; color: var(--green); font-weight: 600; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+
+  .color-palette { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 40px; }
+  .color-swatch {
+    width: 100px; height: 80px; border-radius: 10px; display: flex; align-items: flex-end; justify-content: center;
+    padding-bottom: 8px; font-size: 0.7rem; font-weight: 600; border: 1px solid var(--border);
+  }
+
+  .back-link {
+    display: inline-block; margin: 20px 40px; padding: 8px 20px; border-radius: 8px;
+    background: var(--surface); border: 1px solid var(--border); color: var(--text-dim);
+    text-decoration: none; font-size: 0.85rem; transition: all 0.2s;
+  }
+  .back-link:hover { border-color: var(--primary); color: var(--text); }
+
+  footer { border-top: 1px solid var(--border); padding: 24px 40px; text-align: center; font-size: 0.72rem; color: var(--text-muted); }
+
+  @media (max-width: 768px) {
+    .hero { padding: 40px 20px; }
+    .hero h1 { font-size: 2rem; }
+    .section { padding: 40px 20px; }
+    .feature-grid, .persona-grid { grid-template-columns: 1fr; }
+    .flow-container { flex-direction: column; }
+    .flow-arrow { transform: rotate(90deg); }
+    .info-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="back-link">&#8592; ドキュメント一覧に戻る</a>
+
+<header class="hero">
+  <h1>アプリ概要・機能図解</h1>
+  <p class="subtitle">Groove Match のビジョン、ターゲット、全機能をビジュアルで把握する</p>
+  <div class="badge-row">
+    <span class="badge badge-coral">コピバン特化</span>
+    <span class="badge badge-purple">Web / iOS / Android</span>
+    <span class="badge badge-cyan">Spotify API連携</span>
+    <span class="badge badge-green">Duolingo型ゲーミフィケーション</span>
+  </div>
+</header>
+
+<nav class="nav">
+  <a href="#vision">ビジョン</a>
+  <a href="#mainflow">メインフロー</a>
+  <a href="#features">機能一覧</a>
+  <a href="#persona">ペルソナ</a>
+  <a href="#palette">カラーパレット</a>
+  <a href="#basic">基本情報</a>
+</nav>
+
+<main>
+
+<!-- ビジョン -->
+<section class="section" id="vision">
+  <h2 class="section-title">Groove Match とは？</h2>
+  <p class="section-desc">
+    好きなバンドの曲をコピーしたい初心者が、同じ曲をやりたい仲間を見つけてコピバンを結成し、ライブに出るまでをサポートするアプリ。<br>
+    <strong>ゴール =「コピバンを組んでライブに出ること」。</strong>
+  </p>
+
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 28px; margin-bottom: 40px;">
+    <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 16px;">5つの課題と解決策</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+      <div style="background: var(--surface-light); border-radius: 10px; padding: 16px;">
+        <p style="font-size: 0.78rem; font-weight: 700; color: var(--accent); margin-bottom: 8px;">メインフローの課題</p>
+        <ul style="font-size: 0.85rem; color: var(--text-dim); padding-left: 18px;">
+          <li>同じ曲をやりたい仲間がいない &#8594; <span style="color:var(--green)">曲ベースマッチング（Spotify API）</span></li>
+          <li>コピバンの組み方が分からない &#8594; <span style="color:var(--green)">コピバン作成・セットリスト管理</span></li>
+          <li>レベルが合わない &#8594; <span style="color:var(--green)">スキルレベル考慮のスコアリング</span></li>
+          <li>ライブに出られない &#8594; <span style="color:var(--green)">イベントボード（運営+Proユーザー登録可、「公式」バッジ）</span></li>
+        </ul>
+      </div>
+      <div style="background: var(--surface-light); border-radius: 10px; padding: 16px;">
+        <p style="font-size: 0.78rem; font-weight: 700; color: var(--secondary); margin-bottom: 8px;">挫折防止の課題</p>
+        <ul style="font-size: 0.85rem; color: var(--text-dim); padding-left: 18px;">
+          <li>練習が続かない &#8594; <span style="color:var(--green)">Duolingo型練習トラッカー</span></li>
+          <li>仲間との繋がりが薄い &#8594; <span style="color:var(--green)">相互承認型フレンド + フレンド間ランキング</span></li>
+          <li>活動をアピールしにくい &#8594; <span style="color:var(--green)">SNS連携（X/Instagram/LINE/YouTube）</span></li>
+          <li>登録が面倒 &#8594; <span style="color:var(--green)">ソーシャルログイン（Google/X/Instagram）</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- メインフロー -->
+<section class="section" id="mainflow">
+  <h2 class="section-title">メインフロー</h2>
+  <p class="section-desc">仲間探し &#8594; コピバン結成 &#8594; ライブ出演 の一気通貫体験</p>
+
+  <div class="flow-container">
+    <div class="flow-step" style="border-top: 3px solid var(--primary);">
+      <div class="step-num" style="color: var(--primary-light);">Step 1</div>
+      <span class="step-icon">&#127925;</span>
+      <h4>曲で仲間を探す</h4>
+      <p>Spotify APIで曲を検索し<br>6要素スコアリングでマッチング</p>
+    </div>
+    <span class="flow-arrow">&#8594;</span>
+    <div class="flow-step" style="border-top: 3px solid var(--secondary);">
+      <div class="step-num" style="color: var(--secondary);">Step 2</div>
+      <span class="step-icon">&#127928;</span>
+      <h4>コピバン結成</h4>
+      <p>セットリスト管理<br>楽器スロット制で編成可視化</p>
+    </div>
+    <span class="flow-arrow">&#8594;</span>
+    <div class="flow-step" style="border-top: 3px solid var(--accent);">
+      <div class="step-num" style="color: var(--accent);">Step 3</div>
+      <span class="step-icon">&#127911;</span>
+      <h4>ライブ出演</h4>
+      <p>イベントボードからエントリー<br>初心者歓迎タグで安心</p>
+    </div>
+  </div>
+
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; text-align: center; font-size: 0.88rem; color: var(--text-dim);">
+    マッチングアルゴリズムの詳細は &#8594; <a href="02_%E3%83%9E%E3%83%83%E3%83%81%E3%83%B3%E3%82%B0%E3%82%A2%E3%83%AB%E3%82%B4%E3%83%AA%E3%82%BA%E3%83%A0%E5%9B%B3%E8%A7%A3.html" style="color: var(--primary-light);">02 マッチングアルゴリズム図解</a>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- 機能一覧 -->
+<section class="section" id="features">
+  <h2 class="section-title">全機能一覧</h2>
+  <p class="section-desc">メインフロー機能とサポート機能を含む全機能。詳細は <a href="https://github.com/dan-yuta/groove-match/blob/main/docs/md/01-02_%E6%A9%9F%E8%83%BD%E4%B8%80%E8%A6%A7.md" target="_blank" style="color: var(--primary-light);">01-02_機能一覧.md</a> を参照。</p>
+
+  <div class="feature-grid">
+    <div class="feature-card fc-match">
+      <h3>&#127925; マッチング</h3>
+      <p>6要素スコアリングで相性の良いユーザーを自動提案。</p>
+      <ul>
+        <li>地域(40pt)・楽器(20pt)・ジャンル(20pt)・スキル(15pt)・スケジュール(30pt)・曲マッチング(35pt)</li>
+        <li>合計最大160pt &#8594; 100pt上限でクランプ</li>
+        <li>Freeプラン: 1日3回、Proプラン: 無制限</li>
+      </ul>
+    </div>
+    <div class="feature-card fc-band">
+      <h3>&#127928; コピバン管理</h3>
+      <p>コピバン作成からセットリスト管理まで。</p>
+      <ul>
+        <li>セットリスト管理（Spotify APIで曲情報取得）</li>
+        <li>楽器スロット制で空きポジション可視化</li>
+        <li>リーダー/メンバー権限管理</li>
+        <li>Freeプラン: 1つまで、Proプラン: 無制限</li>
+      </ul>
+    </div>
+    <div class="feature-card fc-event">
+      <h3>&#127911; ライブイベントボード</h3>
+      <p>初心者歓迎のコピバンライブイベント。</p>
+      <ul>
+        <li>イベント登録: 運営 + Proユーザーの両方が可能</li>
+        <li>運営イベントには「公式」バッジ表示</li>
+        <li>フィルター: 地域、日付、初心者歓迎、ジャンル</li>
+        <li>閲覧はFree/Pro共通（イベント作成はProのみ）</li>
+      </ul>
+    </div>
+    <div class="feature-card fc-practice">
+      <h3>&#127919; 練習トラッカー（Duolingo型）</h3>
+      <p>挫折防止のゲーミフィケーション。</p>
+      <ul>
+        <li>曲ごとの練習時間記録</li>
+        <li>ストリーク（連続練習日数）</li>
+        <li>12種類のバッジ＆マイルストーン</li>
+        <li>週間練習目標</li>
+      </ul>
+    </div>
+    <div class="feature-card fc-friend">
+      <h3>&#129309; フレンド・ランキング</h3>
+      <p>相互承認型フレンドで切磋琢磨。</p>
+      <ul>
+        <li>相互承認型（双方が承認して初めてフレンド）</li>
+        <li>練習状況の相互共有・応援機能</li>
+        <li>練習ランキングは相互フレンド間で表示</li>
+        <li>Freeプラン: 5人まで、Proプラン: 無制限</li>
+      </ul>
+    </div>
+    <div class="feature-card fc-community">
+      <h3>&#128172; コミュニティ</h3>
+      <p>タイムラインで仲間と交流。</p>
+      <ul>
+        <li>投稿タイプ: 一般、練習ログ、マイルストーン、質問、カバー動画</li>
+        <li>いいね・コメント機能</li>
+      </ul>
+    </div>
+    <div class="feature-card fc-sns">
+      <h3>&#128279; SNS連携・ソーシャルログイン</h3>
+      <p>登録・発信を簡単に。</p>
+      <ul>
+        <li>ソーシャルログイン: Google / X / Instagram</li>
+        <li>SNS連携: X / Instagram / LINE / YouTube（プロフィール表示用）</li>
+        <li>Freeプラン: SNS1つ、Proプラン: 無制限</li>
+      </ul>
+    </div>
+    <div class="feature-card fc-admin">
+      <h3>&#128202; 管理ダッシュボード</h3>
+      <p>管理者向けの統計・ユーザー管理。</p>
+      <ul>
+        <li>統計概要（ユーザー数、売上、バンド数）</li>
+        <li>ユーザー管理テーブル</li>
+        <li>サブスクリプション管理</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; text-align: center; font-size: 0.88rem; color: var(--text-dim);">
+    料金プラン（Free/Pro比較）の詳細は &#8594; <a href="07_%E6%96%99%E9%87%91%E3%83%97%E3%83%A9%E3%83%B3%E5%9B%B3%E8%A7%A3.html" style="color: var(--green);">07 料金プラン図解</a>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ペルソナ -->
+<section class="section" id="persona">
+  <h2 class="section-title">ペルソナ</h2>
+  <p class="section-desc">ターゲット: 18〜35歳、楽器歴0〜3年の初心者〜中級者。プロフィールの年代表示は「20代前半」「30代後半」のように表示（生年月日非公開）。</p>
+
+  <div class="persona-grid">
+    <div class="persona-card">
+      <span class="avatar">&#127928;</span>
+      <h4>田中 太郎</h4>
+      <p class="age">20代前半・大学生ギタリスト</p>
+      <ul>
+        <li>大学入学を機にギターを始めた</li>
+        <li>BUMP OF CHICKEN「天体観測」を弾きたい</li>
+        <li>軽音サークルでは曲の好みが合わない</li>
+      </ul>
+      <p class="solution">&#8594; Spotify APIで「天体観測」を検索 &#8594; 同じ地域のベース・ドラムとマッチング &#8594; コピバン結成</p>
+    </div>
+    <div class="persona-card">
+      <span class="avatar">&#129345;</span>
+      <h4>鈴木 花子</h4>
+      <p class="age">20代後半・社会人ドラマー</p>
+      <ul>
+        <li>高校時代に軽音部でドラム担当、社会人で再開</li>
+        <li>ONE OK ROCK / RADWIMPSのコピーがしたい</li>
+        <li>社会人サークルの日程が合わない</li>
+      </ul>
+      <p class="solution">&#8594; スケジュールマッチングで週末練習可能なメンバーを発見 &#8594; ワンオクコピバン結成</p>
+    </div>
+    <div class="persona-card">
+      <span class="avatar">&#127929;</span>
+      <h4>山田 健太</h4>
+      <p class="age">20代前半・初心者ベーシスト</p>
+      <ul>
+        <li>ベースを始めて3ヶ月、まだ自信がない</li>
+        <li>アニソン（けいおん!、ぼっち・ざ・ろっく!）のコピーがしたい</li>
+        <li>経験者ばかりの場所だと萎縮する</li>
+      </ul>
+      <p class="solution">&#8594; 同じ初心者レベル＋アニソン好きでマッチング &#8594; 初心者同士で安心してライブを目指す</p>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- カラーパレット -->
+<section class="section" id="palette">
+  <h2 class="section-title">カラーパレット</h2>
+  <p class="section-desc">ダークモード基調、グラスモーフィズム、グラデーションアクセントのUIテーマ。</p>
+
+  <div class="color-palette">
+    <div class="color-swatch" style="background: #7c3aed; color: white;">Primary<br>#7c3aed</div>
+    <div class="color-swatch" style="background: #8b5cf6; color: white;">P-Light<br>#8b5cf6</div>
+    <div class="color-swatch" style="background: #06b6d4; color: white;">Secondary<br>#06b6d4</div>
+    <div class="color-swatch" style="background: #f97066; color: white;">Accent<br>#f97066</div>
+    <div class="color-swatch" style="background: #0a0a1a; color: #e2e8f0;">BG<br>#0a0a1a</div>
+    <div class="color-swatch" style="background: #1a1a2e; color: #e2e8f0;">Surface<br>#1a1a2e</div>
+    <div class="color-swatch" style="background: #25253d; color: #e2e8f0;">S-Light<br>#25253d</div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- 基本情報 -->
+<section class="section" id="basic">
+  <h2 class="section-title">基本情報</h2>
+  <p class="section-desc">プロジェクトの技術スタックとプラットフォーム。</p>
+
+  <div class="info-grid">
+    <div class="info-card">
+      <span class="card-icon">&#127760;</span>
+      <h3>ドメイン</h3>
+      <p>groovematch.jp</p>
+    </div>
+    <div class="info-card">
+      <span class="card-icon">&#128187;</span>
+      <h3>フロントエンド</h3>
+      <p>Next.js 16 + React 19 + TypeScript + Tailwind CSS v4</p>
+    </div>
+    <div class="info-card">
+      <span class="card-icon">&#9881;</span>
+      <h3>バックエンド</h3>
+      <p>Next.js API Routes + Prisma + RDS PostgreSQL</p>
+    </div>
+    <div class="info-card">
+      <span class="card-icon">&#128274;</span>
+      <h3>認証</h3>
+      <p>Amazon Cognito + ソーシャルログイン</p>
+    </div>
+    <div class="info-card">
+      <span class="card-icon">&#128241;</span>
+      <h3>モバイル</h3>
+      <p>Capacitor 6（iOS / Android）</p>
+    </div>
+    <div class="info-card">
+      <span class="card-icon">&#128176;</span>
+      <h3>決済</h3>
+      <p>Stripe / App Store / Google Play</p>
+    </div>
+    <div class="info-card">
+      <span class="card-icon">&#127925;</span>
+      <h3>音楽データ</h3>
+      <p>Spotify API + MusicBrainz連携</p>
+    </div>
+    <div class="info-card">
+      <span class="card-icon">&#9729;</span>
+      <h3>インフラ</h3>
+      <p>AWS（ECS Fargate, CloudFormation）</p>
+    </div>
+  </div>
+
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; text-align: center; font-size: 0.88rem; color: var(--text-dim);">
+    技術構成の詳細は &#8594; <a href="03_%E6%8A%80%E8%A1%93%E3%82%A2%E3%83%BC%E3%82%AD%E3%83%86%E3%82%AF%E3%83%81%E3%83%A3%E5%9B%B3%E8%A7%A3.html" style="color: var(--indigo);">03 技術アーキテクチャ図解</a> |
+    インフラ構成の詳細は &#8594; <a href="04_%E3%82%A4%E3%83%B3%E3%83%95%E3%83%A9%E6%A7%8B%E6%88%90%E5%9B%B3%E8%A7%A3.html" style="color: var(--secondary);">04 インフラ構成図解</a>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>&#169; 2026 Groove Match - アプリ概要・機能図解</p>
+  <p style="margin-top: 4px;"><a href="../index.html" style="color: var(--secondary); text-decoration: none;">&#8592; ドキュメント一覧に戻る</a></p>
+</footer>
+
+</body>
+</html>

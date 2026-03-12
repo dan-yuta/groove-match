@@ -7,17 +7,17 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const notoSansJP = Noto_Sans_JP({ subsets: ['latin'], variable: '--font-noto' });
 
 export const metadata: Metadata = {
-  title: 'BandMatch - やりたい曲で仲間を見つけよう',
+  title: 'Groove Match - やりたい曲で仲間を見つけよう',
   description: '同じ曲をコピーしたい仲間が見つかる！初心者コピバン向けマッチング＆コミュニティアプリ。',
   openGraph: {
-    title: 'BandMatch - やりたい曲で仲間を見つけよう',
+    title: 'Groove Match - やりたい曲で仲間を見つけよう',
     description: '同じ曲をコピーしたい仲間が見つかる！初心者コピバン向けアプリ。',
     type: 'website',
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'BandMatch',
+    title: 'Groove Match',
   },
   other: {
     'mobile-web-app-capable': 'yes',

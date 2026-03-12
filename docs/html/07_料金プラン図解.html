@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Groove Match - 料金プラン図解</title>
+<style>
+  :root {
+    --bg: #0a0a1a; --surface: #1a1a2e; --surface-light: #25253d; --surface-hover: #2f2f4a;
+    --primary: #7c3aed; --primary-light: #8b5cf6; --secondary: #06b6d4;
+    --accent: #f97066; --green: #22c55e; --yellow: #eab308; --orange: #f59e0b;
+    --pink: #ec4899; --blue: #3b82f6; --indigo: #6366f1;
+    --text: #e2e8f0; --text-dim: #94a3b8; --text-muted: #64748b; --border: #334155;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif; line-height:1.7; min-height:100vh; }
+  .hero { background:linear-gradient(135deg, #1a1a2e 0%, #0a0a1a 50%, #1a1a2e 100%); border-bottom:1px solid var(--border); padding:70px 40px 50px; text-align:center; position:relative; overflow:hidden; }
+  .hero::before { content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%;
+    background:radial-gradient(circle at 30% 50%, rgba(124,58,237,0.08) 0%, transparent 50%), radial-gradient(circle at 70% 50%, rgba(34,197,94,0.06) 0%, transparent 50%);
+    animation:heroFloat 20s ease-in-out infinite; }
+  @keyframes heroFloat { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-2%,2%)} }
+  .hero h1 { font-size:2.8rem; font-weight:800; background:linear-gradient(135deg,var(--primary-light),var(--green)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; position:relative; margin-bottom:12px; }
+  .hero .subtitle { font-size:1.15rem; color:var(--text-dim); position:relative; }
+  .hero .badge-row { margin-top:20px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap; position:relative; }
+  .hero .badge { padding:6px 16px; border-radius:20px; font-size:0.85rem; font-weight:600; border:1px solid; }
+  .nav { background:var(--surface); border-bottom:1px solid var(--border); padding:0 40px; display:flex; gap:0; overflow-x:auto; position:sticky; top:0; z-index:100; }
+  .nav a { color:var(--text-dim); text-decoration:none; padding:14px 20px; font-size:0.85rem; font-weight:500; white-space:nowrap; border-bottom:2px solid transparent; transition:all 0.2s; }
+  .nav a:hover { color:var(--text); border-bottom-color:var(--green); background:rgba(34,197,94,0.05); }
+  .section { padding:60px 40px; max-width:1200px; margin:0 auto; }
+  .section-title { font-size:1.8rem; font-weight:700; margin-bottom:8px; background:linear-gradient(135deg,var(--primary-light),var(--green)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .section-desc { color:var(--text-dim); font-size:0.95rem; margin-bottom:36px; }
+  .section-divider { border:none; border-top:1px solid var(--border); margin:0; }
+
+  .plan-grid { display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-bottom:40px; }
+  .plan-card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:36px; position:relative; overflow:hidden; transition:transform 0.3s, box-shadow 0.3s; }
+  .plan-card:hover { transform:translateY(-4px); box-shadow:0 12px 40px rgba(0,0,0,0.3); }
+  .plan-card::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; }
+  .plan-card.plan-free::before { background:var(--text-muted); }
+  .plan-card.plan-pro::before { background:linear-gradient(90deg, var(--primary), var(--green)); }
+  .plan-card.plan-pro { border-color:rgba(124,58,237,0.3); box-shadow:0 0 30px rgba(124,58,237,0.1); }
+  .plan-name { font-size:1.5rem; font-weight:800; margin-bottom:4px; }
+  .plan-price { font-size:2.5rem; font-weight:800; margin-bottom:4px; }
+  .plan-period { font-size:0.85rem; color:var(--text-muted); margin-bottom:20px; }
+  .plan-features { list-style:none; font-size:0.9rem; }
+  .plan-features li { padding:8px 0; border-bottom:1px solid rgba(51,65,85,0.3); display:flex; align-items:center; gap:10px; }
+  .plan-features li:last-child { border-bottom:none; }
+  .plan-features .check { color:var(--green); font-weight:700; font-size:1.1rem; }
+  .plan-features .cross { color:var(--text-muted); font-size:1.1rem; }
+  .plan-features .limit { color:var(--orange); font-size:0.82rem; font-weight:600; }
+  .plan-badge { position:absolute; top:16px; right:16px; background:linear-gradient(135deg,var(--primary),var(--green)); color:white; padding:4px 14px; border-radius:12px; font-size:0.75rem; font-weight:700; }
+
+  .flow-container { display:flex; flex-direction:column; gap:0; margin-bottom:40px; align-items:center; }
+  .flow-step-v { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px 32px; text-align:center; max-width:500px; width:100%; }
+  .flow-step-v h4 { font-size:1rem; font-weight:700; margin-bottom:4px; }
+  .flow-step-v p { font-size:0.85rem; color:var(--text-dim); }
+  .flow-arrow-v { font-size:1.5rem; color:var(--text-muted); padding:8px 0; }
+
+  .legal-box { background:linear-gradient(135deg, rgba(249,112,102,0.08), rgba(245,158,11,0.05)); border:2px solid rgba(249,112,102,0.3); border-radius:16px; padding:28px; margin-bottom:40px; }
+  .legal-box h3 { font-size:1.1rem; font-weight:700; margin-bottom:12px; color:var(--accent); }
+  .legal-box ul { font-size:0.9rem; color:var(--text-dim); padding-left:20px; }
+  .legal-box ul li { margin-bottom:8px; }
+
+  .invite-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:32px; margin-bottom:40px; }
+  .invite-card h3 { font-size:1.2rem; font-weight:700; margin-bottom:16px; }
+  .invite-steps { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; }
+  .invite-step { background:var(--surface-light); border-radius:10px; padding:16px; text-align:center; }
+  .invite-step .step-num { font-size:1.5rem; font-weight:800; color:var(--primary-light); margin-bottom:8px; }
+  .invite-step p { font-size:0.82rem; color:var(--text-dim); }
+
+  .payment-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:40px; }
+  .payment-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:24px; text-align:center; transition:transform 0.3s; }
+  .payment-card:hover { transform:translateY(-3px); }
+  .payment-card h4 { font-size:1rem; font-weight:700; margin-bottom:8px; }
+  .payment-card .fee { font-size:1.8rem; font-weight:800; margin-bottom:4px; }
+  .payment-card .net { font-size:0.9rem; color:var(--text-dim); }
+  .payment-card .impl { font-size:0.78rem; color:var(--text-muted); margin-top:8px; }
+
+  .back-link { display:inline-block; margin:20px 40px; padding:8px 20px; border-radius:8px; background:var(--surface); border:1px solid var(--border); color:var(--text-dim); text-decoration:none; font-size:0.85rem; transition:all 0.2s; }
+  .back-link:hover { border-color:var(--primary); color:var(--text); }
+  footer { border-top:1px solid var(--border); padding:24px 40px; text-align:center; font-size:0.72rem; color:var(--text-muted); }
+
+  @media (max-width:768px) { .hero{padding:40px 20px;} .hero h1{font-size:2rem;} .section{padding:40px 20px;} .plan-grid,.payment-grid{grid-template-columns:1fr;} .invite-steps{grid-template-columns:1fr 1fr;} }
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="back-link">&#8592; ドキュメント一覧に戻る</a>
+
+<header class="hero">
+  <h1>料金プラン図解</h1>
+  <p class="subtitle">Free/Pro比較、課金フロー、招待コード、決済戦略</p>
+  <div class="badge-row">
+    <span class="badge" style="background:rgba(124,58,237,0.12); border-color:rgba(124,58,237,0.3)!important; color:var(--primary-light);">Free &#165;0</span>
+    <span class="badge" style="background:rgba(34,197,94,0.12); border-color:rgba(34,197,94,0.3)!important; color:var(--green);">Pro &#165;500/月</span>
+    <span class="badge" style="background:rgba(245,158,11,0.12); border-color:rgba(245,158,11,0.3)!important; color:var(--orange);">トライアルあり</span>
+    <span class="badge" style="background:rgba(249,112,102,0.12); border-color:rgba(249,112,102,0.3)!important; color:var(--accent);">招待コード</span>
+  </div>
+</header>
+
+<nav class="nav">
+  <a href="#plans">プラン比較</a>
+  <a href="#flow">課金フロー</a>
+  <a href="#legal">法的注意</a>
+  <a href="#invite">招待コード</a>
+  <a href="#payment">決済戦略</a>
+</nav>
+
+<main>
+
+<!-- プラン比較 -->
+<section class="section" id="plans">
+  <h2 class="section-title">Free / Pro プラン比較</h2>
+  <p class="section-desc">詳細は <a href="https://github.com/dan-yuta/groove-match/blob/main/docs/md/01-02_%E6%A9%9F%E8%83%BD%E4%B8%80%E8%A6%A7.md" target="_blank" style="color:var(--primary-light);">01-02_機能一覧.md</a> を参照。</p>
+
+  <div class="plan-grid">
+    <div class="plan-card plan-free">
+      <div class="plan-name" style="color:var(--text-muted);">Free</div>
+      <div class="plan-price">&#165;0</div>
+      <div class="plan-period">トライアル終了後にダウングレード</div>
+      <ul class="plan-features">
+        <li><span class="check">&#10003;</span> プロフィール作成</li>
+        <li><span class="check">&#10003;</span> コミュニティ閲覧</li>
+        <li><span class="check">&#10003;</span> イベント閲覧</li>
+        <li><span class="limit">&#9679; マッチング検索: 1日3回</span></li>
+        <li><span class="limit">&#9679; バンド作成: 1つまで</span></li>
+        <li><span class="limit">&#9679; フレンド: 5人まで</span></li>
+        <li><span class="limit">&#9679; ランキング: フレンドのみ</span></li>
+        <li><span class="limit">&#9679; SNS連携: 1つ</span></li>
+        <li><span class="cross">&#10007;</span> メッセージ</li>
+        <li><span class="cross">&#10007;</span> イベント作成</li>
+        <li><span class="cross">&#10007;</span> アナリティクス</li>
+      </ul>
+    </div>
+    <div class="plan-card plan-pro">
+      <span class="plan-badge">おすすめ</span>
+      <div class="plan-name" style="color:var(--primary-light);">Pro</div>
+      <div class="plan-price" style="color:var(--green);">&#165;500<span style="font-size:1rem; color:var(--text-dim);">/月</span></div>
+      <div class="plan-period">初回登録時に自動選択 + CC登録必須</div>
+      <ul class="plan-features">
+        <li><span class="check">&#10003;</span> プロフィール作成</li>
+        <li><span class="check">&#10003;</span> コミュニティ閲覧</li>
+        <li><span class="check">&#10003;</span> イベント閲覧</li>
+        <li><span class="check">&#10003;</span> <strong>マッチング検索: 無制限</strong></li>
+        <li><span class="check">&#10003;</span> <strong>バンド作成: 無制限</strong></li>
+        <li><span class="check">&#10003;</span> <strong>フレンド: 無制限</strong></li>
+        <li><span class="check">&#10003;</span> <strong>全体ランキング</strong></li>
+        <li><span class="check">&#10003;</span> <strong>SNS連携: 無制限</strong></li>
+        <li><span class="check">&#10003;</span> <strong>メッセージ</strong></li>
+        <li><span class="check">&#10003;</span> <strong>イベント作成（「公式」バッジなし）</strong></li>
+        <li><span class="check">&#10003;</span> <strong>アナリティクス</strong></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- 課金フロー -->
+<section class="section" id="flow">
+  <h2 class="section-title">課金フロー</h2>
+
+  <div class="flow-container">
+    <div class="flow-step-v" style="border-top:3px solid var(--primary);">
+      <h4 style="color:var(--primary-light);">1. 初回登録</h4>
+      <p>Proプランが自動選択。<strong>クレジットカード登録が必須。</strong></p>
+    </div>
+    <div class="flow-arrow-v">&#9660;</div>
+    <div class="flow-step-v" style="border-top:3px solid var(--green);">
+      <h4 style="color:var(--green);">2. トライアル期間</h4>
+      <p><strong>2週間無料</strong>（招待コード入力で <strong>1ヶ月に延長</strong>）</p>
+    </div>
+    <div class="flow-arrow-v">&#9660;</div>
+    <div class="flow-step-v" style="border-top:3px solid var(--orange);">
+      <h4 style="color:var(--orange);">3. トライアル終了後</h4>
+      <p>解約しなければ<strong>自動で&#165;500/月の課金が開始</strong></p>
+    </div>
+    <div class="flow-arrow-v">&#9660;</div>
+    <div class="flow-step-v" style="border-top:3px solid var(--text-muted);">
+      <h4>4. 解約（任意）</h4>
+      <p>いつでも可能。解約するとFreeプランにダウングレード。<br>Freeプランにダウングレードしない限り毎月自動更新。</p>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- 法的注意 -->
+<section class="section" id="legal">
+  <h2 class="section-title">法的注意事項（必須表示）</h2>
+  <div class="legal-box">
+    <h3>&#9888; 以下を登録画面に明確に表示すること</h3>
+    <ul>
+      <li>登録時に「トライアル後は自動でPro &#165;500/月に移行する」旨を <strong>明確に表示</strong></li>
+      <li><strong>解約方法を分かりやすく案内</strong>する</li>
+      <li><strong>トライアル終了3日前にメール通知</strong>を送信</li>
+    </ul>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- 招待コード -->
+<section class="section" id="invite">
+  <h2 class="section-title">招待コード機能</h2>
+  <p class="section-desc">既存ユーザーが新規ユーザーを招待。双方にメリットがある仕組み。</p>
+
+  <div class="invite-card">
+    <h3>招待コードフロー</h3>
+    <div class="invite-steps">
+      <div class="invite-step">
+        <div class="step-num">1</div>
+        <p>既存ユーザーが<br><strong>招待コードを生成</strong></p>
+      </div>
+      <div class="invite-step">
+        <div class="step-num">2</div>
+        <p>新規ユーザーが<br><strong>登録時に入力</strong></p>
+      </div>
+      <div class="invite-step">
+        <div class="step-num">3</div>
+        <p>新規ユーザー:<br><strong style="color:var(--green);">トライアル2週間&#8594;30日</strong></p>
+      </div>
+      <div class="invite-step">
+        <div class="step-num">4</div>
+        <p>紹介者:<br><strong style="color:var(--green);">Pro 1週間延長</strong></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- 決済戦略 -->
+<section class="section" id="payment">
+  <h2 class="section-title">決済戦略（プラットフォーム別）</h2>
+  <p class="section-desc">Web経由はStripe（手取り最大）、iOS/Androidはアプリ内課金（UXシームレス）を併用。加重平均手取り: <strong style="color:var(--green);">&#165;449/人</strong>。</p>
+
+  <div class="payment-grid">
+    <div class="payment-card" style="border-top:3px solid var(--secondary);">
+      <h4>Web（Stripe）</h4>
+      <div class="fee" style="color:var(--secondary);">3.6%</div>
+      <div class="net">手取り: &#165;482</div>
+      <div class="impl">Stripe Checkout</div>
+      <div style="margin-top:8px; font-size:0.78rem; color:var(--green); font-weight:600;">想定構成比: 40%</div>
+    </div>
+    <div class="payment-card" style="border-top:3px solid var(--text-muted);">
+      <h4>iOS（App Store）</h4>
+      <div class="fee" style="color:var(--orange);">15%</div>
+      <div class="net">手取り: &#165;425</div>
+      <div class="impl">StoreKit 2</div>
+      <div style="margin-top:8px; font-size:0.78rem; color:var(--orange); font-weight:600;">想定構成比: 35%</div>
+    </div>
+    <div class="payment-card" style="border-top:3px solid var(--green);">
+      <h4>Android（Google Play）</h4>
+      <div class="fee" style="color:var(--orange);">15%</div>
+      <div class="net">手取り: &#165;425</div>
+      <div class="impl">Google Play Billing</div>
+      <div style="margin-top:8px; font-size:0.78rem; color:var(--orange); font-weight:600;">想定構成比: 25%</div>
+    </div>
+  </div>
+
+  <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; text-align:center; font-size:0.85rem; color:var(--text-dim);">
+    ※ Apple Small Business Program / Google Play サブスク初年度料率を適用（年間売上$1M以下）
+  </div>
+
+  <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px; text-align:center; font-size:0.88rem; color:var(--text-dim); margin-top:20px;">
+    コスト計算・損益分岐点の詳細は &#8594; <a href="05_%E3%82%B3%E3%82%B9%E3%83%88%E3%83%BB%E5%8F%8E%E7%9B%8A%E5%9B%B3%E8%A7%A3.html" style="color:var(--orange);">05 コスト・収益図解</a>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>&#169; 2026 Groove Match - 料金プラン図解</p>
+  <p style="margin-top:4px;"><a href="../index.html" style="color:var(--secondary); text-decoration:none;">&#8592; ドキュメント一覧に戻る</a></p>
+</footer>
+
+</body>
+</html>

@@ -12,9 +12,9 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <Link href={user ? '/dashboard' : '/'} className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-sm">
-            B
+            G
           </div>
-          <span className="text-lg font-bold gradient-text hidden sm:block">BandMatch</span>
+          <span className="text-lg font-bold gradient-text hidden sm:block">Groove Match</span>
         </Link>
 
         {user ? (

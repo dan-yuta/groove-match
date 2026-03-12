@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Groove Match - 安全対策・リスク管理図解</title>
+<style>
+  :root {
+    --bg: #0a0a1a; --surface: #1a1a2e; --surface-light: #25253d; --surface-hover: #2f2f4a;
+    --primary: #7c3aed; --primary-light: #8b5cf6; --secondary: #06b6d4;
+    --accent: #f97066; --green: #22c55e; --yellow: #eab308; --orange: #f59e0b;
+    --pink: #ec4899; --blue: #3b82f6; --indigo: #6366f1; --red: #ef4444;
+    --text: #e2e8f0; --text-dim: #94a3b8; --text-muted: #64748b; --border: #334155;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif; line-height:1.7; min-height:100vh; }
+  .hero { background:linear-gradient(135deg, #1a1a2e 0%, #0a0a1a 50%, #1a1a2e 100%); border-bottom:1px solid var(--border); padding:70px 40px 50px; text-align:center; position:relative; overflow:hidden; }
+  .hero::before { content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%;
+    background:radial-gradient(circle at 30% 50%, rgba(249,112,102,0.08) 0%, transparent 50%), radial-gradient(circle at 70% 50%, rgba(239,68,68,0.06) 0%, transparent 50%);
+    animation:heroFloat 20s ease-in-out infinite; }
+  @keyframes heroFloat { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-2%,2%)} }
+  .hero h1 { font-size:2.8rem; font-weight:800; background:linear-gradient(135deg,var(--accent),var(--orange)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; position:relative; margin-bottom:12px; }
+  .hero .subtitle { font-size:1.15rem; color:var(--text-dim); position:relative; }
+  .hero .badge-row { margin-top:20px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap; position:relative; }
+  .hero .badge { padding:6px 16px; border-radius:20px; font-size:0.85rem; font-weight:600; border:1px solid; }
+  .nav { background:var(--surface); border-bottom:1px solid var(--border); padding:0 40px; display:flex; gap:0; overflow-x:auto; position:sticky; top:0; z-index:100; }
+  .nav a { color:var(--text-dim); text-decoration:none; padding:14px 20px; font-size:0.85rem; font-weight:500; white-space:nowrap; border-bottom:2px solid transparent; transition:all 0.2s; }
+  .nav a:hover { color:var(--text); border-bottom-color:var(--accent); background:rgba(249,112,102,0.05); }
+  .section { padding:60px 40px; max-width:1200px; margin:0 auto; }
+  .section-title { font-size:1.8rem; font-weight:700; margin-bottom:8px; background:linear-gradient(135deg,var(--accent),var(--orange)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .section-desc { color:var(--text-dim); font-size:0.95rem; margin-bottom:36px; }
+  .section-divider { border:none; border-top:1px solid var(--border); margin:0; }
+
+  /* 責任範囲カード */
+  .responsibility-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:40px; }
+  .resp-card { background:var(--surface); border-radius:16px; padding:28px; position:relative; overflow:hidden; }
+  .resp-card::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; }
+  .resp-card.resp-yes::before { background:var(--green); }
+  .resp-card.resp-no::before { background:var(--orange); }
+  .resp-card h3 { font-size:1.1rem; font-weight:700; margin-bottom:16px; }
+  .resp-card ul { list-style:none; font-size:0.88rem; color:var(--text-dim); }
+  .resp-card ul li { padding:8px 0; border-bottom:1px solid rgba(51,65,85,0.3); display:flex; align-items:flex-start; gap:10px; }
+  .resp-card ul li:last-child { border-bottom:none; }
+  .resp-icon { font-size:1.1rem; flex-shrink:0; margin-top:2px; }
+
+  /* 多層防御 */
+  .layer-stack { display:flex; flex-direction:column; gap:0; margin-bottom:40px; }
+  .layer-card { background:var(--surface); border:1px solid var(--border); padding:24px 32px; display:flex; align-items:center; gap:24px; }
+  .layer-card:first-child { border-radius:16px 16px 0 0; }
+  .layer-card:last-child { border-radius:0 0 16px 16px; }
+  .layer-num { font-size:2rem; font-weight:800; min-width:48px; text-align:center; }
+  .layer-content h4 { font-size:1rem; font-weight:700; margin-bottom:4px; }
+  .layer-content p { font-size:0.85rem; color:var(--text-dim); }
+  .layer-tags { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+  .layer-tag { padding:3px 10px; border-radius:6px; font-size:0.72rem; font-weight:600; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text-dim); }
+
+  /* 通報フロー */
+  .flow-container { display:flex; flex-direction:column; gap:0; margin-bottom:40px; align-items:center; }
+  .flow-step-v { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px 32px; text-align:center; max-width:500px; width:100%; }
+  .flow-step-v h4 { font-size:1rem; font-weight:700; margin-bottom:4px; }
+  .flow-step-v p { font-size:0.85rem; color:var(--text-dim); }
+  .flow-arrow-v { font-size:1.5rem; color:var(--text-muted); padding:8px 0; }
+
+  /* エスカレーション */
+  .escalation-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:40px; }
+  .esc-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px; text-align:center; position:relative; overflow:hidden; }
+  .esc-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+  .esc-card .esc-num { font-size:1.8rem; font-weight:800; margin-bottom:8px; }
+  .esc-card h4 { font-size:0.9rem; font-weight:700; margin-bottom:6px; }
+  .esc-card p { font-size:0.78rem; color:var(--text-dim); }
+
+  /* コミュニケーション3フェーズ */
+  .comm-phases { display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:0; align-items:stretch; margin-bottom:40px; }
+  .comm-phase { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:28px; }
+  .comm-phase h4 { font-size:1rem; font-weight:700; margin-bottom:12px; }
+  .comm-phase p { font-size:0.85rem; color:var(--text-dim); margin-bottom:8px; }
+  .comm-phase .phase-label { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+  .comm-arrow { display:flex; align-items:center; font-size:1.5rem; color:var(--text-muted); padding:0 8px; }
+  .comm-features { list-style:none; font-size:0.82rem; color:var(--text-dim); margin-top:12px; }
+  .comm-features li { padding:4px 0; display:flex; align-items:center; gap:8px; }
+
+  /* 比較テーブル */
+  .compare-table { width:100%; border-collapse:collapse; margin-bottom:40px; font-size:0.88rem; }
+  .compare-table th { background:var(--surface); padding:12px 16px; text-align:left; border-bottom:2px solid var(--border); font-weight:600; color:var(--text-dim); }
+  .compare-table td { padding:12px 16px; border-bottom:1px solid rgba(51,65,85,0.3); }
+  .compare-table tr:hover td { background:rgba(255,255,255,0.02); }
+
+  /* レピュテーション */
+  .rep-display { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:40px; }
+  .rep-meter { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:28px; }
+  .rep-meter h3 { font-size:1.1rem; font-weight:700; margin-bottom:20px; }
+  .meter-bar { height:24px; border-radius:12px; background:linear-gradient(90deg, var(--red) 0%, var(--orange) 25%, var(--yellow) 50%, var(--green) 75%, var(--green) 100%); position:relative; margin-bottom:8px; }
+  .meter-labels { display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-muted); }
+  .rep-actions { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:28px; }
+  .rep-actions h3 { font-size:1.1rem; font-weight:700; margin-bottom:16px; }
+  .rep-action-item { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid rgba(51,65,85,0.3); font-size:0.85rem; }
+  .rep-action-item:last-child { border-bottom:none; }
+  .rep-score { font-weight:700; font-size:0.9rem; }
+  .rep-score.positive { color:var(--green); }
+  .rep-score.negative { color:var(--accent); }
+  .rep-score.neutral { color:var(--text-muted); }
+
+  /* キャンセルタイムライン */
+  .cancel-timeline { display:flex; align-items:stretch; margin-bottom:40px; background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; }
+  .cancel-stage { flex:1; padding:24px; text-align:center; border-right:1px solid var(--border); position:relative; }
+  .cancel-stage:last-child { border-right:none; }
+  .cancel-stage::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; }
+  .cancel-stage h4 { font-size:0.9rem; font-weight:700; margin-bottom:8px; }
+  .cancel-stage p { font-size:0.78rem; color:var(--text-dim); }
+  .cancel-stage .cancel-impact { font-size:0.82rem; font-weight:700; margin-top:8px; }
+
+  /* ロードマップ */
+  .roadmap { display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:40px; }
+  .roadmap-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:24px; position:relative; overflow:hidden; }
+  .roadmap-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+  .roadmap-card .rm-phase { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+  .roadmap-card h4 { font-size:0.95rem; font-weight:700; margin-bottom:8px; }
+  .roadmap-card ul { list-style:none; font-size:0.78rem; color:var(--text-dim); }
+  .roadmap-card ul li { padding:4px 0; display:flex; align-items:flex-start; gap:6px; }
+  .roadmap-card ul li::before { content:'&#8226;'; flex-shrink:0; }
+
+  /* 他サービス比較 */
+  .service-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:40px; }
+  .service-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:24px; transition:transform 0.3s; }
+  .service-card:hover { transform:translateY(-3px); }
+  .service-card h4 { font-size:1rem; font-weight:700; margin-bottom:4px; }
+  .service-card .service-type { font-size:0.75rem; color:var(--text-muted); margin-bottom:12px; }
+  .service-card .service-features { list-style:none; font-size:0.82rem; color:var(--text-dim); }
+  .service-card .service-features li { padding:4px 0; display:flex; align-items:center; gap:8px; }
+  .service-card .service-ref { font-size:0.72rem; font-weight:600; margin-top:12px; padding:4px 10px; border-radius:6px; display:inline-block; }
+
+  .legal-box { background:linear-gradient(135deg, rgba(249,112,102,0.08), rgba(245,158,11,0.05)); border:2px solid rgba(249,112,102,0.3); border-radius:16px; padding:28px; margin-bottom:40px; }
+  .legal-box h3 { font-size:1.1rem; font-weight:700; margin-bottom:12px; color:var(--accent); }
+  .legal-box p { font-size:0.9rem; color:var(--text-dim); line-height:1.8; }
+
+  /* 安全アドバイス */
+  .advice-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:16px; margin-bottom:40px; }
+  .advice-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; text-align:center; }
+  .advice-card .advice-icon { font-size:2rem; margin-bottom:10px; }
+  .advice-card p { font-size:0.82rem; color:var(--text-dim); }
+
+  .back-link { display:inline-block; margin:20px 40px; padding:8px 20px; border-radius:8px; background:var(--surface); border:1px solid var(--border); color:var(--text-dim); text-decoration:none; font-size:0.85rem; transition:all 0.2s; }
+  .back-link:hover { border-color:var(--accent); color:var(--text); }
+  footer { border-top:1px solid var(--border); padding:24px 40px; text-align:center; font-size:0.72rem; color:var(--text-muted); }
+
+  @media (max-width:768px) {
+    .hero{padding:40px 20px;} .hero h1{font-size:2rem;} .section{padding:40px 20px;}
+    .responsibility-grid,.rep-display{grid-template-columns:1fr;}
+    .escalation-grid,.roadmap{grid-template-columns:1fr 1fr;}
+    .comm-phases{grid-template-columns:1fr; gap:12px;}
+    .comm-arrow{transform:rotate(90deg); justify-content:center; padding:4px 0;}
+    .cancel-timeline{flex-direction:column;}
+    .cancel-stage{border-right:none; border-bottom:1px solid var(--border);}
+    .cancel-stage:last-child{border-bottom:none;}
+    .service-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="back-link">&#8592; ドキュメント一覧に戻る</a>
+
+<header class="hero">
+  <h1>安全対策・リスク管理図解</h1>
+  <p class="subtitle">ユーザー安全対策、コミュニケーション設計、無断キャンセル対策、免責方針</p>
+  <div class="badge-row">
+    <span class="badge" style="background:rgba(249,112,102,0.12); border-color:rgba(249,112,102,0.3)!important; color:var(--accent);">安全対策</span>
+    <span class="badge" style="background:rgba(124,58,237,0.12); border-color:rgba(124,58,237,0.3)!important; color:var(--primary-light);">コミュニケーション設計</span>
+    <span class="badge" style="background:rgba(245,158,11,0.12); border-color:rgba(245,158,11,0.3)!important; color:var(--orange);">レピュテーション</span>
+    <span class="badge" style="background:rgba(34,197,94,0.12); border-color:rgba(34,197,94,0.3)!important; color:var(--green);">免責設計</span>
+  </div>
+</header>
+
+<nav class="nav">
+  <a href="#responsibility">免責方針</a>
+  <a href="#defense">多層防御</a>
+  <a href="#report">通報フロー</a>
+  <a href="#communication">コミュニケーション</a>
+  <a href="#reputation">レピュテーション</a>
+  <a href="#cancel">キャンセルポリシー</a>
+  <a href="#advice">安全アドバイス</a>
+  <a href="#roadmap">ロードマップ</a>
+  <a href="#compare">他サービス比較</a>
+</nav>
+
+<main>
+
+<!-- 運営の責任範囲 -->
+<section class="section" id="responsibility">
+  <h2 class="section-title">運営の責任範囲</h2>
+  <p class="section-desc">Groove Matchは「音楽活動のマッチングプラットフォーム」です。ユーザーを繋ぐ「場」を提供し、安全ツールを整備します。</p>
+
+  <div class="responsibility-grid">
+    <div class="resp-card resp-yes">
+      <h3 style="color:var(--green);">&#9989; 運営が責任を負う</h3>
+      <ul>
+        <li><span class="resp-icon" style="color:var(--green);">&#10003;</span> 安全なツールの提供（通報・ブロック機能）</li>
+        <li><span class="resp-icon" style="color:var(--green);">&#10003;</span> 通報への合理的な期間内での対応</li>
+        <li><span class="resp-icon" style="color:var(--green);">&#10003;</span> 禁止行為の明示と違反者への対応</li>
+        <li><span class="resp-icon" style="color:var(--green);">&#10003;</span> 安全な利用のための注意喚起</li>
+        <li><span class="resp-icon" style="color:var(--green);">&#10003;</span> プライバシーポリシーに基づくデータ管理</li>
+      </ul>
+    </div>
+    <div class="resp-card resp-no">
+      <h3 style="color:var(--orange);">&#9888; ユーザーの自己責任</h3>
+      <ul>
+        <li><span class="resp-icon" style="color:var(--orange);">&#10007;</span> ユーザー間の金銭トラブル</li>
+        <li><span class="resp-icon" style="color:var(--orange);">&#10007;</span> 外部ツール（LINE等）でのやり取り</li>
+        <li><span class="resp-icon" style="color:var(--orange);">&#10007;</span> ライブ出演に関するトラブル（キャンセル等）</li>
+        <li><span class="resp-icon" style="color:var(--orange);">&#10007;</span> ユーザーが提供した情報の真偽</li>
+        <li><span class="resp-icon" style="color:var(--orange);">&#10007;</span> ユーザーが自発的に公開した情報の悪用</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="legal-box">
+    <h3>&#9888; 免責条項の限界</h3>
+    <p>免責条項は「重大な過失」を免除しません。例えば、犯罪行為の通報を放置した場合は過失に該当する可能性があります。<br>通報には必ず合理的な期間内に対応し、対応記録を残す必要があります。</p>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- 多層防御アーキテクチャ -->
+<section class="section" id="defense">
+  <h2 class="section-title">多層防御アーキテクチャ</h2>
+  <p class="section-desc">4つのレイヤーでユーザーの安全を守ります。</p>
+
+  <div class="layer-stack">
+    <div class="layer-card" style="border-top:3px solid var(--green);">
+      <div class="layer-num" style="color:var(--green);">1</div>
+      <div class="layer-content">
+        <h4 style="color:var(--green);">予防</h4>
+        <p>問題が起きる前に防ぐ</p>
+        <div class="layer-tags">
+          <span class="layer-tag">登録時の規約同意</span>
+          <span class="layer-tag">プロフィール審査（将来）</span>
+          <span class="layer-tag">初回対面時の安全アドバイス</span>
+        </div>
+      </div>
+    </div>
+    <div class="layer-card" style="border-left:3px solid var(--blue);">
+      <div class="layer-num" style="color:var(--blue);">2</div>
+      <div class="layer-content">
+        <h4 style="color:var(--blue);">検出</h4>
+        <p>問題を早期に発見する</p>
+        <div class="layer-tags">
+          <span class="layer-tag">通報機能</span>
+          <span class="layer-tag">禁止ワードフィルタ（Pro）</span>
+          <span class="layer-tag">送信レート制限</span>
+        </div>
+      </div>
+    </div>
+    <div class="layer-card" style="border-left:3px solid var(--orange);">
+      <div class="layer-num" style="color:var(--orange);">3</div>
+      <div class="layer-content">
+        <h4 style="color:var(--orange);">対応</h4>
+        <p>問題に段階的に対処する</p>
+        <div class="layer-tags">
+          <span class="layer-tag">警告</span>
+          <span class="layer-tag">機能制限</span>
+          <span class="layer-tag">アカウント停止</span>
+          <span class="layer-tag">永久BAN</span>
+        </div>
+      </div>
+    </div>
+    <div class="layer-card" style="border-left:3px solid var(--accent);">
+      <div class="layer-num" style="color:var(--accent);">4</div>
+      <div class="layer-content">
+        <h4 style="color:var(--accent);">事後</h4>
+        <p>被害の拡大を防ぐ</p>
+        <div class="layer-tags">
+          <span class="layer-tag">ブロック機能</span>
+          <span class="layer-tag">マッチング結果から除外</span>
+          <span class="layer-tag">警察への情報提供体制</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- 通報・エスカレーションフロー -->
+<section class="section" id="report">
+  <h2 class="section-title">通報・エスカレーションフロー</h2>
+  <p class="section-desc">通報は匿名で処理されます。通報者の情報は対象ユーザーに通知されません。</p>
+
+  <div class="flow-container">
+    <div class="flow-step-v" style="border-top:3px solid var(--accent);">
+      <h4 style="color:var(--accent);">1. ユーザーが通報</h4>
+      <p>通報ボタン &#8594; カテゴリ選択 &#8594; 詳細入力（任意）</p>
+    </div>
+    <div class="flow-arrow-v">&#9660;</div>
+    <div class="flow-step-v" style="border-top:3px solid var(--blue);">
+      <h4 style="color:var(--blue);">2. 通報キューに追加</h4>
+      <p>カテゴリ別に優先度を自動判定</p>
+    </div>
+    <div class="flow-arrow-v">&#9660;</div>
+    <div class="flow-step-v" style="border-top:3px solid var(--primary);">
+      <h4 style="color:var(--primary-light);">3. 運営がレビュー</h4>
+      <p>事実確認 &#8594; 過去の通報履歴 &#8594; メッセージ履歴確認</p>
+    </div>
+    <div class="flow-arrow-v">&#9660;</div>
+    <div class="flow-step-v" style="border-top:3px solid var(--orange);">
+      <h4 style="color:var(--orange);">4. 対応を実行</h4>
+      <p>警告 / 機能制限 / アカウント停止 / 永久BAN</p>
+    </div>
+    <div class="flow-arrow-v">&#9660;</div>
+    <div class="flow-step-v" style="border-top:3px solid var(--green);">
+      <h4 style="color:var(--green);">5. 通報者に結果通知</h4>
+      <p>「対応しました」のみ通知。具体的な制裁内容は非公開</p>
+    </div>
+  </div>
+
+  <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:20px;">エスカレーション段階</h3>
+  <div class="escalation-grid">
+    <div class="esc-card" style="border-color:rgba(234,179,8,0.3);">
+      <div style="position:absolute; top:0; left:0; right:0; height:3px; background:var(--yellow);"></div>
+      <div class="esc-num" style="color:var(--yellow);">1</div>
+      <h4>警告</h4>
+      <p>初回違反<br>警告メール送信<br>即時復帰</p>
+    </div>
+    <div class="esc-card" style="border-color:rgba(245,158,11,0.3);">
+      <div style="position:absolute; top:0; left:0; right:0; height:3px; background:var(--orange);"></div>
+      <div class="esc-num" style="color:var(--orange);">2</div>
+      <h4>機能制限</h4>
+      <p>2回目の違反<br>メッセージ送信停止<br>7日間</p>
+    </div>
+    <div class="esc-card" style="border-color:rgba(249,112,102,0.3);">
+      <div style="position:absolute; top:0; left:0; right:0; height:3px; background:var(--accent);"></div>
+      <div class="esc-num" style="color:var(--accent);">3</div>
+      <h4>一時停止</h4>
+      <p>3回目の違反<br>アカウント停止<br>30日間</p>
+    </div>
+    <div class="esc-card" style="border-color:rgba(239,68,68,0.3);">
+      <div style="position:absolute; top:0; left:0; right:0; height:3px; background:var(--red);"></div>
+      <div class="esc-num" style="color:var(--red);">4</div>
+      <h4>永久BAN</h4>
+      <p>4回目 or Critical<br>アカウント永久停止<br>復帰不可</p>
+    </div>
+  </div>
+
+  <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:20px;">通報対応SLA</h3>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>カテゴリ</th>
+        <th>対応時間</th>
+        <th>例</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span style="color:var(--red); font-weight:700;">Critical</span></td>
+        <td><strong>24時間以内</strong></td>
+        <td>犯罪行為（ストーカー、脅迫、暴力）</td>
+      </tr>
+      <tr>
+        <td><span style="color:var(--orange); font-weight:700;">High</span></td>
+        <td><strong>48時間以内</strong></td>
+        <td>詐欺、MLM勧誘、ハラスメント</td>
+      </tr>
+      <tr>
+        <td><span style="color:var(--yellow); font-weight:700;">Medium</span></td>
+        <td><strong>72時間以内</strong></td>
+        <td>なりすまし、スパム、宣伝</td>
+      </tr>
+      <tr>
+        <td><span style="color:var(--text-muted); font-weight:700;">Low</span></td>
+        <td>1週間以内</td>
+        <td>マナー違反</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<hr class="section-divider">
+
+<!-- コミュニケーション設計 -->
+<section class="section" id="communication">
+  <h2 class="section-title">コミュニケーション設計</h2>
+  <p class="section-desc">初回接触はアプリ内で安全に。信頼構築後は外部ツールへ自然に移行する3フェーズモデル。</p>
+
+  <div class="comm-phases">
+    <div class="comm-phase" style="border-top:3px solid var(--primary);">
+      <div class="phase-label" style="color:var(--primary-light);">Phase 1</div>
+      <h4>アプリ内メッセージ</h4>
+      <p>初回接触は安全なアプリ内で</p>
+      <ul class="comm-features">
+        <li><span style="color:var(--green);">&#10003;</span> Pro限定機能</li>
+        <li><span style="color:var(--green);">&#10003;</span> 運営が監視可能</li>
+        <li><span style="color:var(--green);">&#10003;</span> 不審パターン検出</li>
+        <li><span style="color:var(--green);">&#10003;</span> 課金転換の動機</li>
+      </ul>
+    </div>
+    <div class="comm-arrow">&#8594;</div>
+    <div class="comm-phase" style="border-top:3px solid var(--orange);">
+      <div class="phase-label" style="color:var(--orange);">Phase 2</div>
+      <h4>外部連絡先の交換</h4>
+      <p>信頼構築後、ユーザーの判断で</p>
+      <ul class="comm-features">
+        <li><span style="color:var(--orange);">&#9888;</span> 注意喚起を1回表示</li>
+        <li><span style="color:var(--orange);">&#9888;</span> 自己責任の明示</li>
+        <li><span style="color:var(--text-muted);">&#8212;</span> 運営は関与しない</li>
+      </ul>
+    </div>
+    <div class="comm-arrow">&#8594;</div>
+    <div class="comm-phase" style="border-top:3px solid var(--text-muted);">
+      <div class="phase-label" style="color:var(--text-muted);">Phase 3</div>
+      <h4>外部ツールでバンド活動</h4>
+      <p>LINEグループ等で実務連絡</p>
+      <ul class="comm-features">
+        <li><span style="color:var(--text-muted);">&#8212;</span> 練習日時の調整</li>
+        <li><span style="color:var(--text-muted);">&#8212;</span> グループ通話</li>
+        <li><span style="color:var(--text-muted);">&#8212;</span> ファイル共有</li>
+        <li><span style="color:var(--text-muted);">&#8212;</span> 完全に運営の責任範囲外</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="legal-box">
+    <h3>&#128172; なぜハイブリッド方式なのか？</h3>
+    <p>
+      <strong>アプリ内のみ</strong>だと、バンド活動の実務（グループ通話、日程調整等）にはLINEの方が圧倒的に便利で、ユーザー体験が悪化します。<br>
+      <strong>外部のみ</strong>だと、初対面の相手にいきなりLINEを教えるのは不安で、初回接触時の安全網がなくなります。<br>
+      <strong>ハイブリッド方式</strong>なら、初回はアプリ内で安全に接触し、信頼関係ができたら自然にLINEへ移行できます。
+    </p>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- レピュテーションスコア -->
+<section class="section" id="reputation">
+  <h2 class="section-title">レピュテーション（信頼度）スコア</h2>
+  <p class="section-desc">自動ペナルティではなく、活動実績に基づくソフトなレピュテーション制を採用。プロフィールに&#9733;マークで表示。</p>
+
+  <div class="rep-display">
+    <div class="rep-meter">
+      <h3>スコアメーター</h3>
+      <div style="margin-bottom:24px;">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+          <span style="font-size:1.5rem;">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+          <span style="font-size:0.82rem; color:var(--green);">80-100: 非常に信頼できる</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+          <span style="font-size:1.5rem;">&#9733;&#9733;&#9733;&#9733;&#9734;</span>
+          <span style="font-size:0.82rem; color:var(--green);">60-79: 信頼できる</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+          <span style="font-size:1.5rem;">&#9733;&#9733;&#9733;&#9734;&#9734;</span>
+          <span style="font-size:0.82rem; color:var(--yellow);">40-59: 普通（新規ユーザー初期値）</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+          <span style="font-size:1.5rem;">&#9733;&#9733;&#9734;&#9734;&#9734;</span>
+          <span style="font-size:0.82rem; color:var(--orange);">20-39: 注意が必要</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span style="font-size:1.5rem;">&#9733;&#9734;&#9734;&#9734;&#9734;</span>
+          <span style="font-size:0.82rem; color:var(--accent);">0-19: 要注意</span>
+        </div>
+      </div>
+      <div class="meter-bar"></div>
+      <div class="meter-labels">
+        <span>0</span>
+        <span>25</span>
+        <span>50（初期値）</span>
+        <span>75</span>
+        <span>100</span>
+      </div>
+    </div>
+    <div class="rep-actions">
+      <h3>スコアに影響する行動</h3>
+      <div class="rep-action-item">
+        <span>ライブ出演完了</span>
+        <span class="rep-score positive">+10</span>
+      </div>
+      <div class="rep-action-item">
+        <span>バンドメンバーからの高評価</span>
+        <span class="rep-score positive">+5</span>
+      </div>
+      <div class="rep-action-item">
+        <span>練習セッション参加</span>
+        <span class="rep-score positive">+3</span>
+      </div>
+      <div class="rep-action-item">
+        <span>期限内キャンセル（3日前以上）</span>
+        <span class="rep-score neutral">0</span>
+      </div>
+      <div class="rep-action-item">
+        <span>直前キャンセル（24時間以内）</span>
+        <span class="rep-score negative">-5</span>
+      </div>
+      <div class="rep-action-item">
+        <span>無断キャンセル（ノーショー）</span>
+        <span class="rep-score negative">-15</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- キャンセルポリシー -->
+<section class="section" id="cancel">
+  <h2 class="section-title">キャンセルポリシー</h2>
+  <p class="section-desc">イベント出演に関するキャンセルポリシー。運営はバンド内のトラブルに介入しません。</p>
+
+  <div class="cancel-timeline">
+    <div class="cancel-stage" style="background:rgba(34,197,94,0.05);">
+      <div style="position:absolute; top:0; left:0; right:0; height:4px; background:var(--green);"></div>
+      <h4 style="color:var(--green);">7日前以上</h4>
+      <p>ペナルティなし</p>
+      <div class="cancel-impact" style="color:var(--green);">影響: なし</div>
+    </div>
+    <div class="cancel-stage" style="background:rgba(234,179,8,0.05);">
+      <div style="position:absolute; top:0; left:0; right:0; height:4px; background:var(--yellow);"></div>
+      <h4 style="color:var(--yellow);">3〜7日前</h4>
+      <p>内部記録のみ</p>
+      <div class="cancel-impact" style="color:var(--yellow);">影響: なし</div>
+    </div>
+    <div class="cancel-stage" style="background:rgba(245,158,11,0.05);">
+      <div style="position:absolute; top:0; left:0; right:0; height:4px; background:var(--orange);"></div>
+      <h4 style="color:var(--orange);">24h〜3日前</h4>
+      <p>リーダーに通知</p>
+      <div class="cancel-impact" style="color:var(--orange);">スコア: -5</div>
+    </div>
+    <div class="cancel-stage" style="background:rgba(249,112,102,0.05);">
+      <div style="position:absolute; top:0; left:0; right:0; height:4px; background:var(--accent);"></div>
+      <h4 style="color:var(--accent);">24h以内</h4>
+      <p>リーダー+主催者に通知</p>
+      <div class="cancel-impact" style="color:var(--accent);">スコア: -10</div>
+    </div>
+    <div class="cancel-stage" style="background:rgba(239,68,68,0.05);">
+      <div style="position:absolute; top:0; left:0; right:0; height:4px; background:var(--red);"></div>
+      <h4 style="color:var(--red);">無断キャンセル</h4>
+      <p>自動警告メール</p>
+      <div class="cancel-impact" style="color:var(--red);">スコア: -15</div>
+    </div>
+  </div>
+
+  <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px; text-align:center; font-size:0.88rem; color:var(--text-dim);">
+    バンド内の人間関係は<strong>バンドリーダーの自治</strong>に委ねます。リーダーはメンバー除外・評価・募集管理の権限を持ちます。
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- 初回対面時の安全アドバイス -->
+<section class="section" id="advice">
+  <h2 class="section-title">初回対面時の安全アドバイス</h2>
+  <p class="section-desc">マッチング後、初めてスタジオで会う際に1回だけ表示されます。</p>
+
+  <div class="advice-grid">
+    <div class="advice-card">
+      <div class="advice-icon">&#127963;</div>
+      <p><strong>公共のスタジオを利用</strong><br>個人宅や密室は避け、公共のリハーサルスタジオで</p>
+    </div>
+    <div class="advice-card">
+      <div class="advice-icon">&#128233;</div>
+      <p><strong>場所と時間を共有</strong><br>友人や家族に練習場所と時間を伝えましょう</p>
+    </div>
+    <div class="advice-card">
+      <div class="advice-icon">&#127769;</div>
+      <p><strong>夜間の練習を避ける</strong><br>初回は昼間の練習がおすすめ</p>
+    </div>
+    <div class="advice-card">
+      <div class="advice-icon">&#128176;</div>
+      <p><strong>金銭の貸し借りはNG</strong><br>スタジオ代の割り勘以外の金銭のやり取りは避けて</p>
+    </div>
+    <div class="advice-card">
+      <div class="advice-icon">&#128694;</div>
+      <p><strong>不安ならすぐ離れる</strong><br>身の安全を最優先に</p>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- 実装ロードマップ -->
+<section class="section" id="roadmap">
+  <h2 class="section-title">実装ロードマップ</h2>
+  <p class="section-desc">安全機能の段階的な実装計画。</p>
+
+  <div class="roadmap">
+    <div class="roadmap-card" style="border-color:rgba(239,68,68,0.3);">
+      <div style="position:absolute; top:0; left:0; right:0; height:3px; background:var(--red);"></div>
+      <div class="rm-phase" style="color:var(--red);">Phase 1: ローンチ前（必須）</div>
+      <h4>基本安全機能</h4>
+      <ul>
+        <li>利用規約・ガイドライン作成</li>
+        <li>登録時のクリックラップ同意</li>
+        <li>通報機能</li>
+        <li>ブロック機能</li>
+        <li>禁止ワードフィルタ</li>
+      </ul>
+    </div>
+    <div class="roadmap-card" style="border-color:rgba(245,158,11,0.3);">
+      <div style="position:absolute; top:0; left:0; right:0; height:3px; background:var(--orange);"></div>
+      <div class="rm-phase" style="color:var(--orange);">Phase 2: ローンチ後1ヶ月</div>
+      <h4>管理・レピュテーション</h4>
+      <ul>
+        <li>通報管理ダッシュボード</li>
+        <li>エスカレーション自動化</li>
+        <li>レピュテーションスコアv1</li>
+        <li>キャンセルポリシー実装</li>
+      </ul>
+    </div>
+    <div class="roadmap-card" style="border-color:rgba(234,179,8,0.3);">
+      <div style="position:absolute; top:0; left:0; right:0; height:3px; background:var(--yellow);"></div>
+      <div class="rm-phase" style="color:var(--yellow);">Phase 3: ローンチ後3ヶ月</div>
+      <h4>高度な検出</h4>
+      <ul>
+        <li>不審パターン検出</li>
+        <li>SNS公開範囲設定</li>
+        <li>安全アドバイス表示</li>
+      </ul>
+    </div>
+    <div class="roadmap-card" style="border-color:rgba(100,116,139,0.3);">
+      <div style="position:absolute; top:0; left:0; right:0; height:3px; background:var(--text-muted);"></div>
+      <div class="rm-phase" style="color:var(--text-muted);">Phase 4: 将来</div>
+      <h4>AI・認証強化</h4>
+      <ul>
+        <li>AI不正検出</li>
+        <li>写真認証</li>
+        <li>高度なレピュテーション</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- 他サービス比較 -->
+<section class="section" id="compare">
+  <h2 class="section-title">他サービスの安全対策比較</h2>
+  <p class="section-desc">Groove Matchの安全設計は、以下のサービスの実績を参考にしています。</p>
+
+  <div class="service-grid">
+    <div class="service-card" style="border-top:3px solid var(--accent);">
+      <h4>Tinder</h4>
+      <div class="service-type">マッチングアプリ</div>
+      <ul class="service-features">
+        <li><span style="color:var(--green);">&#10003;</span> AI不正検出</li>
+        <li><span style="color:var(--green);">&#10003;</span> 写真認証</li>
+        <li><span style="color:var(--green);">&#10003;</span> 通報&#8594;48h対応</li>
+        <li><span style="color:var(--green);">&#10003;</span> レッドフラグ言語スキャン</li>
+      </ul>
+      <span class="service-ref" style="background:rgba(249,112,102,0.12); color:var(--accent);">参考: エスカレーション段階制</span>
+    </div>
+    <div class="service-card" style="border-top:3px solid var(--yellow);">
+      <h4>Bumble</h4>
+      <div class="service-type">マッチングアプリ</div>
+      <ul class="service-features">
+        <li><span style="color:var(--green);">&#10003;</span> Deception Detector&#8482;</li>
+        <li><span style="color:var(--green);">&#10003;</span> 匿名通報</li>
+        <li><span style="color:var(--green);">&#10003;</span> 写真認証</li>
+        <li><span style="color:var(--green);">&#10003;</span> 警告&#8594;永久BAN</li>
+      </ul>
+      <span class="service-ref" style="background:rgba(234,179,8,0.12); color:var(--yellow);">参考: 自動検出の考え方</span>
+    </div>
+    <div class="service-card" style="border-top:3px solid var(--primary);">
+      <h4>Pairs</h4>
+      <div class="service-type">マッチングアプリ（日本）</div>
+      <ul class="service-features">
+        <li><span style="color:var(--green);">&#10003;</span> 24h有人パトロール</li>
+        <li><span style="color:var(--green);">&#10003;</span> アプリ内メッセージ監視</li>
+        <li><span style="color:var(--green);">&#10003;</span> 年齢確認（身分証）</li>
+        <li><span style="color:var(--green);">&#10003;</span> 本人確認バッジ</li>
+      </ul>
+      <span class="service-ref" style="background:rgba(124,58,237,0.12); color:var(--primary-light);">参考: ハイブリッド通信モデル</span>
+    </div>
+    <div class="service-card" style="border-top:3px solid var(--green);">
+      <h4>メンボネット</h4>
+      <div class="service-type">バンドメンバー募集</div>
+      <ul class="service-features">
+        <li><span style="color:var(--green);">&#10003;</span> 宣伝アカウントフィルタ</li>
+        <li><span style="color:var(--green);">&#10003;</span> 恋愛目的利用の排除</li>
+        <li><span style="color:var(--green);">&#10003;</span> 音楽活動に特化</li>
+      </ul>
+      <span class="service-ref" style="background:rgba(34,197,94,0.12); color:var(--green);">参考: 音楽特化の禁止行為</span>
+    </div>
+    <div class="service-card" style="border-top:3px solid var(--secondary);">
+      <h4>Meetup</h4>
+      <div class="service-type">イベントプラットフォーム</div>
+      <ul class="service-features">
+        <li><span style="color:var(--green);">&#10003;</span> キャンセル窓の設定</li>
+        <li><span style="color:var(--green);">&#10003;</span> グループ自治権</li>
+        <li><span style="color:var(--green);">&#10003;</span> ノーショー管理</li>
+      </ul>
+      <span class="service-ref" style="background:rgba(6,182,212,0.12); color:var(--secondary);">参考: レピュテーション制</span>
+    </div>
+    <div class="service-card" style="border-top:3px solid var(--orange);">
+      <h4>Airbnb</h4>
+      <div class="service-type">宿泊プラットフォーム</div>
+      <ul class="service-features">
+        <li><span style="color:var(--green);">&#10003;</span> 双方向の評価制度</li>
+        <li><span style="color:var(--green);">&#10003;</span> スーパーホストステータス</li>
+        <li><span style="color:var(--green);">&#10003;</span> 本人確認</li>
+      </ul>
+      <span class="service-ref" style="background:rgba(245,158,11,0.12); color:var(--orange);">参考: 双方向の信頼スコア</span>
+    </div>
+  </div>
+
+  <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px; text-align:center; font-size:0.88rem; color:var(--text-dim);">
+    詳細は &#8594; <a href="https://github.com/dan-yuta/groove-match/blob/main/docs/md/08-01_%E5%AE%89%E5%85%A8%E5%AF%BE%E7%AD%96%E3%83%BB%E3%83%AA%E3%82%B9%E3%82%AF%E7%AE%A1%E7%90%86.md" target="_blank" style="color:var(--accent);">08-01_安全対策・リスク管理.md</a>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>&#169; 2026 Groove Match - 安全対策・リスク管理図解</p>
+  <p style="margin-top:4px;"><a href="../index.html" style="color:var(--secondary); text-decoration:none;">&#8592; ドキュメント一覧に戻る</a></p>
+</footer>
+
+</body>
+</html>

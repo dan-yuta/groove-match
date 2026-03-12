@@ -124,6 +124,8 @@
 
   .fc-match::before { background: var(--primary); }
   .fc-band::before { background: var(--secondary); }
+  .fc-chat::before { background: #14b8a6; }
+  .fc-calendar::before { background: #f59e0b; }
   .fc-event::before { background: var(--accent); }
   .fc-practice::before { background: var(--green); }
   .fc-friend::before { background: var(--pink); }
@@ -289,6 +291,26 @@
         <li>楽器スロット制で空きポジション可視化</li>
         <li>リーダー/メンバー権限管理</li>
         <li>Freeプラン: 1つまで、Proプラン: 無制限</li>
+      </ul>
+    </div>
+    <div class="feature-card fc-chat">
+      <h3>&#128172; チャット</h3>
+      <p>WebSocketリアルタイムチャットでバンド活動を円滑に。</p>
+      <ul>
+        <li>DM（1対1）とバンドグループチャット</li>
+        <li>API Gateway WebSocket + Lambdaで低コスト実現</li>
+        <li>禁止ワードフィルタ・URL送信警告・通報機能</li>
+        <li>Proプラン限定機能</li>
+      </ul>
+    </div>
+    <div class="feature-card fc-calendar">
+      <h3>&#128197; 練習カレンダー</h3>
+      <p>バンド単位の練習日程調整をアプリ内で完結。</p>
+      <ul>
+        <li>月次カレンダー表示</li>
+        <li>日程提案 &#8594; メンバー回答（OK/NG） &#8594; リーダー確定</li>
+        <li>スタジオ名・住所・メモを記録</li>
+        <li>Proプラン限定機能</li>
       </ul>
     </div>
     <div class="feature-card fc-event">
